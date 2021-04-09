@@ -1,0 +1,27 @@
+#gift-card-label {
+    display: table-row;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+#gift-card-input {
+    display: table-cell;
+    position: relative;
+    width: 100%;
+}
+
+#apply-gift-card {
+    display: table-cell;
+    white-space: nowrap;
+    margin-left: 1em;
+}
+
+#gift-card-number {
+    width: 70%;
+}
+
+#gift-card-pin {
+    width: 26%;
+}
