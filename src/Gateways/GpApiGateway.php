@@ -103,8 +103,8 @@ class GpApiGateway extends AbstractGateway {
 			'country'                  => wc_get_base_location()['country'],
 			'developerId'              => '',
 			'environment'              => $this->is_production ? Environment::PRODUCTION : Environment::TEST,
-			'methodNotificationUrl'    => $this->get_api_url('globalpayments_threedsecure_methodnotification'),
-			'challengeNotificationUrl' => $this->get_api_url('globalpayments_threedsecure_challengenotification'),
+			'methodNotificationUrl'    => WC()->api_request_url('globalpayments_threedsecure_methodnotification'),
+			'challengeNotificationUrl' => WC()->api_request_url('globalpayments_threedsecure_challengenotification'),
 		);
 	}
 
@@ -157,23 +157,18 @@ class GpApiGateway extends AbstractGateway {
 			return;
 		}
 
-		$globalpayments_threedsecure_lib = Plugin::get_url( '/assets/frontend/js/globalpayments-3ds.js' );
-
 		$convertedThreeDSMethodData = wc_clean( json_decode( base64_decode( $_POST['threeDSMethodData'] ) ) );
 		$response = json_encode([
 			'threeDSServerTransID' => $convertedThreeDSMethodData->threeDSServerTransID,
 		]);
-		$script = <<<EOT
-<!DOCTYPE html>
-<html>
-<body>
-<script src="$globalpayments_threedsecure_lib"></script>
-<script>GlobalPayments.ThreeDSecure.handleMethodNotification($response);</script>
-</body>
-</html>
-EOT;
-		header("Content-Type: text/html");
-		echo $script;
+
+		wp_enqueue_script(
+			'globalpayments-threedsecure-lib',
+			Plugin::get_url( '/assets/frontend/js/globalpayments-3ds' )
+			. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js'
+		);
+		wp_add_inline_script( 'globalpayments-threedsecure-lib', 'GlobalPayments.ThreeDSecure.handleMethodNotification(' . $response . ');' );
+		wp_print_scripts();
 		exit();
 	}
 
@@ -204,19 +199,13 @@ EOT;
 					'PaRes' => wc_clean( $_POST['PaRes'] ),
 				], JSON_UNESCAPED_SLASHES );
 			}
-
-			$globalpayments_threedsecure_lib = Plugin::get_url( '/assets/frontend/js/globalpayments-3ds.js' );
-			$script =  <<<EOT
-<!DOCTYPE html>
-<html>
-<body>
-<script src="$globalpayments_threedsecure_lib"></script>
-<script>GlobalPayments.ThreeDSecure.handleChallengeNotification($response);</script>
-</body>
-</html>
-EOT;
-			header("Content-Type: text/html");
-			echo $script;
+			wp_enqueue_script(
+				'globalpayments-threedsecure-lib',
+				Plugin::get_url( '/assets/frontend/js/globalpayments-3ds' )
+				. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js'
+			);
+			wp_add_inline_script( 'globalpayments-threedsecure-lib', 'GlobalPayments.ThreeDSecure.handleChallengeNotification(' . $response . ');' );
+			wp_print_scripts();
 			exit();
 
 		} catch (Exception $e) {
@@ -257,14 +246,5 @@ EOT;
 			'country'        => WC()->customer->get_shipping_country(),
 			'countryCode'    => '',
 		];
-	}
-
-	protected function get_api_url($path) {
-		$url = get_home_url( null, "wc-api/", is_ssl() ? 'https' : 'http' );
-		if ( ! empty( $path ) && is_string( $path ) ) {
-			$url .= ltrim( $path, '/' );
-		}
-
-		return $url;
 	}
 }
