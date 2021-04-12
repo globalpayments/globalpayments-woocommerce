@@ -308,10 +308,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			'globalpayments_secure_payment_threedsecure_params',
 			array(
 				'threedsecure'    => array(
-					'methodNotificationUrl'     => $this->get_api_url( 'globalpayments_threedsecure_methodnotification' ),
-					'challengeNotificationUrl'  => $this->get_api_url( 'globalpayments_threedsecure_challengenotification' ),
-					'checkEnrollmentUrl'        => $this->get_api_url( 'globalpayments_threedsecure_checkenrollment' ),
-					'initiateAuthenticationUrl' => $this->get_api_url( 'globalpayments_threedsecure_initiateauthentication' ),
+					'methodNotificationUrl'     => WC()->api_request_url( 'globalpayments_threedsecure_methodnotification' ),
+					'challengeNotificationUrl'  => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
+					'checkEnrollmentUrl'        => WC()->api_request_url( 'globalpayments_threedsecure_checkenrollment' ),
+					'initiateAuthenticationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_initiateauthentication' ),
 				),
 				'order'           => array (
 					'amount'          => $this->get_session_amount(),
