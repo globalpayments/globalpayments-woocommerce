@@ -200,14 +200,10 @@
 		 */
 		toggleSubmitButtons: function () {
 			var paymentGatewaySelected = $( this.getPaymentMethodRadioSelector() ).is( ':checked' );
-			if ( ! paymentGatewaySelected ) {
-				return;
-			}
-
 			var savedCardsAvailable    = $( this.getStoredPaymentMethodsRadioSelector() + '[value!="new"]' ).length > 0;
 			var newSavedCardSelected   = 'new' === $( this.getStoredPaymentMethodsRadioSelector() + ':checked' ).val();
 
-			var shouldBeVisible = ( ! savedCardsAvailable ) || ( savedCardsAvailable && newSavedCardSelected );
+			var shouldBeVisible = ( paymentGatewaySelected && ( ! savedCardsAvailable  || savedCardsAvailable && newSavedCardSelected ) );
 			if (shouldBeVisible) {
 				// our gateway was selected
 				$( this.getSubmitButtonTargetSelector() ).show();
