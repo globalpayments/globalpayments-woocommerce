@@ -506,6 +506,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	protected function add_hooks() {
 		// hooks always active for the gateway
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'admin_enforce_single_gateway' ) );
 
 		if ( 'no' === $this->enabled ) {
 			return;
@@ -850,5 +851,47 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	        'U' => 'Issuer not certified',
 	        '?' => 'CVV unrecognized'
 	    );
+	}
+
+	/**
+	 * Enforce single GlobalPayments gateway activation.
+	 *
+	 * @param array $settings Admin settings
+	 * @return mixed
+	 */
+	public function admin_enforce_single_gateway( $settings ) {
+		if ( ! wc_string_to_bool( $settings['enabled'] ) ) {
+			return $settings;
+		}
+
+		$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+		foreach ( $available_gateways as $gateway_id => $gateway ) {
+			if ( $this->id !== $gateway_id && false !== strpos( $gateway_id, 'globalpayments_' ) ) {
+				$settings['enabled'] = 'no';
+				add_action ( 'woocommerce_sections_checkout', function() use ( $gateway ) {
+					echo '<div id="message" class="error inline"><p><strong>' .
+						__( 'You can enable only one GlobalPayments gateway at a time.
+							Please disable ' . $gateway->method_title . ' first!',
+							'globalpayments-gateway-provider-for-woocommerce'
+						) .
+						'</strong></p></div>';
+				});
+				return $settings;
+			}
+		}
+
+		return $settings;
+	}
+
+	/**
+	 * Enqueue admin scripts.
+	 *
+	 * @param string $hook_suffix The current admin page.
+	 */
+	public static function admin_enqueue_scripts( $hook_suffix ) {
+		if ( 'woocommerce_page_wc-settings' !== $hook_suffix ) {
+			return;
+		}
+		wp_enqueue_script ( 'globalpayments-enforce-single-gateway', Plugin::get_url( '/assets/admin/js/globalpayments-enforce-single-gateway.js' ) );
 	}
 }
