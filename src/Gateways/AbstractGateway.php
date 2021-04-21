@@ -251,19 +251,13 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		parent::tokenization_script();
 
 		// Global Payments styles for client-side tokenization
-		$css_style = Plugin::get_url( '/assets/frontend/css/globalpayments-secure-payment-fields.css' );
-		/**
-		 * Allow iframe styling according to theme
-		 *
-		 * @param $css_style CSS stylesheet
-		 */
-		$css_style = apply_filters( 'globalpayments_secure_payment_fields', $css_style );
 		wp_enqueue_style(
 			'globalpayments-secure-payment-fields',
-			$css_style,
+			Plugin::get_url( '/assets/frontend/css/globalpayments-secure-payment-fields.css' ),
 			array(),
 			WC()->version
 		);
+
 		// Global Payments scripts for handling client-side tokenization
 		wp_enqueue_script(
 			'globalpayments-secure-payment-fields-lib',
@@ -287,6 +281,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'id'              => $this->id,
 				'gateway_options' => $this->get_frontend_gateway_options(),
 				'field_options'   => $this->secure_payment_fields(),
+				'field_styles'    => $this->secure_payment_fields_styles(),
 			)
 		);
 
@@ -422,6 +417,171 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				),
 			),
 		);
+	}
+
+	/**
+	 * CSS styles for secure payment fields.
+	 *
+	 * @return mixed|void
+	 */
+	protected function secure_payment_fields_styles() {
+		$image_base = $this->secure_payment_fields_asset_base_url() . '/images';
+
+		$secure_payment_fields_styles = array(
+			'html' => array(
+				'font-size'                => '100%',
+				'-webkit-text-size-adjust' => '100%',
+			),
+			'body' => array(),
+			'#secure-payment-field-wrapper' => array(
+				'position' => 'relative',
+			),
+			'#secure-payment-field' => array(
+				'background-color' => '#fff',
+				'border'           => '1px solid #ccc',
+				'border-radius'    => '4px',
+				'display'          => 'block',
+				'font-size'        => '14px',
+				'height'           => '35px',
+				'padding'          => '6px 12px',
+				'width'            => '100%',
+			),
+			'#secure-payment-field:focus' => array(
+				'border'     => '1px solid lightblue',
+				'box-shadow' => '0 1px 3px 0 #cecece',
+				'outline'    => 'none',
+			),
+
+			'button#secure-payment-field.submit' => array(
+				'border'             => '0',
+				'border-radius'      => '0',
+				'background'         => 'none',
+				'background-color'   => '#333333',
+				'border-color'       => '#333333',
+				'color'              => '#fff',
+				'cursor'             => 'pointer',
+				'padding'            => '.6180469716em 1.41575em',
+				'text-decoration'    => 'none',
+				'font-weight'        => '600',
+				'text-shadow'        => 'none',
+				'display'            => 'inline-block',
+				'-webkit-appearance' => 'none',
+				'height'             => 'initial',
+				'width'              => '100%',
+				'flex'               => 'auto',
+				'position'           => 'static',
+				'margin'             => '0',
+
+				'white-space'        => 'pre-wrap',
+				'margin-bottom'      => '0',
+				'float'              => 'none',
+
+				'font'               => '600 1.41575em/1.618 Source Sans Pro,HelveticaNeue-Light,Helvetica Neue Light,
+							Helvetica Neue,Helvetica,Arial,Lucida Grande,sans-serif !important'
+			),
+			'#secure-payment-field[type=button]:focus' => array(
+				'color'      => '#fff',
+				'background' => '#000000',
+			),
+			'#secure-payment-field[type=button]:hover' => array(
+				'color'      => '#fff',
+				'background' => '#000000',
+			),
+			'.card-cvv' => array(
+				'background'      => 'transparent url(' . $image_base . '/cvv.png) no-repeat right',
+				'background-size' => '60px'
+			),
+			'.card-cvv.card-type-amex' => array(
+				'background'      => 'transparent url(' . $image_base . '/cvv-amex.png) no-repeat right',
+				'background-size' => '60px'
+			),
+			'.card-number' => array(
+				'background'      => 'transparent url(' . $image_base . '/logo-unknown@2x.png) no-repeat right',
+				'background-size' => '52px'
+			),
+			'.card-number.invalid.card-type-amex' => array(
+				'background'            => 'transparent url(' . $image_base . '/amex-invalid.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '38px'
+			),
+			'.card-number.invalid.card-type-discover' => array(
+				'background'            => 'transparent url(' . $image_base . '/discover-invalid.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '60px'
+			),
+			'.card-number.invalid.card-type-jcb' => array(
+				'background'            => 'transparent url(' . $image_base . '/jcb-invalid.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '38px'
+			),
+			'.card-number.invalid.card-type-mastercard' => array(
+				'background'            => 'transparent url(' . $image_base . '/mastercard-invalid.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '40px'
+			),
+			'.card-number.invalid.card-type-visa' => array(
+				'background'            => 'transparent url(' . $image_base . '/visa-invalid.svg) no-repeat center',
+				'background-position-x' => '98%',
+				'background-size'       => '50px',
+			),
+			'.card-number.valid.card-type-amex' => array(
+				'background'            => 'transparent url(' . $image_base . '/amex.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '38px',
+			),
+			'.card-number.valid.card-type-discover' => array(
+				'background'            => 'transparent url(' . $image_base . '/discover.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '60px'
+			),
+			'.card-number.valid.card-type-jcb' => array(
+				'background'            => 'transparent url(' . $image_base . '/jcb.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '38px'
+			),
+			'.card-number.valid.card-type-mastercard' => array(
+				'background'            => 'transparent url(' . $image_base . '/mastercard.svg) no-repeat center',
+				'background-position-x' => '98%',
+				'background-size'       => '40px'
+			),
+			'.card-number.valid.card-type-visa' => array(
+				'background'            => 'transparent url(' . $image_base . '/visa.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '50px'
+			),
+			'.card-number::-ms-clear' => array(
+				'display' => 'none',
+			),
+			'input[placeholder]' => array(
+				'letter-spacing' => '.5px',
+			),
+		);
+
+		/**
+		 * Allow hosted fields styling customization.
+		 *
+		 * @param array $secure_payment_fields_styles CSS styles.
+		 */
+		return apply_filters( 'globalpayments_secure_payment_fields_styles', json_encode( $secure_payment_fields_styles ) );
+	}
+
+	/**
+	 * Base assets URL for secure payment fields.
+	 *
+	 * @return string
+	 */
+	protected function secure_payment_fields_asset_base_url() {
+		$frontend_gateway_options = $this->get_frontend_gateway_options();
+
+		switch ( $frontend_gateway_options['env'] ) {
+			case self::ENVIRONMENT_PRODUCTION:
+				$asset_base = 'https://js.globalpay.com/v1';
+				break;
+			default:
+				$asset_base = 'https://js-cert.globalpay.com/v1';
+		}
+
+		return $asset_base;
 	}
 
 	public function save_payment_method_checkbox() {

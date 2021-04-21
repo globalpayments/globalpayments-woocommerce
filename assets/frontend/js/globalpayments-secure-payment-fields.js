@@ -37,6 +37,11 @@
 		this.fieldOptions = options.field_options;
 
 		/**
+		 * Payment field styles
+		 */
+		this.fieldStyles = options.field_styles;
+
+		/**
 		 * Payment gateway options
 		 *
 		 * @type {object}
@@ -158,7 +163,6 @@
 			}
 
 			GlobalPayments.configure( this.gatewayOptions );
-
 			this.cardForm = GlobalPayments.ui.form(
 				{
 					fields: this.getFieldConfiguration(),
@@ -585,135 +589,7 @@
 		 * @returns {object}
 		 */
 		getStyleConfiguration: function () {
-			var imageBase = 'https://api2.heartlandportico.com/securesubmit.v1/token/gp-1.6.0/assets';
-			return {
-				'html': {
-					'font-size': '100%',
-					'-webkit-text-size-adjust': '100%',
-				},
-
-				'body': {
-					'font-size': '14px',
-				},
-				'#secure-payment-field-wrapper': {
-					'position': 'relative'
-				},
-				'#secure-payment-field': {
-					'background-color': '#fff',
-					'border': '1px solid #ccc',
-					'border-radius': '4px',
-					'display': 'block',
-
-					'font-size': '14px',
-					'height': '35px',
-					'padding': '6px 12px',
-					'width': '100%',
-				},
-				'#secure-payment-field:focus': {
-					'border': '1px solid lightblue',
-					'box-shadow': '0 1px 3px 0 #cecece',
-					'outline': 'none'
-				},
-			 	'#secure-payment-field[type=button]': {
-					'cursor': 'pointer',
-					'border': '0',
-					'border-radius': '0',
-					'background': 'none',
-					'background-color': '#333333',
-					'border-color': '#333333',
-					'color': '#fff',
-					'padding': '.6180469716em 1.41575em',
-					'text-decoration': 'none',
-					'text-shadow': 'none',
-					'display': 'inline-block',
-					'height': 'initial',
-					'width': '100%',
-					'flex': 'initial',
-					'position': 'relative',
-					'margin': '0',
-					'-webkit-appearance': 'none',
-					'white-space': 'pre-wrap',
-					'margin-bottom': '0',
-					'float': 'none',
-					'font': '600 1.41575em Source Sans Pro,HelveticaNeue-Light,Helvetica Neue Light,Helvetica Neue,Helvetica,Arial,Lucida Grande,sans-serif !important'
-				},
-				'#secure-payment-field[type=button]:focus': {
-					'color': '#fff',
-					'background': '#000000',
-				},
-				'#secure-payment-field[type=button]:hover': {
-					'color': '#fff',
-					'background': '#000000',
-				},
-				'.card-cvv': {
-					'background': 'transparent url(' + imageBase + '/cvv.png) no-repeat right',
-					'background-size': '60px'
-				},
-				'.card-cvv.card-type-amex': {
-					'background': 'transparent url(' + imageBase + '/cvv-amex.png) no-repeat right',
-					'background-size': '60px'
-				},
-				'.card-number': {
-					'background': 'transparent url(' + imageBase + '/logo-unknown@2x.png) no-repeat right',
-					'background-size': '52px'
-				},
-				'.card-number.invalid.card-type-amex': {
-					'background': 'transparent url(' + imageBase + '/amex-invalid.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '38px'
-				},
-				'.card-number.invalid.card-type-discover': {
-					'background': 'transparent url(' + imageBase + '/discover-invalid.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '60px'
-				},
-				'.card-number.invalid.card-type-jcb': {
-					'background': 'transparent url(' + imageBase + '/jcb-invalid.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '38px'
-				},
-				'.card-number.invalid.card-type-mastercard': {
-					'background': 'transparent url(' + imageBase + '/mastercard-invalid.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '40px'
-				},
-				'.card-number.invalid.card-type-visa': {
-					'background': 'transparent url(' + imageBase + '/visa-invalid.svg) no-repeat center',
-					'background-position-x': '98%',
-					'background-size': '50px'
-				},
-				'.card-number.valid.card-type-amex': {
-					'background': 'transparent url(' + imageBase + '/amex.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '38px'
-				},
-				'.card-number.valid.card-type-discover': {
-					'background': 'transparent url(' + imageBase + '/discover.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '60px'
-				},
-				'.card-number.valid.card-type-jcb': {
-					'background': 'transparent url(' + imageBase + '/jcb.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '38px'
-				},
-				'.card-number.valid.card-type-mastercard': {
-					'background': 'transparent url(' + imageBase + '/mastercard.svg) no-repeat center',
-					'background-position-x': '98%',
-					'background-size': '40px'
-				},
-				'.card-number.valid.card-type-visa': {
-					'background': 'transparent url(' + imageBase + '/visa.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '50px'
-				},
-				'.card-number::-ms-clear': {
-					'display': 'none',
-				},
-				'input[placeholder]': {
-					'letter-spacing': '.5px',
-				}
-			};
+			return JSON.parse( this.fieldStyles );
 		},
 
 		/**
