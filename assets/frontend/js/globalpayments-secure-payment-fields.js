@@ -87,21 +87,18 @@
 				}
 			);
 
+			$( this.getForm() ).on( 'checkout_place_order_globalpayments_gpapi', this.threeDSecure.bind( this ) );
+			$( document.body ).on( 'checkout_error', this.threeDSRemoveCheckoutFields.bind( this ) );
+
 			// Checkout
 			if ( 1 == wc_checkout_params.is_checkout ) {
 				$( document.body ).on( 'updated_checkout', this.renderPaymentFields.bind( this ) );
-				if ( 'globalpayments_gpapi' === this.id) {
-					$( document.body ).on( 'updated_checkout', this.threeDSSecure.bind( this ) );
-				}
 				return;
 			}
 
 			// Order Pay
 			if ( $( document.body ).hasClass( 'woocommerce-order-pay' ) ) {
 				$( document ).ready( this.renderPaymentFields.bind( this ) );
-				if ( 'globalpayments_gpapi' === this.id) {
-					$( document ).ready( this.threeDSSecure.bind( this ) );
-				}
 				return;
 			}
 
@@ -150,7 +147,6 @@
 			if ( $( '#' + this.id + '-' + this.fieldOptions['card-number-field'].class ).children().length > 0 ) {
 				return;
 			}
-
 			if ( ! GlobalPayments.configure ) {
 				console.log( 'Warning! Payment fields cannot be loaded' );
 				return;
@@ -169,7 +165,6 @@
 					styles: this.getStyleConfiguration()
 				}
 			);
-
 			this.cardForm.on( 'submit', 'click', this.blockOnSubmit.bind( this ) );
 			this.cardForm.on( 'token-success', this.handleResponse.bind( this ) );
 			this.cardForm.on( 'token-error', this.handleErrors.bind( this ) );
@@ -290,96 +285,97 @@
 		/**
 		 * 3DS Process
 		 */
-		threeDSSecure: function () {
-			var checkVersionButton = $( this.getPlaceOrderButtonSelector() );
-			if ( ! checkVersionButton ) {
-				console.error( 'Warning! Place Order button cannot be loaded' );
-				return;
+		threeDSecure: function ( e ) {
+			e.preventDefault();
+
+			if ( 1 == $('#globalpayments_gpapi-3ds_process_completed').val() ) {
+				return true;
 			}
 
-			//handle 3DS 2.0 workflow
-			var start3DS = async (e) => {
-				this.blockOnSubmit();
-				e.preventDefault();
-				if ( 1 === wc_checkout_params.is_checkout && ! this.validateFields() ) {
-					this.showPaymentError( 'Please fill in the required fields.' );
-					e.stopPropagation();
-					return;
-				}
+			this.blockOnSubmit();
 
-				var _that = this;
+			var _that = this;
+			GlobalPayments.ThreeDSecure.checkVersion( this.threedsecure.checkEnrollmentUrl, {
+				tokenResponse: this.tokenResponse,
+				wcTokenId: $( 'input[name="wc-' + this.id + '-payment-token"]:checked', this.getForm() ).val(),
+				amount: this.order.amount,
+				currency: this.order.currency,
+				challengeWindow: {
+					windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
+					displayMode: 'lightbox',
+					hide: false,
+				},
+			})
+				.then( function( versionCheckData ) {
+					// Card holder not enrolled in 3D Secure, continue the WooCommerce flow.
+					if ( versionCheckData.enrolled === "NOT_ENROLLED" ) {
+						_that.createInputElement( '3ds_process_completed', 1 );
+						$( _that.getForm() ).submit();
+						return true;
+					}
 
-				GlobalPayments.ThreeDSecure.checkVersion( this.threedsecure.checkEnrollmentUrl, {
-					tokenResponse: this.tokenResponse,
-					wcTokenId: $( 'input[name="wc-' + this.id + '-payment-token"]:checked', this.getForm() ).val(),
-					amount: this.order.amount,
-					currency: this.order.currency,
-					challengeWindow: {
-						windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
-						displayMode: 'lightbox',
-						hide: false,
-					},
-				})
-					.then( function( versionCheckData ) {
-						// Card holder not enrolled in 3D Secure, continue the WooCommerce flow.
-						if ( versionCheckData.enrolled === "NOT_ENROLLED" ) {
-							$( _that.getForm() ).submit();
-							return;
-						}
+					if ( "ONE" === versionCheckData.version ) {
+						_that.createInputElement( '3ds_process_completed', 1 );
+						_that.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD );
+						_that.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes );
+						$( _that.getForm() ).submit();
+						return false;
+					}
 
-						if ( "ONE" === versionCheckData.version ) {
-							_that.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD );
-							_that.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes );
-							$( _that.getForm() ).submit();
-							return;
-						}
+					if ( versionCheckData.error ) {
+						_that.showPaymentError( versionCheckData.message );
+						return false;
+					}
 
-						if ( versionCheckData.error ) {
-							_that.showPaymentError( versionCheckData.message );
-							return;
-						}
-
-						GlobalPayments.ThreeDSecure.initiateAuthentication( _that.threedsecure.initiateAuthenticationUrl, {
-							tokenResponse: _that.tokenResponse,
-							wcTokenId: $( 'input[name="wc-' + _that.id + '-payment-token"]:checked', _that.getForm() ).val(),
-							versionCheckData: versionCheckData,
-							challengeWindow: {
-								windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
-								displayMode: 'lightbox',
-							},
-							order: _that.order,
-						})
-							.then( function ( authenticationData ) {
-								if ( authenticationData.error ) {
-									_that.showPaymentError( authenticationData.message );
-									return;
-								}
-								_that.createInputElement( 'serverTransId', versionCheckData.serverTransactionId );
-								$( _that.getForm() ).submit();
-
-							});
-
+					GlobalPayments.ThreeDSecure.initiateAuthentication( _that.threedsecure.initiateAuthenticationUrl, {
+						tokenResponse: _that.tokenResponse,
+						wcTokenId: $( 'input[name="wc-' + _that.id + '-payment-token"]:checked', _that.getForm() ).val(),
+						versionCheckData: versionCheckData,
+						challengeWindow: {
+							windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
+							displayMode: 'lightbox',
+						},
+						order: _that.order,
 					})
-					.catch( function( e ) {
-						console.error( e );
-						_that.showPaymentError( e.reasons[0].message );
-						return;
-					});
+						.then( function ( authenticationData ) {
+							if ( authenticationData.error ) {
+								_that.showPaymentError( authenticationData.message );
+								return false;
+							}
+							if (authenticationData.challenge.response.data.transStatus == "N") {
+								_that.showPaymentError( '3DS Authentication failed' );
+								return false;
+							}
+							_that.createInputElement( '3ds_process_completed', 1 );
+							_that.createInputElement( 'serverTransId', versionCheckData.serverTransactionId );
+							$( _that.getForm() ).submit();
+							return true;
+						});
+				})
+				.catch( function( e ) {
+					console.error( e );
+					console.error(  e.reasons );
+					_that.showPaymentError( e.reasons[0].message );
+					return false;
+				});
 
+			$( document ).on( "click", 'img[id^="GlobalPayments-frame-close-"]', this.cancelTransaction.bind( this ) );
 
-
-
-				return false;
-			};
-
-			checkVersionButton.off( 'click' ).on('click', start3DS );
-
-			$( document ).on("click",'img[id^="GlobalPayments-frame-close-"]', this.cancelTransaction.bind( this ) );
+			return false;
 
 		},
 
 		cancelTransaction: function () {
-			this.showPaymentError( 'Transaction canceled' );
+			window.parent.postMessage({ data: { "transStatus":"N" }, event: "challengeNotification" }, window.location.origin );
+		},
+
+		/**
+		 * Remove 3DS checkout fields.
+		 */
+		threeDSRemoveCheckoutFields: function () {
+			$('#globalpayments_gpapi-3ds_process_completed').remove();
+			$('#globalpayments_gpapi-serverTransId').remove();
+			$('#globalpayments_gpapi-PaRes').remove();
 		},
 
 		createInputElement: function ( name, value ) {
@@ -491,6 +487,8 @@
 			$( 'html, body' ).animate( {
 				scrollTop: ( $form.offset().top - 100 )
 			}, 1000 );
+
+			$( document.body ).trigger( 'checkout_error' );
 		},
 
 		/**
