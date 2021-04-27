@@ -342,7 +342,7 @@
 								_that.showPaymentError( authenticationData.message );
 								return false;
 							}
-							if (authenticationData.challenge.response.data.transStatus == "N") {
+							if ( "N" == authenticationData.challenge.response.data.transStatus ) {
 								_that.showPaymentError( '3DS Authentication failed' );
 								return false;
 							}
@@ -365,12 +365,15 @@
 
 		},
 
+		/**
+		 * Assists with notifying the challenge status, when the user closes the challenge window
+		 */
 		cancelTransaction: function () {
 			window.parent.postMessage({ data: { "transStatus":"N" }, event: "challengeNotification" }, window.location.origin );
 		},
 
 		/**
-		 * Remove 3DS checkout fields.
+		 * Remove 3DS checkout fields
 		 */
 		threeDSRemoveCheckoutFields: function () {
 			$('#globalpayments_gpapi-3ds_process_completed').remove();
