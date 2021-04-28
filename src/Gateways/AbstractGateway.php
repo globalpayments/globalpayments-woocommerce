@@ -347,7 +347,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'payment_action'    => array(
 					'title'       => __( 'Payment Action', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'type'        => 'select',
-					'description' => __( 'Choose whether you wish to capture funds immediately, authorize payment only for a delayed capture, or verify and capture when the order ships.', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'description' => __( 'Choose whether you wish to capture funds immediately or authorize payment only for a delayed capture.', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'default'     => 'sale',
 					'desc_tip'    => true,
 					'options'     => array(
