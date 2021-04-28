@@ -87,8 +87,10 @@
 				}
 			);
 
-			$( this.getForm() ).on( 'checkout_place_order_globalpayments_gpapi', this.threeDSecure.bind( this ) );
-			$( document.body ).on( 'checkout_error', this.threeDSRemoveCheckoutFields.bind( this ) );
+			$( this.getForm() ).on( 'checkout_place_order_globalpayments_gpapi', this.initThreeDSecure.bind( this ) );
+			$( document.body ).on( 'checkout_error', function() {
+				$('#globalpayments_gpapi-checkout_validated').remove();
+			} );
 
 			// Checkout
 			if ( 1 == wc_checkout_params.is_checkout ) {
@@ -107,6 +109,32 @@
 				$( document ).ready( this.renderPaymentFields.bind( this ) );
 				return;
 			}
+		},
+
+		initThreeDSecure: function ( e ) {
+			e.preventDefault;
+			this.blockOnSubmit();
+
+			var _that = this;
+
+			if ( 1 == $('#globalpayments_gpapi-checkout_validated').val() ) {
+				return true;
+			}
+
+			$.post( this.threedsecure.ajaxCheckoutUrl, $( this.getForm() ).serialize())
+				.success( function( result ) {
+					if ( result.messages.includes( _that.id + '_checkout_validated' ) ) {
+						_that.createInputElement( 'checkout_validated', 1 );
+						_that.threeDSecure();
+					} else {
+						_that.showPaymentError( result.messages );
+					}
+				})
+				.error(	function( jqXHR, textStatus, errorThrown ) {
+					_that.showPaymentError( errorThrown );
+				});
+
+			return false;
 		},
 
 		/**
@@ -264,64 +292,41 @@
 		},
 
 		/**
-		 * Validate mandatory checkout fields
-		 *
-		 * @returns {boolean}
-		 */
-		validateFields: function() {
-			if ( ! $( '#billing_first_name' ).val()
-				|| ! $( '#billing_last_name' ).val()
-				|| ! $( '#billing_address_1' ).val()
-				|| ! $( '#billing_city' ).val()
-				|| ! $( '#billing_phone' ).val()
-				|| ! $( '#billing_email' ).val() ) {
-
-				return false;
-			}
-
-			return true;
-		},
-
-		/**
 		 * 3DS Process
 		 */
-		threeDSecure: function ( e ) {
-			e.preventDefault();
-
-			if ( 1 == $('#globalpayments_gpapi-3ds_process_completed').val() ) {
-				return true;
-			}
-
+		threeDSecure: function () {
 			this.blockOnSubmit();
 
 			var _that = this;
+			var _form = this.getForm();
+			var $form = $( _form );
+
 			GlobalPayments.ThreeDSecure.checkVersion( this.threedsecure.checkEnrollmentUrl, {
 				tokenResponse: this.tokenResponse,
-				wcTokenId: $( 'input[name="wc-' + this.id + '-payment-token"]:checked', this.getForm() ).val(),
+				wcTokenId: $( 'input[name="wc-' + this.id + '-payment-token"]:checked', _form ).val(),
 				amount: this.order.amount,
 				currency: this.order.currency,
 				challengeWindow: {
 					windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
 					displayMode: 'lightbox',
-					hide: false,
 				},
 			})
 				.then( function( versionCheckData ) {
 					// Card holder not enrolled in 3D Secure, continue the WooCommerce flow.
 					if ( versionCheckData.enrolled === "NOT_ENROLLED" ) {
-						_that.createInputElement( '3ds_process_completed', 1 );
-						$( _that.getForm() ).submit();
+						$form.submit();
 						return true;
 					}
-
 					if ( "ONE" === versionCheckData.version ) {
-						_that.createInputElement( '3ds_process_completed', 1 );
+						if ( GlobalPayments.ThreeDSecure.TransactionStatus.ChallengeRequired == versionCheckData.status && "N" == versionCheckData.challenge.response.data.transStatus ) {
+							_that.showPaymentError( '3DS Authentication failed' );
+							return false;
+						}
 						_that.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD );
 						_that.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes );
-						$( _that.getForm() ).submit();
+						$form.submit();
 						return false;
 					}
-
 					if ( versionCheckData.error ) {
 						_that.showPaymentError( versionCheckData.message );
 						return false;
@@ -329,7 +334,7 @@
 
 					GlobalPayments.ThreeDSecure.initiateAuthentication( _that.threedsecure.initiateAuthenticationUrl, {
 						tokenResponse: _that.tokenResponse,
-						wcTokenId: $( 'input[name="wc-' + _that.id + '-payment-token"]:checked', _that.getForm() ).val(),
+						wcTokenId: $( 'input[name="wc-' + _that.id + '-payment-token"]:checked', _form ).val(),
 						versionCheckData: versionCheckData,
 						challengeWindow: {
 							windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
@@ -342,20 +347,19 @@
 								_that.showPaymentError( authenticationData.message );
 								return false;
 							}
-							if ( "N" == authenticationData.challenge.response.data.transStatus ) {
+							if ( GlobalPayments.ThreeDSecure.TransactionStatus.ChallengeRequired == authenticationData.status && "N" == authenticationData.challenge.response.data.transStatus ) {
 								_that.showPaymentError( '3DS Authentication failed' );
 								return false;
 							}
-							_that.createInputElement( '3ds_process_completed', 1 );
 							_that.createInputElement( 'serverTransId', versionCheckData.serverTransactionId );
-							$( _that.getForm() ).submit();
+							$form.submit();
 							return true;
 						});
 				})
-				.catch( function( e ) {
-					console.error( e );
-					console.error(  e.reasons );
-					_that.showPaymentError( e.reasons[0].message );
+				.catch( function( error ) {
+					console.error( error );
+					console.error( error.reasons );
+					_that.showPaymentError( error.reasons[0].message );
 					return false;
 				});
 
@@ -370,15 +374,6 @@
 		 */
 		cancelTransaction: function () {
 			window.parent.postMessage({ data: { "transStatus":"N" }, event: "challengeNotification" }, window.location.origin );
-		},
-
-		/**
-		 * Remove 3DS checkout fields
-		 */
-		threeDSRemoveCheckoutFields: function () {
-			$('#globalpayments_gpapi-3ds_process_completed').remove();
-			$('#globalpayments_gpapi-serverTransId').remove();
-			$('#globalpayments_gpapi-PaRes').remove();
 		},
 
 		createInputElement: function ( name, value ) {
@@ -480,16 +475,19 @@
 		showPaymentError: function ( message ) {
 			var $form     = $( this.getForm() );
 
-			this.unblockOnError();
-
 			// Remove notices from all sources
 			$( '.woocommerce-NoticeGroup, .woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-globalpayments-checkout-error' ).remove();
 
-			$form.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout woocommerce-error woocommerce-globalpayments-checkout-error">' + message + '</div>' );
+			if ( ! message.includes( 'woocommerce-error' ) ) {
+				message = '<ul class="woocommerce-error"><li>' + message + '</li></ul>';
+			}
+			$form.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout woocommerce-globalpayments-checkout-error">' + message + '</div>' );
 
 			$( 'html, body' ).animate( {
 				scrollTop: ( $form.offset().top - 100 )
 			}, 1000 );
+
+			this.unblockOnError();
 
 			$( document.body ).trigger( 'checkout_error' );
 		},
