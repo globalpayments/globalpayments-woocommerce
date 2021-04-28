@@ -19,7 +19,6 @@ This extension allows WooCommerce to use the available Global Payments payment g
 - Integrates with Woocommerce
 - Sale transactions (automatic capture or separate capture action later)
 - Refund transactions from a previous Sale
-- Verify payment method
 - Stored payment methods
 - 3D Secure 2 & SCA
 - 3D Secure 1
