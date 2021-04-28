@@ -123,7 +123,7 @@
 
 			$.post( this.threedsecure.ajaxCheckoutUrl, $( this.getForm() ).serialize())
 				.success( function( result ) {
-					if ( result.messages.includes( _that.id + '_checkout_validated' ) ) {
+					if ( -1 !== result.messages.indexOf( _that.id + '_checkout_validated' ) ) {
 						_that.createInputElement( 'checkout_validated', 1 );
 						_that.threeDSecure();
 					} else {
@@ -478,7 +478,7 @@
 			// Remove notices from all sources
 			$( '.woocommerce-NoticeGroup, .woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-globalpayments-checkout-error' ).remove();
 
-			if ( ! message.includes( 'woocommerce-error' ) ) {
+			if ( -1 === message.indexOf( 'woocommerce-error' ) ) {
 				message = '<ul class="woocommerce-error"><li>' + message + '</li></ul>';
 			}
 			$form.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout woocommerce-globalpayments-checkout-error">' + message + '</div>' );
