@@ -118,6 +118,8 @@ class GpApiGateway extends AbstractGateway {
 	protected function add_hooks() {
 		parent::add_hooks();
 
+		add_action( 'woocommerce_after_checkout_validation', array( $this, 'after_checkout_validation' ), 10, 2 );
+
 		/**
 		 * The WooCommerce API allows plugins make a callback to a special URL that will then load the specified class (if it exists)
 		 * and run an action. This is also useful for gateways that are not initialized.
@@ -128,6 +130,21 @@ class GpApiGateway extends AbstractGateway {
 		add_action( 'woocommerce_api_globalpayments_threedsecure_challengenotification', array( $this, 'process_threeDSecure_challengeNotification' ) );
 	}
 
+	public function after_checkout_validation( $data, $errors ) {
+		if ( ! empty( $errors->errors ) ) {
+			return;
+		}
+		if ( $this->id !== $data['payment_method'] ) {
+			return;
+		}
+		$post_data = $this->get_post_data();
+		if ( isset( $post_data[ $this->id ]['checkout_validated'] ) && 1 == $post_data[ $this->id ]['checkout_validated'] ) {
+			return;
+		}
+
+		wc_add_notice($this->id . '_checkout_validated', 'error', array( 'id' => $this->id ) );
+	}
+
 	public function mapResponseCodeToFriendlyMessage( $responseCode ) {
 		if ( 'DECLINED' === $responseCode ) {
 			return __( 'Your card has been declined by the bank.', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -136,20 +153,17 @@ class GpApiGateway extends AbstractGateway {
 		return __( 'An error occurred while processing the card.', 'globalpayments-gateway-provider-for-woocommerce' );
 	}
 
-	public function process_threeDSecure_checkEnrollment()
-	{
+	public function process_threeDSecure_checkEnrollment() {
 		$request = $this->prepare_request( parent::TXN_TYPE_CHECK_ENROLLMENT );
 		$this->client->submit_request( $request );
 	}
 
-	public function process_threeDSecure_initiateAuthentication()
-	{
+	public function process_threeDSecure_initiateAuthentication() {
 		$request = $this->prepare_request( parent::TXN_TYPE_INITIATE_AUTHENTICATION );
 		$this->client->submit_request( $request );
 	}
 
-	public function process_threeDSecure_methodNotification()
-	{
+	public function process_threeDSecure_methodNotification() {
 		if ( ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) ) {
 			return;
 		}
@@ -172,8 +186,7 @@ class GpApiGateway extends AbstractGateway {
 		exit();
 	}
 
-	public function process_threeDSecure_challengeNotification()
-	{
+	public function process_threeDSecure_challengeNotification() {
 		if ( ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) ) {
 			return;
 		}
@@ -222,8 +235,7 @@ class GpApiGateway extends AbstractGateway {
 		return WC()->customer->get_billing_email();
 	}
 
-	protected function get_billing_address()
-	{
+	protected function get_billing_address() {
 		return [
 			'streetAddress1' => WC()->customer->get_billing_address_1(),
 			'streetAddress2' => WC()->customer->get_billing_address_2(),
@@ -235,8 +247,7 @@ class GpApiGateway extends AbstractGateway {
 		];
 	}
 
-	protected function get_shipping_address()
-	{
+	protected function get_shipping_address() {
 		return [
 			'streetAddress1' => WC()->customer->get_shipping_address_1(),
 			'streetAddress2' => WC()->customer->get_shipping_address_2(),

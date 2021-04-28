@@ -70,7 +70,7 @@ class InitiateAuthenticationRequest extends AbstractRequest {
 				$responseJson["eci"]                 = $threeDSecureData->eci;
 
 			} else { //challenge flow
-				$responseJson["result"]                               = $threeDSecureData->status;
+				$responseJson["status"]                               = $threeDSecureData->status;
 				$responseJson["challengeMandated"]                    = $threeDSecureData->challengeMandated;
 				$responseJson["challenge"]["requestUrl"]              = $threeDSecureData->issuerAcsUrl;
 				$responseJson["challenge"]["encodedChallengeRequest"] = $threeDSecureData->payerAuthenticationRequest;
