@@ -614,17 +614,11 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @return string
 	 */
 	protected function secure_payment_fields_asset_base_url() {
-		$frontend_gateway_options = $this->get_frontend_gateway_options();
-
-		switch ( $frontend_gateway_options['env'] ) {
-			case self::ENVIRONMENT_PRODUCTION:
-				$asset_base = 'https://js.globalpay.com/v1';
-				break;
-			default:
-				$asset_base = 'https://js-cert.globalpay.com/v1';
+		if ( $this->is_production ) {
+			return 'https://js.globalpay.com/v1';
 		}
 
-		return $asset_base;
+		return 'https://js-cert.globalpay.com/v1';
 	}
 
 	public function save_payment_method_checkbox() {
