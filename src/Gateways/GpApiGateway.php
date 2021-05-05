@@ -109,10 +109,14 @@ class GpApiGateway extends AbstractGateway {
 	}
 
 	protected function get_access_token() {
-		$request  = $this->prepare_request(self::TXN_TYPE_GET_ACCESS_TOKEN);
-		$response = $this->submit_request($request);
+		try {
+			$request  = $this->prepare_request( self::TXN_TYPE_GET_ACCESS_TOKEN );
+			$response = $this->submit_request( $request );
 
-		return $response->token;
+			return $response->token;
+		} catch (\Exception $e) {
+			return null;
+		}
 	}
 
 	protected function add_hooks() {
@@ -142,7 +146,7 @@ class GpApiGateway extends AbstractGateway {
 			return;
 		}
 
-		wc_add_notice($this->id . '_checkout_validated', 'error', array( 'id' => $this->id ) );
+		wc_add_notice( $this->id . '_checkout_validated', 'error', array( 'id' => $this->id ) );
 	}
 
 	public function mapResponseCodeToFriendlyMessage( $responseCode ) {
