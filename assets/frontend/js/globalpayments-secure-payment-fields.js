@@ -557,6 +557,12 @@
 							this.showValidationError( 'card-cvv' );
 							break;
 						}
+					case 'SYSTEM_ERROR_DOWNSTREAM':
+						var n = reason.message.search( "card expdate" );
+						if ( n>=0 ) {
+							this.showValidationError( 'card-expiration' );
+							break;
+						}
 					case 'ERROR':
 						alert(reason.message);
 						break;
