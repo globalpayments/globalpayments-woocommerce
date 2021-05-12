@@ -111,11 +111,17 @@
 			}
 		},
 
+		/**
+		 * Initiate 3DS process.
+		 *
+		 * @param e
+		 * @returns {boolean}
+		 */
 		initThreeDSecure: function ( e ) {
 			e.preventDefault;
 			this.blockOnSubmit();
 
-			var _that = this;
+			var self = this;
 
 			if ( 1 == $('#globalpayments_gpapi-checkout_validated').val() ) {
 				return true;
@@ -123,15 +129,15 @@
 
 			$.post( this.threedsecure.ajaxCheckoutUrl, $( this.getForm() ).serialize())
 				.success( function( result ) {
-					if ( -1 !== result.messages.indexOf( _that.id + '_checkout_validated' ) ) {
-						_that.createInputElement( 'checkout_validated', 1 );
-						_that.threeDSecure();
+					if ( -1 !== result.messages.indexOf( self.id + '_checkout_validated' ) ) {
+						self.createInputElement( 'checkout_validated', 1 );
+						self.threeDSecure();
 					} else {
-						_that.showPaymentError( result.messages );
+						self.showPaymentError( result.messages );
 					}
 				})
 				.error(	function( jqXHR, textStatus, errorThrown ) {
-					_that.showPaymentError( errorThrown );
+					self.showPaymentError( errorThrown );
 				});
 
 			return false;
@@ -297,7 +303,7 @@
 		threeDSecure: function () {
 			this.blockOnSubmit();
 
-			var _that = this;
+			var self = this;
 			var _form = this.getForm();
 			var $form = $( _form );
 
@@ -312,54 +318,58 @@
 				},
 			})
 				.then( function( versionCheckData ) {
+					if ( versionCheckData.error ) {
+						self.showPaymentError( versionCheckData.message );
+						return false;
+					}
 					// Card holder not enrolled in 3D Secure, continue the WooCommerce flow.
-					if ( versionCheckData.enrolled === "NOT_ENROLLED" ) {
+					if ( "NOT_ENROLLED" === versionCheckData.enrolled ) {
 						$form.submit();
 						return true;
 					}
 					if ( "ONE" === versionCheckData.version ) {
 						if ( GlobalPayments.ThreeDSecure.TransactionStatus.ChallengeRequired == versionCheckData.status && "N" == versionCheckData.challenge.response.data.transStatus ) {
-							_that.showPaymentError( '3DS Authentication failed' );
+							self.showPaymentError( '3DS Authentication failed' );
 							return false;
 						}
-						_that.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD );
-						_that.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes );
+						self.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD );
+						self.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes );
 						$form.submit();
 						return false;
 					}
-					if ( versionCheckData.error ) {
-						_that.showPaymentError( versionCheckData.message );
-						return false;
-					}
 
-					GlobalPayments.ThreeDSecure.initiateAuthentication( _that.threedsecure.initiateAuthenticationUrl, {
-						tokenResponse: _that.tokenResponse,
-						wcTokenId: $( 'input[name="wc-' + _that.id + '-payment-token"]:checked', _form ).val(),
+					GlobalPayments.ThreeDSecure.initiateAuthentication( self.threedsecure.initiateAuthenticationUrl, {
+						tokenResponse: self.tokenResponse,
+						wcTokenId: $( 'input[name="wc-' + self.id + '-payment-token"]:checked', _form ).val(),
 						versionCheckData: versionCheckData,
 						challengeWindow: {
 							windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
 							displayMode: 'lightbox',
 						},
-						order: _that.order,
+						order: self.order,
 					})
 						.then( function ( authenticationData ) {
 							if ( authenticationData.error ) {
-								_that.showPaymentError( authenticationData.message );
+								self.showPaymentError( authenticationData.message );
 								return false;
 							}
 							if ( GlobalPayments.ThreeDSecure.TransactionStatus.ChallengeRequired == authenticationData.status && "N" == authenticationData.challenge.response.data.transStatus ) {
-								_that.showPaymentError( '3DS Authentication failed' );
+								self.showPaymentError( '3DS Authentication failed' );
 								return false;
 							}
-							_that.createInputElement( 'serverTransId', versionCheckData.serverTransactionId );
+							self.createInputElement( 'serverTransId', authenticationData.serverTransactionId || authenticationData.challenge.response.data.threeDSServerTransID );
 							$form.submit();
 							return true;
+						})
+						.catch( function( error ) {
+							console.error( error );
+							self.showPaymentError( 'Something went wrong while doing 3DS processing.' );
+							return false;
 						});
 				})
 				.catch( function( error ) {
 					console.error( error );
-					console.error( error.reasons );
-					_that.showPaymentError( error.reasons[0].message );
+					self.showPaymentError( 'Something went wrong while doing 3DS processing.' );
 					return false;
 				});
 

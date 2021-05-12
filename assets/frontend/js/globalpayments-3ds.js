@@ -1770,17 +1770,22 @@ this.GlobalPayments.ThreeDSecure = (function (exports) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        if (!data.enrolled) {
+                            throw new Error("Card not enrolled");
+                        }
                         if (!(data.challengeMandated || data.status === exports.TransactionStatus.ChallengeRequired)) return [3 /*break*/, 2];
                         data.challenge = data.challenge || {};
                         if (!data.challenge.requestUrl) {
                             throw new Error("Invalid challenge state. Missing challenge URL");
                         }
+                        var serverTransactionIdKey = data.sessionDataFieldName || "MD";
+                        var messageTypeKey = data.challenge.messageType || "PaReq";
                         return [4 /*yield*/, postToIframe(
                             data.challenge.requestUrl,
                             [
                                 { name: "TermUrl", value: data.TermUrl },
-                                { name: "MD", value: data.serverTransactionId },
-                                { name: "PaReq", value: data.challenge.encodedChallengeRequest },
+                                { name: serverTransactionIdKey, value: data.serverTransactionId },
+                                { name: messageTypeKey, value: data.challenge.encodedChallengeRequest },
                             ],
                             options)];
                     case 1:
@@ -1812,8 +1817,9 @@ this.GlobalPayments.ThreeDSecure = (function (exports) {
                         if (!data.challenge.requestUrl) {
                             throw new Error("Invalid challenge state. Missing challenge URL");
                         }
+                        var messageTypeKey = data.challenge.messageType || "creq";
                         return [4 /*yield*/, postToIframe(data.challenge.requestUrl, [
-                                { name: "creq", value: data.challenge.encodedChallengeRequest },
+                                { name: messageTypeKey, value: data.challenge.encodedChallengeRequest },
                             ], options)];
                     case 1:
                         response = _a.sent();

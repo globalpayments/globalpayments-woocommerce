@@ -11,35 +11,21 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\Utils\CountryUtils;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\AbstractRequest;
 
 defined('ABSPATH') || exit;
 
-class InitiateAuthenticationRequest extends AbstractRequest {
-
+class InitiateAuthenticationRequest extends AbstractAuthenticationsRequest {
 	public function get_transaction_type() {
 		return AbstractGateway::TXN_TYPE_INITIATE_AUTHENTICATION;
 	}
 
-	public function get_args() {
-		return array();
-	}
-
 	public function do_request() {
-		$responseJson = [];
+		$response = [];
 		$requestData  = $this->data;
 
 		try {
-			if ( isset( $requestData->wcTokenId ) && 'new' !== $requestData->wcTokenId ) {
-				$tokenResponse = \WC_Payment_Tokens::get( $requestData->wcTokenId );
-				$token = $tokenResponse->get_token();
-			} else {
-				$tokenResponse = json_decode( $requestData->tokenResponse );
-				$token = $tokenResponse->paymentReference;
-			}
-
 			$paymentMethod = new CreditCardData();
-			$paymentMethod->token = $token;
+			$paymentMethod->token = $this->getToken( $requestData );
 
 			$threeDSecureData = new ThreeDSecure();
 			$threeDSecureData->serverTransactionId = $requestData->versionCheckData->serverTransactionId;
@@ -62,27 +48,28 @@ class InitiateAuthenticationRequest extends AbstractRequest {
 				->execute();
 
 			// frictionless flow
-			if ($threeDSecureData->status !== "CHALLENGE_REQUIRED") {
-				$responseJson["result"]              = $threeDSecureData->status;
-				$responseJson["authenticationValue"] = $threeDSecureData->authenticationValue;
-				$responseJson["serverTransactionId"] = $threeDSecureData->serverTransactionId;
-				$responseJson["messageVersion"]      = $threeDSecureData->messageVersion;
-				$responseJson["eci"]                 = $threeDSecureData->eci;
+			if ($threeDSecureData->status !== 'CHALLENGE_REQUIRED') {
+				$response['result']              = $threeDSecureData->status;
+				$response['authenticationValue'] = $threeDSecureData->authenticationValue;
+				$response['serverTransactionId'] = $threeDSecureData->serverTransactionId;
+				$response['messageVersion']      = $threeDSecureData->messageVersion;
+				$response['eci']                 = $threeDSecureData->eci;
 
 			} else { //challenge flow
-				$responseJson["status"]                               = $threeDSecureData->status;
-				$responseJson["challengeMandated"]                    = $threeDSecureData->challengeMandated;
-				$responseJson["challenge"]["requestUrl"]              = $threeDSecureData->issuerAcsUrl;
-				$responseJson["challenge"]["encodedChallengeRequest"] = $threeDSecureData->payerAuthenticationRequest;
+				$response['status']                               = $threeDSecureData->status;
+				$response['challengeMandated']                    = $threeDSecureData->challengeMandated;
+				$response['challenge']['requestUrl']              = $threeDSecureData->issuerAcsUrl;
+				$response['challenge']['encodedChallengeRequest'] = $threeDSecureData->payerAuthenticationRequest;
+				$response['challenge']['messageType']             = $threeDSecureData->messageType;
 			}
 		} catch (\Exception $e) {
-			$responseJson = [
+			$response = [
 				'error'   => true,
 				'message' => $e->getMessage(),
 			];
 		}
 
-		wp_send_json( $responseJson );
+		wp_send_json( $response );
 	}
 
 	private function getBrowserData( $requestData ) {
