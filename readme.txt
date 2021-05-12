@@ -43,6 +43,7 @@ After you have installed and configured the main WooCommerce plugin use the foll
 * Remove Verify payment action
 * Add filters for hosted fields styling
 * Internet Explorer compatibility
+* Update PHP-SDK version to 2.2.14
 
 = 1.0.0-b.1 =
 * Initial release.
