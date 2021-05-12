@@ -4,7 +4,7 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Clients;
 
 use GlobalPayments\Api\Builders\TransactionBuilder;
 use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\CardType;
@@ -19,7 +19,6 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\TransitConfig;
 use GlobalPayments\Api\Services\ReportingService;
-use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Data\PaymentTokenData;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
@@ -78,7 +77,10 @@ class SdkClient implements ClientInterface {
 	protected $previous_transaction = null;
 
 	public function set_request( RequestInterface $request ) {
-		$this->prepare_request_args( $request );
+		$this->args = array_merge(
+			$request->get_default_args(),
+			$request->get_args()
+		);
 		$this->prepare_request_objects();
 
 		return $this;
@@ -96,9 +98,6 @@ class SdkClient implements ClientInterface {
 		}
 
 		$this->prepare_builder( $builder );
-		if ( $this->threedsecure_is_enabled() ) {
-			$this->set_threedsecure_data();
-		}
 		$response = $builder->execute();
 		if ( ! is_null( $this->card_data ) && $response instanceof Transaction && $response->token ) {
 			$this->card_data->token = $response->token;
@@ -106,13 +105,6 @@ class SdkClient implements ClientInterface {
 		}
 
 		return $response;
-	}
-
-	public function submit_request( RequestInterface $request ) {
-		$this->prepare_request_args( $request );
-		$this->configure_sdk();
-
-		$request->do_request();
 	}
 
 	protected function prepare_builder( TransactionBuilder $builder ) {
@@ -155,13 +147,6 @@ class SdkClient implements ClientInterface {
 			in_array( $this->get_arg( RequestArg::TXN_TYPE ), $this->auth_transactions, true )
 			? $this->card_data : $this->previous_transaction;
 		return $subject->{$this->get_arg( RequestArg::TXN_TYPE )}();
-	}
-
-	protected function prepare_request_args( RequestInterface $request ) {
-		$this->args = array_merge(
-			$request->get_default_args(),
-			$request->get_args()
-		);
 	}
 
 	protected function prepare_request_objects() {
@@ -274,22 +259,6 @@ class SdkClient implements ClientInterface {
 		}
 	}
 
-	protected function threedsecure_is_enabled() {
-		return $this->has_arg( RequestArg::SERVER_TRANS_ID );
-	}
-
-	protected function set_threedsecure_data() {
-		$threeDSecureData = Secure3dService::getAuthenticationData()
-			->withServerTransactionId( $this->get_arg( RequestArg::SERVER_TRANS_ID ) )
-			->withPayerAuthenticationResponse( $this->get_arg( RequestArg::PARES ) )
-			->execute();
-
-		if ( ! in_array( $threeDSecureData->eci, ["01", "02", "05", "06"] ) ) {
-			throw new ApiException( __( '3DS authentication failed' ) );
-		}
-		$this->card_data->threeDSecure = $threeDSecureData;
-	}
-
 	protected function prepare_address( $address_type, array $data ) {
 		$address       = new Address();
 		$address->type = $address_type;
@@ -314,24 +283,32 @@ class SdkClient implements ClientInterface {
 			case GatewayProvider::TRANSIT:
 				$gatewayConfig = new TransitConfig();
 				$gatewayConfig->acceptorConfig = new AcceptorConfig(); // defaults should work here
-				if ( $this->get_arg( RequestArg::TXN_TYPE ) === AbstractGateway::TXN_TYPE_CREATE_MANIFEST ) {
-					$gatewayConfig->deviceId = $this->args[ RequestArg::SERVICES_CONFIG ]['tsepDeviceId'];
-				}
 				break;
 			case GatewayProvider::GENIUS:
 				$gatewayConfig = new GeniusConfig();
 				break;
 			case GatewayProvider::GP_API:
 				$gatewayConfig = new GpApiConfig();
-				if ( $this->has_arg( RequestArg::PERMISSIONS ) ) {
-					$gatewayConfig->permissions = $this->get_arg( RequestArg::PERMISSIONS );
-				}
+				$servicesConfig = $this->args[ RequestArg::SERVICES_CONFIG ];
+				$gatewayConfig->setAppId( $servicesConfig['AppId'] );
+				$gatewayConfig->setAppKey( $servicesConfig['AppKey'] );
+				$gatewayConfig->setChannel( Channels::CardNotPresent );
+
+				unset( $this->args[ RequestArg::SERVICES_CONFIG ]['gatewayProvider'] );
 				break;
 		}
+
 		$config = $this->set_object_data(
 			$gatewayConfig,
 			$this->args[ RequestArg::SERVICES_CONFIG ]
 		);
+
+		if (
+			$this->args['SERVICES_CONFIG']['gatewayProvider'] === GatewayProvider::TRANSIT &&
+			$this->get_arg( RequestArg::TXN_TYPE ) === AbstractGateway::TXN_TYPE_CREATE_MANIFEST
+		) {
+			$config->deviceId = $this->args[ RequestArg::SERVICES_CONFIG ]['tsepDeviceId'];
+		}
 
 		ServicesContainer::configureService( $config );
 	}

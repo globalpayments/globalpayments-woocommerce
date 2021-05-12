@@ -36,8 +36,8 @@ class HeartlandGateway extends AbstractGateway {
 	 *
 	 * @var bool
 	 */
-	public $allow_gift_cards;
-
+	public $allow_gift_cards;	
+	
 	public function configure_method_settings() {
 		$this->id                 = 'globalpayments_heartland';
 		$this->method_title       = __( 'Heartland', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -49,6 +49,7 @@ class HeartlandGateway extends AbstractGateway {
 	}
 
 	public function get_gateway_form_fields() {
+	    
 		return array(
 			'public_key' => array(
 				'title'       => __( 'Public Key', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -71,6 +72,27 @@ class HeartlandGateway extends AbstractGateway {
 				),
 				'default'			=> 'no'
 			),
+		    'check_avs_cvv' => array(
+		        'title'				=> __( 'Check AVS CVN', 'globalpayments-gateway-provider-for-woocommerce' ),
+		        'label'				=> __( 'Check AVS/CVN result codes and reverse transaction.', 'globalpayments-gateway-provider-for-woocommerce' ),
+		        'type'				=> 'checkbox',
+		        'description'		=> sprintf(
+		            __( 'This will check AVS/CVN result codes and reverse transaction.' )
+		            ),
+		        'default'			=> 'no'
+		    ),
+		    'avs_reject_conditions'    => array(
+		        'title'       => __( 'AVS Reject Conditions', 'globalpayments-gateway-provider-for-woocommerce' ),
+		        'type'        => 'multiselect',
+		        'description' => __( 'Choose for which AVS result codes, the transaction must be auto reveresed.'),
+		        'options'     => $this->avs_rejection_conditions(),
+		    ),
+		    'cvn_reject_conditions'    => array(
+		        'title'       => __( 'CVN Reject Conditions', 'globalpayments-gateway-provider-for-woocommerce' ),
+		        'type'        => 'multiselect',
+		        'description' => __( 'Choose for which CVN result codes, the transaction must be auto reveresed.'),
+		        'options'     => $this->cvn_rejection_conditions(),
+		    ),
 		);
 	}
 
@@ -181,11 +203,26 @@ class HeartlandGateway extends AbstractGateway {
 	 * @return array	 * 
 	 */
 	public function process_payment( $order_id ) {
-		$order         = new WC_Order( $order_id );
+	    $order         = new WC_Order( $order_id );
 		$request       = $this->prepare_request( $this->payment_action, $order );
 		$response      = $this->submit_request( $request );
 		$is_successful = $this->handle_response( $request, $response );
-
+		
+		//reverse incase of AVS/CVN failure
+		if(!empty($response->transactionReference->transactionId) && !empty($this->check_avs_cvv)){
+		    if(!empty($response->avsResponseCode) || !empty($response->cvnResponseCode)){	
+		        //check admin selected decline condtions
+	            if(in_array($response->avsResponseCode, $this->avs_reject_conditions) ||
+	                in_array($response->cvnResponseCode, $this->cvn_reject_conditions)){
+	                    Transaction::fromId( $response->transactionReference->transactionId )
+	                    ->reverse( $request->order->data[ 'total' ] )
+	                    ->execute();
+	                    
+	                    $is_successful = false;
+	            }
+		    } 
+		}
+		
 		// Charge HPS gift cards if CC trans succeeds
 		if ( $is_successful && !empty( WC()->session->get( 'heartland_gift_card_applied' ) ) ) {
 			$gift_card_order_placement = new HeartlandGiftCardOrder();
@@ -209,5 +246,38 @@ class HeartlandGateway extends AbstractGateway {
 			'result'   => $is_successful ? 'success' : 'failure',
 			'redirect' => $is_successful ? $this->get_return_url( $order ) : false,
 		);
+	}
+	
+	public function avs_rejection_conditions()
+	{
+	    return array(
+	        'A'  => 'Address matches, zip No Match',
+	        'N'  => 'Neither address or zip code match',
+	        'R'  => 'Retry - system unable to respond',
+	        'U'  => 'Visa / Discover card AVS not supported',
+	        'S'  => 'Master / Amex card AVS not supported',
+	        'Z'  => 'Visa / Discover card 9-digit zip code match, address no match',
+	        'W'  => 'Master / Amex card 9-digit zip code match, address no match',
+	        'Y'  => 'Visa / Discover card 5-digit zip code and address match',
+	        'X'  => 'Master / Amex card 5-digit zip code and address match',
+	        'G'  => 'Address not verified for International transaction',
+	        'B'  => 'Address match, Zip not verified',
+	        'C'  => 'Address and zip mismatch',
+	        'D'  => 'Address and zip match',
+	        'I'  => 'AVS not verified for International transaction',
+	        'M'  => 'Street address and postal code matches',
+	        'P'  => 'Address and Zip not verified'
+	    );
+	}
+	
+	public function cvn_rejection_conditions()
+	{
+	    return array(
+	        'N' => 'Not Matching',
+	        'P' => 'Not Processed',
+	        'S' => 'Result not present',
+	        'U' => 'Issuer not certified',
+	        '?' => 'CVV unrecognized'
+	    );
 	}
 }
