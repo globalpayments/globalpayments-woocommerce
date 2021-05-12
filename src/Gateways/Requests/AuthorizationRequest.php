@@ -16,11 +16,9 @@ class AuthorizationRequest extends AbstractRequest {
 		$token = ( new PaymentTokenData( $this ) )->get_token();
 
 		return array(
-			RequestArg::AMOUNT          => null !== $this->order ? $this->order->get_total() : null,
-			RequestArg::CURRENCY        => null !== $this->order ? $this->order->get_currency() : null,
-			RequestArg::CARD_DATA       => $token,
-			RequestArg::SERVER_TRANS_ID => $this->data[ $this->gateway_id ]['serverTransId'] ?? null,
-			RequestArg::PARES           => $this->data[ $this->gateway_id ]['PaRes'] ?? null,
+			RequestArg::AMOUNT    => null !== $this->order ? $this->order->get_total() : null,
+			RequestArg::CURRENCY  => null !== $this->order ? $this->order->get_currency() : null,
+			RequestArg::CARD_DATA => $token,
 		);
 	}
 }

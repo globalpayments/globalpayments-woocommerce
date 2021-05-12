@@ -36,8 +36,8 @@ class HeartlandGiftGateway
     public function applyGiftCard()
     {
         $gift_card_balance = $this->giftCardBalance(
-            wc_clean( $_POST['gift_card_number'] ),
-            wc_clean( $_POST['gift_card_pin'] )
+            $_POST['gift_card_number'],
+            $_POST['gift_card_pin']
         );
 
         if ($gift_card_balance['error']) {
@@ -330,7 +330,7 @@ class HeartlandGiftGateway
     public function removeGiftCard($removed_card = null)
     {
         if (isset($_POST['securesubmit_card_id']) && empty($removed_card)) {
-            $removed_card = wc_clean( $_POST['securesubmit_card_id'] );
+            $removed_card = $_POST['securesubmit_card_id'];
         }
 
         $applied_cards = WC()->session->get('heartland_gift_card_applied');

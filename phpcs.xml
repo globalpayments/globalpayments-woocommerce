@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<ruleset name="Global Payments Payment Gateway Provider for WooCommerce">
+
+	<!-- Configs -->
+  <config name="installed_paths" value="vendor/wp-coding-standards/wpcs" />
+	<config name="minimum_supported_wp_version" value="5.0" />
+  <file>.</file>
+
+	<!-- Exclude paths -->
+	<exclude-pattern>tests/</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/wp-content/*</exclude-pattern>
+
+	<!-- Rules -->
+	<rule ref="Generic.Commenting" />
+  <rule ref="WordPress-Extra" />
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array" value="globalpayments-gateway-provider-for-woocommerce" />
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.Files.FileName">
+		<properties>
+			<property name="strict_class_file_names" value="false"/>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
+		<exclude-pattern>*</exclude-pattern>
+	</rule>
+
+</ruleset>

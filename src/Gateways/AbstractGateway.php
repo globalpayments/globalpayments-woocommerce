@@ -5,7 +5,6 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 defined( 'ABSPATH' ) || exit;
 
 use Exception;
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use WC_Payment_Gateway_CC;
@@ -48,10 +47,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 	//gp-api requests
 	const TXN_TYPE_GET_ACCESS_TOKEN = 'getAccessToken';
-
-	//3DS requests
-	const TXN_TYPE_CHECK_ENROLLMENT        = 'checkEnrollment';
-	const TXN_TYPE_INITIATE_AUTHENTICATION = 'initiateAuthentication';
 
 	/**
 	 * Gateway provider. Should be overriden by individual gateway implementations
@@ -110,6 +105,28 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @var Clients\ClientInterface
 	 */
 	protected $client;
+	
+	/**
+	 * AVS CVN auto reverse condition
+	 *
+	 * @var bool
+	 */
+	public $check_avs_cvv;
+	
+	/**
+	 * AVS result codes
+	 *
+	 * @var array
+	 */
+	public $avs_reject_conditions;
+	
+	/**
+	 * CVN result codes
+	 *
+	 * @var array
+	 */
+	public $cvn_reject_conditions;
+	
 
 	public function __construct() {
 		$this->client     = new Clients\SdkClient();
@@ -173,6 +190,20 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @return string
 	 */
 	abstract public function get_first_line_support_email();
+	
+	/**
+	 * Avs Rejection Conditions
+	 *
+	 * @return string
+	 */
+	abstract public function avs_rejection_conditions();
+	
+	/**
+	 * CVV Rejection Conditions
+	 *
+	 * @return string
+	 */
+	abstract public function cvn_rejection_conditions();
 
 	/**
 	 * Get the current gateway provider
@@ -251,23 +282,16 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		parent::tokenization_script();
 
 		// Global Payments styles for client-side tokenization
-		$css_style = Plugin::get_url( '/assets/frontend/css/globalpayments-secure-payment-fields.css' );
-		/**
-		 * Allow iframe styling according to theme
-		 *
-		 * @param $css_style CSS stylesheet
-		 */
-		$css_style = apply_filters( 'globalpayments_secure_payment_fields', $css_style );
 		wp_enqueue_style(
 			'globalpayments-secure-payment-fields',
-			$css_style,
+			Plugin::get_url( '/assets/frontend/css/globalpayments-secure-payment-fields.css' ),
 			array(),
 			WC()->version
 		);
 		// Global Payments scripts for handling client-side tokenization
 		wp_enqueue_script(
 			'globalpayments-secure-payment-fields-lib',
-			'https://js.globalpay.com/v1/globalpayments'
+			'https://api2.heartlandportico.com/securesubmit.v1/token/gp-1.6.0/globalpayments'
 			. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js',
 			array(),
 			WC()->version,
@@ -287,39 +311,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'id'              => $this->id,
 				'gateway_options' => $this->get_frontend_gateway_options(),
 				'field_options'   => $this->secure_payment_fields(),
-			)
-		);
-
-		// Global Payments scripts for handling 3DS
-		if ( GatewayProvider::GP_API !== $this->gateway_provider ) {
-			return;
-		}
-
-		wp_enqueue_script(
-			'globalpayments-threedsecure-lib',
-			Plugin::get_url( '/assets/frontend/js/globalpayments-3ds' )
-			. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js',
-			array( 'globalpayments-secure-payment-fields-lib' ),
-			WC()->version,
-			true
-		);
-		wp_localize_script(
-			'globalpayments-secure-payment-fields',
-			'globalpayments_secure_payment_threedsecure_params',
-			array(
-				'threedsecure'    => array(
-					'methodNotificationUrl'     => WC()->api_request_url( 'globalpayments_threedsecure_methodnotification' ),
-					'challengeNotificationUrl'  => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
-					'checkEnrollmentUrl'        => WC()->api_request_url( 'globalpayments_threedsecure_checkenrollment' ),
-					'initiateAuthenticationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_initiateauthentication' ),
-				),
-				'order'           => array (
-					'amount'          => $this->get_session_amount(),
-					'currency'        => get_woocommerce_currency(),
-					'billingAddress'  => $this->get_billing_address(),
-					'shippingAddress' => $this->get_shipping_address(),
-					'customerEmail'   => $this->get_customer_email(),
-				),
 			)
 		);
 	}
@@ -449,7 +440,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		'<div class="form-row form-row-wide globalpayments %1$s %2$s">
 				<label for="%1$s-%2$s">%3$s&nbsp;<span class="required">*</span></label>
 				<div id="%1$s-%2$s"></div>
-				<ul class="woocommerce-globalpayments-validation-error" style="display: none;">
+				<ul class="woocommerce_error woocommerce-error validation-error" style="display: none;">
 					<li>%4$s</li>
 				</ul>
 			</div>'
@@ -473,7 +464,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		if ( is_add_payment_method_page() ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'tokenization_script' ) );
-			add_filter( 'woocommerce_available_payment_gateways', array( $this, 'woocommerce_available_payment_gateways') );
 		}
 	}
 
@@ -507,13 +497,14 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		try {
 			$response = $this->submit_request( $request );
-			$is_successful = $this->handle_response( $request, $response );
 		} catch ( Exception $e ) {
 			return array(
 				'result'   => 'failure',
 				'redirect' => $redirect,
 			);
 		}
+
+		$is_successful = $this->handle_response( $request, $response );
 
 		return array(
 			'result'   => $is_successful ? 'success' : 'failure',
@@ -572,7 +563,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			case "globalpayments_genius":
 				$gateway = new GeniusGateway();
 				break;
-			case GpApiGateway::GATEWAY_ID:
+			case "globalpayments_gpapi":
 				$gateway = new GpApiGateway();
 				break;
 		};
@@ -636,8 +627,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			self::TXN_TYPE_REPORT_TXN_DETAILS      => Requests\TransactionDetailRequest::class,
 			self::TXN_TYPE_CAPTURE                 => Requests\CaptureAuthorizationRequest::class,
 			self::TXN_TYPE_GET_ACCESS_TOKEN        => Requests\GetAccessTokenRequest::class,
-			self::TXN_TYPE_CHECK_ENROLLMENT        => Requests\ThreeDSecure\CheckEnrollmentRequest::class,
-			self::TXN_TYPE_INITIATE_AUTHENTICATION => Requests\ThreeDSecure\InitiateAuthenticationRequest::class,
 		);
 
 		if ( ! isset( $map[ $txn_type ] ) ) {
@@ -672,7 +661,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @return bool
 	 */
 	protected function handle_response( Requests\RequestInterface $request, Transaction $response ) {
-		if ($response->responseCode !== '00' && 'SUCCESS' !== $response->responseCode || $response->responseMessage === 'Partially Approved') {
+	    if ($response->responseCode !== '00' && 'SUCCESS' !== $response->responseCode || $response->responseMessage === 'Partially Approved') {
 			if ($response->responseCode === '10' || $response->responseMessage === 'Partially Approved') {
 				try {
 					$response->void()->withDescription('POST_AUTH_USER_DECLINE')->execute();
@@ -739,27 +728,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
      */
 	public static function addCaptureOrderAction( $actions )
     {
-		global $theorder;
-
-		if ( AbstractGateway::TXN_TYPE_AUTHORIZE !== $theorder->get_meta('_globalpayments_payment_action') ) {
-			return $actions;
-		}
         $actions['capture_credit_card_authorization'] = 'Capture credit card authorization';
         return $actions;
     }
-
-	/**
-	 * Disable adding new cards via 'My Account', if "Allow Card Saving" option not checked in admin.
-	 *
-	 * @param array $available_gateways
-	 * @return array
-	 */
-    public function woocommerce_available_payment_gateways( $available_gateways ) {
-		if ( 'no' === $this->get_option( 'allow_card_saving' ) ) {
-			unset( $available_gateways[ $this->id ]);
-		}
-
-		return $available_gateways;
-	}
-
 }
