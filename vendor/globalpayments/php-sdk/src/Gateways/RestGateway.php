@@ -47,6 +47,9 @@ abstract class RestGateway extends Gateway
         if (!in_array($response->statusCode, [200, 204])) {
             $parsed = json_decode($response->rawResponse);
             $error = isset($parsed->error) ? $parsed->error : $parsed;
+            if (empty($error)) {
+                throw new GatewayException(sprintf('Status Code: %s', $response->statusCode));
+            }
             if ($this->isGpApi()) {
                 $gatewayException = new GatewayException(
                     sprintf(
@@ -63,11 +66,18 @@ abstract class RestGateway extends Gateway
                 }
                 throw $gatewayException;
             } else {
+                $errMsgProperty = ['error_description', 'message' , 'eos_reason'];
+                foreach ($errMsgProperty as $propertyName) {
+                    if (property_exists($error, $propertyName)) {
+                        $errorMessage = $error->{$propertyName};
+                        break;
+                    }
+                }
                 throw new GatewayException(
                     sprintf(
                         'Status Code: %s - %s',
                         $response->statusCode,
-                        isset($error->error_description) ? $error->error_description : (isset($error->message) ? $error->message : (string)$error)
+                        !empty($errorMessage) ? $errorMessage : (string)$error
                     )
                 );
             }
