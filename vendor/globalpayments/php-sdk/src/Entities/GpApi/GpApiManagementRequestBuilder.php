@@ -8,7 +8,6 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\Card;
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
-use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\StringUtils;
 
 class GpApiManagementRequestBuilder implements IRequestBuilder
@@ -36,10 +35,6 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
     {
         $payload = [];
         switch ($builder->transactionType) {
-            case TransactionType::DETOKENIZE:
-                $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT . '/' . $builder->paymentMethod->token . '/detokenize';
-                $verb = 'POST';
-                break;
             case TransactionType::TOKEN_DELETE:
                 $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT . '/' . $builder->paymentMethod->token;
                 $verb = 'DELETE';
@@ -77,6 +72,15 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $endpoint = GpApiRequest::DISPUTES_ENDPOINT . '/' . $builder->disputeId . '/challenge';
                 $verb = 'POST';
                 $payload['documents'] = $builder->disputeDocuments;
+                break;
+            case TransactionType::BATCH_CLOSE:
+                $endpoint = GpApiRequest::BATCHES_ENDPOINT . '/' . $builder->batchReference;
+                $verb = 'POST';
+                break;
+            case TransactionType::REAUTH:
+                $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/reauthorization';
+                $verb = 'POST';
+                $payload['amount'] = StringUtils::toNumeric($builder->amount);
                 break;
             default:
                 return null;

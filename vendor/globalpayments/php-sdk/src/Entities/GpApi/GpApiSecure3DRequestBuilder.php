@@ -4,6 +4,8 @@ namespace GlobalPayments\Api\Entities\GpApi;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\Entities\Enums\Target;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\IRequestBuilder;
@@ -76,7 +78,19 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         $threeDS['notifications'] = [
             'challenge_return_url' => $config->challengeNotificationUrl,
             'three_ds_method_return_url' => $config->methodNotificationUrl
+
         ];
+
+        if (!empty($builder->storedCredential)) {
+            $threeDS['initiator'] =
+                !empty(StoredCredentialInitiator::$mapInitiator[$builder->storedCredential->initiator]) ?
+                    strtoupper(StoredCredentialInitiator::$mapInitiator[$builder->storedCredential->initiator][Target::GP_API]) : '';
+            $threeDS['stored_credential'] = [
+                'model' => strtoupper($builder->storedCredential->type),
+                'reason' => strtoupper($builder->storedCredential->reason),
+                'sequence' => strtoupper($builder->storedCredential->sequence)
+            ];
+        }
 
         return $threeDS;
     }
@@ -84,15 +98,12 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
     private function initiateAuthenticationData(Secure3dBuilder $builder, GpApiConfig $config)
     {
         $threeDS = [];
-        $threeDS['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
-        $threeDS['channel'] = $config->channel;
-        $threeDS['country'] = $config->country;
-        $threeDS['amount'] = StringUtils::toNumeric($builder->amount);
-        $threeDS['currency'] = $builder->currency;
-        $threeDS['preference'] = $builder->challengeRequestIndicator;
+        $threeDS['three_ds'] = [
+            'source' => (string) $builder->authenticationSource,
+            'preference' => $builder->challengeRequestIndicator,
+            'message_version' => $builder->messageVersion
+        ];
         $threeDS['method_url_completion_status'] = (string) $builder->methodUrlCompletion;
-        $threeDS['source'] = (string) $builder->authenticationSource;
-//        $threeDS->message_category = (string) $builder->messageCategory; ???
         $threeDS['merchant_contact_url'] = 'https://enp4qhvjseljg.x.pipedream.net/'; // @TODO
         $order = [
             'time_created_reference' => !empty($builder->orderCreateDate) ?
@@ -110,7 +121,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
             'shipping_name_matches_cardholder_name' => $builder->getShippingNameMatchesCardHolderName(),
             'preorder_indicator' => (string) $builder->preOrderIndicator,
             'preorder_availability_date' => !empty($builder->preOrderAvailabilityDate) ?
-                $builder->preOrderAvailabilityDate->format('Y-m-d') : null,
+                (new \DateTime($builder->preOrderAvailabilityDate))->format('Y-m-d') : null,
             'reorder_indicator' => (string) $builder->reorderIndicator,
             'transaction_type' => $builder->orderTransactionType
         ];
@@ -132,12 +143,12 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
             'reference' => $builder->customerAccountId,
             'account_age' => (string) $builder->accountAgeIndicator,
             'account_creation_date' => !empty($builder->accountCreateDate) ?
-                $builder->accountCreateDate->format('Y-m-d') : null,
+                (new \DateTime($builder->accountCreateDate))->format('Y-m-d') : null,
             'account_change_date' => !empty($builder->accountChangeDate) ?
-                $builder->accountChangeDate->format('Y-m-d') : null,
+                (new \DateTime($builder->accountChangeDate))->format('Y-m-d') : null,
             'account_change_indicator' => (string) $builder->accountChangeIndicator,
             'account_password_change_date' => !empty($builder->passwordChangeDate) ?
-                $builder->passwordChangeDate->format('Y-m-d') : null,
+                (new \DateTime($builder->passwordChangeDate))->format('Y-m-d') : null,
             'account_password_change_indicator' => (string) $builder->passwordChangeIndicator,
             'home_phone' => [
                 'country_code' => $builder->homeCountryCode,
@@ -148,7 +159,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
                 'subscriber_number' => $builder->workNumber
             ],
             'payment_account_creation_date' => !empty($builder->paymentAccountCreateDate) ?
-                $builder->paymentAccountCreateDate->format('Y-m-d') : null,
+                (new \DateTime($builder->paymentAccountCreateDate))->format('Y-m-d') : null,
             'payment_account_age_indicator' => (string) $builder->paymentAgeIndicator,
             'suspicious_account_activity' => $builder->previousSuspiciousActivity,
             'purchases_last_6months_count' => $builder->numberOfPurchasesInLastSixMonths,
@@ -156,7 +167,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
             'transaction_last_year_count' => $builder->numberOfTransactionsInLastYear,
             'provision_attempt_last_24hours_count' => $builder->numberOfAddCardAttemptsInLast24Hours,
             'shipping_address_time_created_reference' => !empty($builder->shippingAddressCreateDate) ?
-                $builder->shippingAddressCreateDate->format('Y-m-d') : null,
+                (new \DateTime($builder->shippingAddressCreateDate))->format('Y-m-d') : null,
             'shipping_address_creation_indicator' => (string) $builder->shippingAddressUsageIndicator
         ];
 
@@ -164,7 +175,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
             'authentication_method' => (string) $builder->priorAuthenticationMethod,
             'acs_transaction_reference' => $builder->priorAuthenticationTransactionId,
             'authentication_timestamp' => !empty($builder->priorAuthenticationTimestamp) ?
-                $builder->priorAuthenticationTimestamp->format('Y-m-d\TH:i:s.u\Z') : null,
+                (new \DateTime($builder->priorAuthenticationTimestamp))->format('Y-m-d\TH:i:s.u\Z') : null,
             'authentication_data' => $builder->priorAuthenticationData
         ];
 
@@ -177,9 +188,10 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         $threeDS['payer_login_data'] = [
             'authentication_data' => $builder->customerAuthenticationData,
             'authentication_timestamp' => !empty($builder->customerAuthenticationTimestamp) ?
-                $builder->customerAuthenticationTimestamp->format('Y-m-d\TH:i:s.u\Z') : null,
+                (new \DateTime($builder->customerAuthenticationTimestamp))->format('Y-m-d\TH:i:s.u\Z') : null,
             'authentication_type' => (string) $builder->customerAuthenticationMethod
         ];
+
         if (!empty($builder->browserData)) {
             $threeDS['browser_data'] = [
                 'accept_header' => $builder->browserData->acceptHeader,
@@ -204,7 +216,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         $paymentMethod = new PaymentMethod();
         if ($cardData instanceof ITokenizable && !empty($cardData->token)) {
             $paymentMethod->id = $cardData->token;
-            $paymentMethod->name = $cardData->cardHolderName;
+
         }
         if ($cardData instanceof ICardData) {
             $paymentMethod->card = (object) [
@@ -214,6 +226,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
                     substr(str_pad($cardData->expYear, 4, '0', STR_PAD_LEFT), 2, 2) : ''
             ];;
         }
+        $paymentMethod->name = !empty($cardData->cardHolderName) ? $cardData->cardHolderName : null;
 
         return $paymentMethod;
     }
