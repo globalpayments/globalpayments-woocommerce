@@ -1,4 +1,4 @@
-# Global Payments Gateway Provider for WooCommerce
+# GlobalPayments WooCommerce
 
 This extension allows WooCommerce to use the available Global Payments payment gateways. All card data is tokenized using the respective gateway's tokenization service.
 

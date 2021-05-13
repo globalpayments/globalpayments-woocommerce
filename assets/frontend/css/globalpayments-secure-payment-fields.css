@@ -1,3 +1,21 @@
 .globalpayments iframe {
 	min-height: 3.6rem;
+	width: 100%;
+}
+
+div[id^="GlobalPayments-overlay-"] {
+	z-index: 1001 !important;
+}
+
+.woocommerce-globalpayments-validation-error {
+	margin-bottom:2.617924em;
+	background-color:#e2401c;
+	margin-left:0;
+	border-radius:2px;
+	color:#fff;
+	clear:both;
+	border-left:.6180469716em solid rgba(0,0,0,.15);
+	padding:1em 2em 1em 3.5em;
+	position:relative;
+	list-style:none outside
 }

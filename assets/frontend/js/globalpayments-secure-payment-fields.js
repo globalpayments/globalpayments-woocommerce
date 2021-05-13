@@ -4,14 +4,16 @@
 	$,
 	wc_checkout_params,
 	GlobalPayments,
-	globalpayments_secure_payment_fields_params
+	GlobalPayments3DS,
+	globalpayments_secure_payment_fields_params,
+	globalpayments_secure_payment_threedsecure_params
 ) {
 	/**
 	 * Frontend code for Global Payments in WooCommerce
 	 *
 	 * @param {object} options
 	 */
-	function GlobalPaymentsWooCommerce(options) {
+	function GlobalPaymentsWooCommerce( options, threeDSecureOptions ) {
 
 		/**
 		 * Card form instance
@@ -26,18 +28,37 @@
 		 * @type {string}
 		 */
 		this.id = options.id;
+
 		/**
 		 * Payment field options
 		 *
 		 * @type {object}
 		 */
 		this.fieldOptions = options.field_options;
+
 		/**
 		 * Payment gateway options
 		 *
 		 * @type {object}
 		 */
 		this.gatewayOptions = options.gateway_options;
+
+		/**
+		 * 3DS endpoints
+		 */
+		this.threedsecure = threeDSecureOptions.threedsecure;
+
+		/**
+		 * Order info
+		 */
+		this.order = threeDSecureOptions.order;
+
+		/**
+		 *
+		 * @type {null}
+		 */
+		this.tokenResponse = null;
+
 		this.attachEventHandlers();
 	};
 
@@ -61,15 +82,27 @@
 				}
 			);
 
-			// Order Pay + Add payment method
-			if ( $( document.body ).hasClass( 'woocommerce-order-pay' ) || $( 'form#add_payment_method' ).length > 0 ) {
-				$( document ).ready( this.renderPaymentFields.bind( this ) );
+			// Checkout
+			if ( 1 == wc_checkout_params.is_checkout ) {
+				$( document.body ).on( 'updated_checkout', this.renderPaymentFields.bind( this ) );
+				if ( 'globalpayments_gpapi' === this.id) {
+					$( document.body ).on( 'updated_checkout', this.threeDSSecure.bind( this ) );
+				}
 				return;
 			}
 
-			// Checkout
-			if ( wc_checkout_params.is_checkout ) {
-				$( document.body ).on( 'updated_checkout', this.renderPaymentFields.bind( this ) );
+			// Order Pay
+			if ( $( document.body ).hasClass( 'woocommerce-order-pay' ) ) {
+				$( document ).ready( this.renderPaymentFields.bind( this ) );
+				if ( 'globalpayments_gpapi' === this.id) {
+					$( document ).ready( this.threeDSSecure.bind( this ) );
+				}
+				return;
+			}
+
+			// Add payment method
+			if ( $( 'form#add_payment_method' ).length > 0 ) {
+				$( document ).ready( this.renderPaymentFields.bind( this ) );
 				return;
 			}
 		},
@@ -167,11 +200,14 @@
 		 */
 		toggleSubmitButtons: function () {
 			var paymentGatewaySelected = $( this.getPaymentMethodRadioSelector() ).is( ':checked' );
+			if ( ! paymentGatewaySelected ) {
+				return;
+			}
+
 			var savedCardsAvailable    = $( this.getStoredPaymentMethodsRadioSelector() + '[value!="new"]' ).length > 0;
 			var newSavedCardSelected   = 'new' === $( this.getStoredPaymentMethodsRadioSelector() + ':checked' ).val();
 
-			var shouldBeVisible = (paymentGatewaySelected && ! savedCardsAvailable) || (savedCardsAvailable && newSavedCardSelected);
-
+			var shouldBeVisible = ( ! savedCardsAvailable ) || ( savedCardsAvailable && newSavedCardSelected );
 			if (shouldBeVisible) {
 				// our gateway was selected
 				$( this.getSubmitButtonTargetSelector() ).show();
@@ -198,7 +234,7 @@
 				return;
 			}
 
-			console.log(response);
+			this.tokenResponse = JSON.stringify(response);
 
 			var that = this;
 
@@ -230,6 +266,134 @@
 				tokenResponseElement.value = JSON.stringify( response );
 				that.placeOrder();
 			});
+		},
+
+		/**
+		 * Validate mandatory checkout fields
+		 *
+		 * @returns {boolean}
+		 */
+		validateFields: function() {
+			if ( ! $( '#billing_first_name' ).val()
+				|| ! $( '#billing_last_name' ).val()
+				|| ! $( '#billing_address_1' ).val()
+				|| ! $( '#billing_city' ).val()
+				|| ! $( '#billing_phone' ).val()
+				|| ! $( '#billing_email' ).val() ) {
+
+				return false;
+			}
+
+			return true;
+		},
+
+		/**
+		 * 3DS Process
+		 */
+		threeDSSecure: function () {
+			var checkVersionButton = $( this.getPlaceOrderButtonSelector() );
+			if ( ! checkVersionButton ) {
+				console.error( 'Warning! Place Order button cannot be loaded' );
+				return;
+			}
+
+			//handle 3DS 2.0 workflow
+			var start3DS = async (e) => {
+				this.blockOnSubmit();
+				e.preventDefault();
+				if ( 1 === wc_checkout_params.is_checkout && ! this.validateFields() ) {
+					this.showPaymentError( 'Please fill in the required fields.' );
+					e.stopPropagation();
+					return;
+				}
+
+				var _that = this;
+
+				GlobalPayments.ThreeDSecure.checkVersion( this.threedsecure.checkEnrollmentUrl, {
+					tokenResponse: this.tokenResponse,
+					wcTokenId: $( 'input[name="wc-' + this.id + '-payment-token"]:checked', this.getForm() ).val(),
+					amount: this.order.amount,
+					currency: this.order.currency,
+					challengeWindow: {
+						windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
+						displayMode: 'lightbox',
+						hide: false,
+					},
+				})
+					.then( function( versionCheckData ) {
+						// Card holder not enrolled in 3D Secure, continue the WooCommerce flow.
+						if ( versionCheckData.enrolled === "NOT_ENROLLED" ) {
+							$( _that.getForm() ).submit();
+							return;
+						}
+
+						if ( "ONE" === versionCheckData.version ) {
+							_that.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD );
+							_that.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes );
+							$( _that.getForm() ).submit();
+							return;
+						}
+
+						if ( versionCheckData.error ) {
+							_that.showPaymentError( versionCheckData.message );
+							return;
+						}
+
+						GlobalPayments.ThreeDSecure.initiateAuthentication( _that.threedsecure.initiateAuthenticationUrl, {
+							tokenResponse: _that.tokenResponse,
+							wcTokenId: $( 'input[name="wc-' + _that.id + '-payment-token"]:checked', _that.getForm() ).val(),
+							versionCheckData: versionCheckData,
+							challengeWindow: {
+								windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
+								displayMode: 'lightbox',
+							},
+							order: _that.order,
+						})
+							.then( function ( authenticationData ) {
+								if ( authenticationData.error ) {
+									_that.showPaymentError( authenticationData.message );
+									return;
+								}
+								_that.createInputElement( 'serverTransId', versionCheckData.serverTransactionId );
+								$( _that.getForm() ).submit();
+
+							});
+
+					})
+					.catch( function( e ) {
+						console.error( e );
+						_that.showPaymentError( e.reasons[0].message );
+						return;
+					});
+
+
+
+
+				return false;
+			};
+
+			checkVersionButton.off( 'click' ).on('click', start3DS );
+
+			$( document ).on("click",'img[id^="GlobalPayments-frame-close-"]', this.cancelTransaction.bind( this ) );
+
+		},
+
+		cancelTransaction: function () {
+			this.showPaymentError( 'Transaction canceled' );
+		},
+
+		createInputElement: function ( name, value ) {
+			var inputElement = (document.getElementById( this.id + '-' + name ));
+
+			if ( ! inputElement) {
+				inputElement      = document.createElement( 'input' );
+				inputElement.id   = this.id + '-' + name;
+				inputElement.name = this.id + '[' + name + ']';
+				inputElement.type = 'hidden';
+				this.getForm().appendChild( inputElement );
+			}
+
+			inputElement.value = value;
 		},
 
 		/**
@@ -293,7 +457,7 @@
 		 * @returns
 		 */
 		resetValidationErrors: function () {
-			$( '.' + this.id + ' .validation-error' ).hide();
+			$( '.' + this.id + ' .woocommerce-globalpayments-validation-error' ).hide();
 		},
 
 		/**
@@ -304,7 +468,29 @@
 		 * @returns
 		 */
 		showValidationError: function (fieldType) {
-			$( '.' + this.id + '.' + fieldType + ' .validation-error' ).show();
+			$( '.' + this.id + '.' + fieldType + ' .woocommerce-globalpayments-validation-error' ).show();
+		},
+
+		/**
+		 * Shows payment error and scrolls to it
+		 *
+		 * @param {string} message Error message
+		 *
+		 * @returns
+		 */
+		showPaymentError: function ( message ) {
+			var $form     = $( this.getForm() );
+
+			this.unblockOnError();
+
+			// Remove notices from all sources
+			$( '.woocommerce-NoticeGroup, .woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-globalpayments-checkout-error' ).remove();
+
+			$form.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout woocommerce-error woocommerce-globalpayments-checkout-error">' + message + '</div>' );
+
+			$( 'html, body' ).animate( {
+				scrollTop: ( $form.offset().top - 100 )
+			}, 1000 );
 		},
 
 		/**
@@ -323,7 +509,6 @@
 			}
 
 			var numberOfReasons = error.reasons.length;
-
 			for ( var i = 0; i < numberOfReasons; i++ ) {
 				var reason = error.reasons[i];
 				switch ( reason.code ) {
@@ -367,7 +552,7 @@
 						alert(reason.message);
 						break;
 					default:
-						break;
+						this.showPaymentError( reason.message );
 				}
 			}
 		},
@@ -407,78 +592,62 @@
 			var imageBase = 'https://api2.heartlandportico.com/securesubmit.v1/token/gp-1.6.0/assets';
 			return {
 				'html': {
-					'font-size': '62.5%'
+					'font-size': '100%',
+					'-webkit-text-size-adjust': '100%',
 				},
+
 				'body': {
-					'font-size': '1.4rem'
+					'font-size': '14px',
 				},
 				'#secure-payment-field-wrapper': {
-					'postition': 'relative'
+					'position': 'relative'
 				},
 				'#secure-payment-field': {
-					'-o-transition': 'border-color ease-in-out .15s,box-shadow ease-in-out .15s',
-					'-webkit-box-shadow': 'inset 0 1px 1px rgba(0,0,0,.075)',
-					'-webkit-transition': 'border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s',
 					'background-color': '#fff',
-					'border': '1px solid #cecece',
-					'border-radius': '2px',
-					'box-shadow': 'none',
-					'box-sizing': 'border-box',
+					'border': '1px solid #ccc',
+					'border-radius': '4px',
 					'display': 'block',
-					'font-family': '"Roboto", sans-serif',
-					'font-size': '11px',
-					'font-smoothing': 'antialiased',
+
+					'font-size': '14px',
 					'height': '35px',
-					'margin': '5px 0 10px 0',
-					'max-width': '100%',
-					'outline': '0',
-					'padding': '0 10px',
-					'transition': 'border-color ease-in-out .15s,box-shadow ease-in-out .15s',
-					'vertical-align': 'baseline',
-					'width': '100%'
+					'padding': '6px 12px',
+					'width': '100%',
 				},
 				'#secure-payment-field:focus': {
 					'border': '1px solid lightblue',
 					'box-shadow': '0 1px 3px 0 #cecece',
 					'outline': 'none'
 				},
-				'#secure-payment-field[type=button]': {
-					'text-align': 'center',
-					'text-transform': 'none',
-					'white-space': 'nowrap',
-
-					'background-image': 'none',
-					'background': '#1979c3',
-					'border': '1px solid #1979c3',
-					'color': '#ffffff',
+			 	'#secure-payment-field[type=button]': {
 					'cursor': 'pointer',
+					'border': '0',
+					'border-radius': '0',
+					'background': 'none',
+					'background-color': '#333333',
+					'border-color': '#333333',
+					'color': '#fff',
+					'padding': '.6180469716em 1.41575em',
+					'text-decoration': 'none',
+					'text-shadow': 'none',
 					'display': 'inline-block',
-					'font-family': '"Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
-					'font-weight': '500',
-					'padding': '14px 17px',
-					'font-size': '1.8rem',
-					'line-height': '2.2rem',
-					'box-sizing': 'border-box',
-					'vertical-align': 'middle',
-					'margin': '0',
 					'height': 'initial',
-					'width': 'initial',
+					'width': '100%',
 					'flex': 'initial',
-					'position': 'absolute',
-					'right': '0'
+					'position': 'relative',
+					'margin': '0',
+					'-webkit-appearance': 'none',
+					'white-space': 'pre-wrap',
+					'margin-bottom': '0',
+					'float': 'none',
+					'font': '600 1.41575em Source Sans Pro,HelveticaNeue-Light,Helvetica Neue Light,Helvetica Neue,Helvetica,Arial,Lucida Grande,sans-serif !important'
 				},
 				'#secure-payment-field[type=button]:focus': {
-					'outline': 'none',
-
-					'box-shadow': 'none',
-					'background': '#006bb4',
-					'border': '1px solid #006bb4',
-					'color': '#ffffff'
+					'color': '#fff',
+					'background': '#000000',
 				},
 				'#secure-payment-field[type=button]:hover': {
-					'background': '#006bb4',
-					'border': '1px solid #006bb4',
-					'color': '#ffffff'
+					'color': '#fff',
+					'background': '#000000',
 				},
 				'.card-cvv': {
 					'background': 'transparent url(' + imageBase + '/cvv.png) no-repeat right',
@@ -613,7 +782,7 @@
 		}
 	};
 
-	new GlobalPaymentsWooCommerce( globalpayments_secure_payment_fields_params );
+	new GlobalPaymentsWooCommerce( globalpayments_secure_payment_fields_params, globalpayments_secure_payment_threedsecure_params );
 }(
 	/**
 	 * Global `jQuery` reference
@@ -634,9 +803,21 @@
 	 */
 	(window).GlobalPayments,
 	/**
+	 * Global `GlobalPayments` reference
+	 *
+	 * @type {any}
+	 */
+	(window).GlobalPayments.ThreeDSecure,
+	/**
 	 * Global `globalpayments_secure_payment_fields_params` reference
 	 *
 	 * @type {any}
 	 */
-	(window).globalpayments_secure_payment_fields_params
+	(window).globalpayments_secure_payment_fields_params,
+	/**
+	 * Global `globalpayments_secure_payment_threedsecure_params` reference
+	 *
+	 * @type {any}
+	 */
+	(window).globalpayments_secure_payment_threedsecure_params || {}
 ));

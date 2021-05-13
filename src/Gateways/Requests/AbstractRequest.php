@@ -67,9 +67,15 @@ abstract class AbstractRequest implements RequestInterface {
 
 	public function get_request_data( $key = null ) {
 		if ( null === $key ) {
+			if ( ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) ) {
+				return null;
+			}
+			if ( 'application/json' === $_SERVER['CONTENT_TYPE'] ) {
+				return json_decode( file_get_contents( 'php://input' ) );
+			}
 			// WooCommerce should verify nonce during its checkout handling
 			// phpcs:ignore WordPress.Security.NonceVerification
-			return $_POST;
+			return wc_clean( $_POST );
 		}
 
 		if ( ! isset( $this->data[ $key ] ) ) {

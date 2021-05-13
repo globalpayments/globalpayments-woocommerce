@@ -15,7 +15,7 @@ class RefundRequest extends AbstractRequest {
 	public function get_args() {
 		$gateway_id    = $this->order->get_transaction_id();
 		$description   = $this->data['refund_reason'];
-		$refund_amount = $this->data['refund_amount'];
+		$refund_amount = wc_format_decimal( $this->data['refund_amount'] );
 
 		return array(
 			RequestArg::CURRENCY    => $this->order->get_currency(),
