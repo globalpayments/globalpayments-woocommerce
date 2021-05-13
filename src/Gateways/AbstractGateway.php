@@ -109,7 +109,28 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 *
 	 * @var Clients\ClientInterface
 	 */
-	protected $client;
+	protected $client;	
+	
+	/**
+	 * AVS CVN auto reverse condition
+	 *
+	 * @var bool
+	 */
+	public $check_avs_cvv;
+	
+	/**
+	 * AVS result codes
+	 *
+	 * @var array
+	 */
+	public $avs_reject_conditions;
+	
+	/**
+	 * CVN result codes
+	 *
+	 * @var array
+	 */
+	public $cvn_reject_conditions;
 
 	public function __construct() {
 		$this->client     = new Clients\SdkClient();
@@ -172,7 +193,21 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 *
 	 * @return string
 	 */
-	abstract public function get_first_line_support_email();
+	abstract public function get_first_line_support_email();	
+	
+	/**
+	 * Avs Rejection Conditions
+	 *
+	 * @return string
+	 */
+	abstract public function avs_rejection_conditions();
+	
+	/**
+	 * CVV Rejection Conditions
+	 *
+	 * @return string
+	 */
+	abstract public function cvn_rejection_conditions();
 
 	/**
 	 * Get the current gateway provider

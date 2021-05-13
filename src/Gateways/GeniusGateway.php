@@ -102,4 +102,10 @@ class GeniusGateway extends AbstractGateway {
 			'environment'    => $this->is_production ? Environment::PRODUCTION : Environment::TEST,
 		);
 	}
+	
+	public function cvn_rejection_conditions()
+    {}
+
+    public function avs_rejection_conditions()
+    {}
 }
