@@ -12,6 +12,10 @@ class GetAccessTokenRequest extends AbstractRequest {
 	}
 
 	public function get_args() {
-		return array();
+		return array(
+			RequestArg::PERMISSIONS => array(
+				'PMT_POST_Create_Single',
+			)
+		);
 	}
 }

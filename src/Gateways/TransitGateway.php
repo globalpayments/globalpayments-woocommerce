@@ -211,10 +211,4 @@ class TransitGateway extends AbstractGateway {
 
 		return $is_successful;
 	}
-    public function cvn_rejection_conditions()
-    {}
-
-    public function avs_rejection_conditions()
-    {}
-
 }
