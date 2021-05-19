@@ -473,6 +473,8 @@
 		 */
 		showValidationError: function (fieldType) {
 			$( '.' + this.id + '.' + fieldType + ' .woocommerce-globalpayments-validation-error' ).show();
+
+			this.unblockOnError();
 		},
 
 		/**
@@ -511,7 +513,6 @@
 		 */
 		handleErrors: function ( error ) {
 			this.resetValidationErrors();
-			this.unblockOnError();
 
 			if ( ! error.reasons ) {
 				return;
@@ -564,7 +565,7 @@
 							break;
 						}
 					case 'ERROR':
-						alert(reason.message);
+						this.showPaymentError( reason.message );
 						break;
 					default:
 						this.showPaymentError( reason.message );
