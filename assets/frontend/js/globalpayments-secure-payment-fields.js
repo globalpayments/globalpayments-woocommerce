@@ -37,6 +37,11 @@
 		this.fieldOptions = options.field_options;
 
 		/**
+		 * Payment field styles
+		 */
+		this.fieldStyles = options.field_styles;
+
+		/**
 		 * Payment gateway options
 		 *
 		 * @type {object}
@@ -82,21 +87,20 @@
 				}
 			);
 
+			$( this.getForm() ).on( 'checkout_place_order_globalpayments_gpapi', this.initThreeDSecure.bind( this ) );
+			$( document.body ).on( 'checkout_error', function() {
+				$('#globalpayments_gpapi-checkout_validated').remove();
+			} );
+
 			// Checkout
 			if ( 1 == wc_checkout_params.is_checkout ) {
 				$( document.body ).on( 'updated_checkout', this.renderPaymentFields.bind( this ) );
-				if ( 'globalpayments_gpapi' === this.id) {
-					$( document.body ).on( 'updated_checkout', this.threeDSSecure.bind( this ) );
-				}
 				return;
 			}
 
 			// Order Pay
 			if ( $( document.body ).hasClass( 'woocommerce-order-pay' ) ) {
 				$( document ).ready( this.renderPaymentFields.bind( this ) );
-				if ( 'globalpayments_gpapi' === this.id) {
-					$( document ).ready( this.threeDSSecure.bind( this ) );
-				}
 				return;
 			}
 
@@ -105,6 +109,38 @@
 				$( document ).ready( this.renderPaymentFields.bind( this ) );
 				return;
 			}
+		},
+
+		/**
+		 * Initiate 3DS process.
+		 *
+		 * @param e
+		 * @returns {boolean}
+		 */
+		initThreeDSecure: function ( e ) {
+			e.preventDefault;
+			this.blockOnSubmit();
+
+			var self = this;
+
+			if ( 1 == $('#globalpayments_gpapi-checkout_validated').val() ) {
+				return true;
+			}
+
+			$.post( this.threedsecure.ajaxCheckoutUrl, $( this.getForm() ).serialize())
+				.success( function( result ) {
+					if ( -1 !== result.messages.indexOf( self.id + '_checkout_validated' ) ) {
+						self.createInputElement( 'checkout_validated', 1 );
+						self.threeDSecure();
+					} else {
+						self.showPaymentError( result.messages );
+					}
+				})
+				.error(	function( jqXHR, textStatus, errorThrown ) {
+					self.showPaymentError( errorThrown );
+				});
+
+			return false;
 		},
 
 		/**
@@ -145,7 +181,6 @@
 			if ( $( '#' + this.id + '-' + this.fieldOptions['card-number-field'].class ).children().length > 0 ) {
 				return;
 			}
-
 			if ( ! GlobalPayments.configure ) {
 				console.log( 'Warning! Payment fields cannot be loaded' );
 				return;
@@ -158,14 +193,12 @@
 			}
 
 			GlobalPayments.configure( this.gatewayOptions );
-
 			this.cardForm = GlobalPayments.ui.form(
 				{
 					fields: this.getFieldConfiguration(),
 					styles: this.getStyleConfiguration()
 				}
 			);
-
 			this.cardForm.on( 'submit', 'click', this.blockOnSubmit.bind( this ) );
 			this.cardForm.on( 'token-success', this.handleResponse.bind( this ) );
 			this.cardForm.on( 'token-error', this.handleErrors.bind( this ) );
@@ -200,14 +233,10 @@
 		 */
 		toggleSubmitButtons: function () {
 			var paymentGatewaySelected = $( this.getPaymentMethodRadioSelector() ).is( ':checked' );
-			if ( ! paymentGatewaySelected ) {
-				return;
-			}
-
 			var savedCardsAvailable    = $( this.getStoredPaymentMethodsRadioSelector() + '[value!="new"]' ).length > 0;
 			var newSavedCardSelected   = 'new' === $( this.getStoredPaymentMethodsRadioSelector() + ':checked' ).val();
 
-			var shouldBeVisible = ( ! savedCardsAvailable ) || ( savedCardsAvailable && newSavedCardSelected );
+			var shouldBeVisible = ( paymentGatewaySelected && ( ! savedCardsAvailable  || savedCardsAvailable && newSavedCardSelected ) );
 			if (shouldBeVisible) {
 				// our gateway was selected
 				$( this.getSubmitButtonTargetSelector() ).show();
@@ -269,117 +298,92 @@
 		},
 
 		/**
-		 * Validate mandatory checkout fields
-		 *
-		 * @returns {boolean}
+		 * 3DS Process
 		 */
-		validateFields: function() {
-			if ( ! $( '#billing_first_name' ).val()
-				|| ! $( '#billing_last_name' ).val()
-				|| ! $( '#billing_address_1' ).val()
-				|| ! $( '#billing_city' ).val()
-				|| ! $( '#billing_phone' ).val()
-				|| ! $( '#billing_email' ).val() ) {
+		threeDSecure: function () {
+			this.blockOnSubmit();
 
-				return false;
-			}
+			var self = this;
+			var _form = this.getForm();
+			var $form = $( _form );
 
-			return true;
+			GlobalPayments.ThreeDSecure.checkVersion( this.threedsecure.checkEnrollmentUrl, {
+				tokenResponse: this.tokenResponse,
+				wcTokenId: $( 'input[name="wc-' + this.id + '-payment-token"]:checked', _form ).val(),
+				amount: this.order.amount,
+				currency: this.order.currency,
+				challengeWindow: {
+					windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
+					displayMode: 'lightbox',
+				},
+			})
+				.then( function( versionCheckData ) {
+					if ( versionCheckData.error ) {
+						self.showPaymentError( versionCheckData.message );
+						return false;
+					}
+					// Card holder not enrolled in 3D Secure, continue the WooCommerce flow.
+					if ( "NOT_ENROLLED" === versionCheckData.enrolled ) {
+						$form.submit();
+						return true;
+					}
+					if ( "ONE" === versionCheckData.version ) {
+						if ( GlobalPayments.ThreeDSecure.TransactionStatus.ChallengeRequired == versionCheckData.status && "N" == versionCheckData.challenge.response.data.transStatus ) {
+							self.showPaymentError( '3DS Authentication failed' );
+							return false;
+						}
+						self.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD );
+						self.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes );
+						$form.submit();
+						return false;
+					}
+
+					GlobalPayments.ThreeDSecure.initiateAuthentication( self.threedsecure.initiateAuthenticationUrl, {
+						tokenResponse: self.tokenResponse,
+						wcTokenId: $( 'input[name="wc-' + self.id + '-payment-token"]:checked', _form ).val(),
+						versionCheckData: versionCheckData,
+						challengeWindow: {
+							windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
+							displayMode: 'lightbox',
+						},
+						order: self.order,
+					})
+						.then( function ( authenticationData ) {
+							if ( authenticationData.error ) {
+								self.showPaymentError( authenticationData.message );
+								return false;
+							}
+							if ( GlobalPayments.ThreeDSecure.TransactionStatus.ChallengeRequired == authenticationData.status && "N" == authenticationData.challenge.response.data.transStatus ) {
+								self.showPaymentError( '3DS Authentication failed' );
+								return false;
+							}
+							self.createInputElement( 'serverTransId', authenticationData.serverTransactionId || authenticationData.challenge.response.data.threeDSServerTransID );
+							$form.submit();
+							return true;
+						})
+						.catch( function( error ) {
+							console.error( error );
+							self.showPaymentError( 'Something went wrong while doing 3DS processing.' );
+							return false;
+						});
+				})
+				.catch( function( error ) {
+					console.error( error );
+					self.showPaymentError( 'Something went wrong while doing 3DS processing.' );
+					return false;
+				});
+
+			$( document ).on( "click", 'img[id^="GlobalPayments-frame-close-"]', this.cancelTransaction.bind( this ) );
+
+			return false;
+
 		},
 
 		/**
-		 * 3DS Process
+		 * Assists with notifying the challenge status, when the user closes the challenge window
 		 */
-		threeDSSecure: function () {
-			var checkVersionButton = $( this.getPlaceOrderButtonSelector() );
-			if ( ! checkVersionButton ) {
-				console.error( 'Warning! Place Order button cannot be loaded' );
-				return;
-			}
-
-			//handle 3DS 2.0 workflow
-			var start3DS = async (e) => {
-				this.blockOnSubmit();
-				e.preventDefault();
-				if ( 1 === wc_checkout_params.is_checkout && ! this.validateFields() ) {
-					this.showPaymentError( 'Please fill in the required fields.' );
-					e.stopPropagation();
-					return;
-				}
-
-				var _that = this;
-
-				GlobalPayments.ThreeDSecure.checkVersion( this.threedsecure.checkEnrollmentUrl, {
-					tokenResponse: this.tokenResponse,
-					wcTokenId: $( 'input[name="wc-' + this.id + '-payment-token"]:checked', this.getForm() ).val(),
-					amount: this.order.amount,
-					currency: this.order.currency,
-					challengeWindow: {
-						windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
-						displayMode: 'lightbox',
-						hide: false,
-					},
-				})
-					.then( function( versionCheckData ) {
-						// Card holder not enrolled in 3D Secure, continue the WooCommerce flow.
-						if ( versionCheckData.enrolled === "NOT_ENROLLED" ) {
-							$( _that.getForm() ).submit();
-							return;
-						}
-
-						if ( "ONE" === versionCheckData.version ) {
-							_that.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD );
-							_that.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes );
-							$( _that.getForm() ).submit();
-							return;
-						}
-
-						if ( versionCheckData.error ) {
-							_that.showPaymentError( versionCheckData.message );
-							return;
-						}
-
-						GlobalPayments.ThreeDSecure.initiateAuthentication( _that.threedsecure.initiateAuthenticationUrl, {
-							tokenResponse: _that.tokenResponse,
-							wcTokenId: $( 'input[name="wc-' + _that.id + '-payment-token"]:checked', _that.getForm() ).val(),
-							versionCheckData: versionCheckData,
-							challengeWindow: {
-								windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
-								displayMode: 'lightbox',
-							},
-							order: _that.order,
-						})
-							.then( function ( authenticationData ) {
-								if ( authenticationData.error ) {
-									_that.showPaymentError( authenticationData.message );
-									return;
-								}
-								_that.createInputElement( 'serverTransId', versionCheckData.serverTransactionId );
-								$( _that.getForm() ).submit();
-
-							});
-
-					})
-					.catch( function( e ) {
-						console.error( e );
-						_that.showPaymentError( e.reasons[0].message );
-						return;
-					});
-
-
-
-
-				return false;
-			};
-
-			checkVersionButton.off( 'click' ).on('click', start3DS );
-
-			$( document ).on("click",'img[id^="GlobalPayments-frame-close-"]', this.cancelTransaction.bind( this ) );
-
-		},
-
 		cancelTransaction: function () {
-			this.showPaymentError( 'Transaction canceled' );
+			window.parent.postMessage({ data: { "transStatus":"N" }, event: "challengeNotification" }, window.location.origin );
 		},
 
 		createInputElement: function ( name, value ) {
@@ -469,6 +473,8 @@
 		 */
 		showValidationError: function (fieldType) {
 			$( '.' + this.id + '.' + fieldType + ' .woocommerce-globalpayments-validation-error' ).show();
+
+			this.unblockOnError();
 		},
 
 		/**
@@ -481,16 +487,21 @@
 		showPaymentError: function ( message ) {
 			var $form     = $( this.getForm() );
 
-			this.unblockOnError();
-
 			// Remove notices from all sources
 			$( '.woocommerce-NoticeGroup, .woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-globalpayments-checkout-error' ).remove();
 
-			$form.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout woocommerce-error woocommerce-globalpayments-checkout-error">' + message + '</div>' );
+			if ( -1 === message.indexOf( 'woocommerce-error' ) ) {
+				message = '<ul class="woocommerce-error"><li>' + message + '</li></ul>';
+			}
+			$form.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout woocommerce-globalpayments-checkout-error">' + message + '</div>' );
 
 			$( 'html, body' ).animate( {
 				scrollTop: ( $form.offset().top - 100 )
 			}, 1000 );
+
+			this.unblockOnError();
+
+			$( document.body ).trigger( 'checkout_error' );
 		},
 
 		/**
@@ -502,7 +513,6 @@
 		 */
 		handleErrors: function ( error ) {
 			this.resetValidationErrors();
-			this.unblockOnError();
 
 			if ( ! error.reasons ) {
 				return;
@@ -548,8 +558,14 @@
 							this.showValidationError( 'card-cvv' );
 							break;
 						}
+					case 'SYSTEM_ERROR_DOWNSTREAM':
+						var n = reason.message.search( "card expdate" );
+						if ( n>=0 ) {
+							this.showValidationError( 'card-expiration' );
+							break;
+						}
 					case 'ERROR':
-						alert(reason.message);
+						this.showPaymentError( reason.message );
 						break;
 					default:
 						this.showPaymentError( reason.message );
@@ -589,135 +605,7 @@
 		 * @returns {object}
 		 */
 		getStyleConfiguration: function () {
-			var imageBase = 'https://api2.heartlandportico.com/securesubmit.v1/token/gp-1.6.0/assets';
-			return {
-				'html': {
-					'font-size': '100%',
-					'-webkit-text-size-adjust': '100%',
-				},
-
-				'body': {
-					'font-size': '14px',
-				},
-				'#secure-payment-field-wrapper': {
-					'position': 'relative'
-				},
-				'#secure-payment-field': {
-					'background-color': '#fff',
-					'border': '1px solid #ccc',
-					'border-radius': '4px',
-					'display': 'block',
-
-					'font-size': '14px',
-					'height': '35px',
-					'padding': '6px 12px',
-					'width': '100%',
-				},
-				'#secure-payment-field:focus': {
-					'border': '1px solid lightblue',
-					'box-shadow': '0 1px 3px 0 #cecece',
-					'outline': 'none'
-				},
-			 	'#secure-payment-field[type=button]': {
-					'cursor': 'pointer',
-					'border': '0',
-					'border-radius': '0',
-					'background': 'none',
-					'background-color': '#333333',
-					'border-color': '#333333',
-					'color': '#fff',
-					'padding': '.6180469716em 1.41575em',
-					'text-decoration': 'none',
-					'text-shadow': 'none',
-					'display': 'inline-block',
-					'height': 'initial',
-					'width': '100%',
-					'flex': 'initial',
-					'position': 'relative',
-					'margin': '0',
-					'-webkit-appearance': 'none',
-					'white-space': 'pre-wrap',
-					'margin-bottom': '0',
-					'float': 'none',
-					'font': '600 1.41575em Source Sans Pro,HelveticaNeue-Light,Helvetica Neue Light,Helvetica Neue,Helvetica,Arial,Lucida Grande,sans-serif !important'
-				},
-				'#secure-payment-field[type=button]:focus': {
-					'color': '#fff',
-					'background': '#000000',
-				},
-				'#secure-payment-field[type=button]:hover': {
-					'color': '#fff',
-					'background': '#000000',
-				},
-				'.card-cvv': {
-					'background': 'transparent url(' + imageBase + '/cvv.png) no-repeat right',
-					'background-size': '60px'
-				},
-				'.card-cvv.card-type-amex': {
-					'background': 'transparent url(' + imageBase + '/cvv-amex.png) no-repeat right',
-					'background-size': '60px'
-				},
-				'.card-number': {
-					'background': 'transparent url(' + imageBase + '/logo-unknown@2x.png) no-repeat right',
-					'background-size': '52px'
-				},
-				'.card-number.invalid.card-type-amex': {
-					'background': 'transparent url(' + imageBase + '/amex-invalid.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '38px'
-				},
-				'.card-number.invalid.card-type-discover': {
-					'background': 'transparent url(' + imageBase + '/discover-invalid.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '60px'
-				},
-				'.card-number.invalid.card-type-jcb': {
-					'background': 'transparent url(' + imageBase + '/jcb-invalid.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '38px'
-				},
-				'.card-number.invalid.card-type-mastercard': {
-					'background': 'transparent url(' + imageBase + '/mastercard-invalid.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '40px'
-				},
-				'.card-number.invalid.card-type-visa': {
-					'background': 'transparent url(' + imageBase + '/visa-invalid.svg) no-repeat center',
-					'background-position-x': '98%',
-					'background-size': '50px'
-				},
-				'.card-number.valid.card-type-amex': {
-					'background': 'transparent url(' + imageBase + '/amex.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '38px'
-				},
-				'.card-number.valid.card-type-discover': {
-					'background': 'transparent url(' + imageBase + '/discover.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '60px'
-				},
-				'.card-number.valid.card-type-jcb': {
-					'background': 'transparent url(' + imageBase + '/jcb.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '38px'
-				},
-				'.card-number.valid.card-type-mastercard': {
-					'background': 'transparent url(' + imageBase + '/mastercard.svg) no-repeat center',
-					'background-position-x': '98%',
-					'background-size': '40px'
-				},
-				'.card-number.valid.card-type-visa': {
-					'background': 'transparent url(' + imageBase + '/visa.svg) no-repeat right center',
-					'background-position-x': '98%',
-					'background-size': '50px'
-				},
-				'.card-number::-ms-clear': {
-					'display': 'none',
-				},
-				'input[placeholder]': {
-					'letter-spacing': '.5px',
-				}
-			};
+			return JSON.parse( this.fieldStyles );
 		},
 
 		/**

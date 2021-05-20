@@ -5,6 +5,7 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 defined( 'ABSPATH' ) || exit;
@@ -91,6 +92,7 @@ class GpApiGateway extends AbstractGateway {
 	public function get_frontend_gateway_options() {
 		return array(
 			'accessToken' => $this->get_access_token(),
+			'apiVersion'  => GpApiConnector::GP_API_VERSION,
 			'env'         => $this->is_production ? parent::ENVIRONMENT_PRODUCTION : parent::ENVIRONMENT_SANDBOX,
 		);
 	}
@@ -109,14 +111,20 @@ class GpApiGateway extends AbstractGateway {
 	}
 
 	protected function get_access_token() {
-		$request  = $this->prepare_request(self::TXN_TYPE_GET_ACCESS_TOKEN);
-		$response = $this->submit_request($request);
+		try {
+			$request  = $this->prepare_request( self::TXN_TYPE_GET_ACCESS_TOKEN );
+			$response = $this->submit_request( $request );
 
-		return $response->token;
+			return $response->token;
+		} catch (\Exception $e) {
+			return null;
+		}
 	}
 
 	protected function add_hooks() {
 		parent::add_hooks();
+
+		add_action( 'woocommerce_after_checkout_validation', array( $this, 'after_checkout_validation' ), 10, 2 );
 
 		/**
 		 * The WooCommerce API allows plugins make a callback to a special URL that will then load the specified class (if it exists)
@@ -128,6 +136,21 @@ class GpApiGateway extends AbstractGateway {
 		add_action( 'woocommerce_api_globalpayments_threedsecure_challengenotification', array( $this, 'process_threeDSecure_challengeNotification' ) );
 	}
 
+	public function after_checkout_validation( $data, $errors ) {
+		if ( ! empty( $errors->errors ) ) {
+			return;
+		}
+		if ( $this->id !== $data['payment_method'] ) {
+			return;
+		}
+		$post_data = $this->get_post_data();
+		if ( isset( $post_data[ $this->id ]['checkout_validated'] ) && 1 == $post_data[ $this->id ]['checkout_validated'] ) {
+			return;
+		}
+
+		wc_add_notice( $this->id . '_checkout_validated', 'error', array( 'id' => $this->id ) );
+	}
+
 	public function mapResponseCodeToFriendlyMessage( $responseCode ) {
 		if ( 'DECLINED' === $responseCode ) {
 			return __( 'Your card has been declined by the bank.', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -136,20 +159,17 @@ class GpApiGateway extends AbstractGateway {
 		return __( 'An error occurred while processing the card.', 'globalpayments-gateway-provider-for-woocommerce' );
 	}
 
-	public function process_threeDSecure_checkEnrollment()
-	{
+	public function process_threeDSecure_checkEnrollment() {
 		$request = $this->prepare_request( parent::TXN_TYPE_CHECK_ENROLLMENT );
 		$this->client->submit_request( $request );
 	}
 
-	public function process_threeDSecure_initiateAuthentication()
-	{
+	public function process_threeDSecure_initiateAuthentication() {
 		$request = $this->prepare_request( parent::TXN_TYPE_INITIATE_AUTHENTICATION );
 		$this->client->submit_request( $request );
 	}
 
-	public function process_threeDSecure_methodNotification()
-	{
+	public function process_threeDSecure_methodNotification() {
 		if ( ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) ) {
 			return;
 		}
@@ -172,8 +192,7 @@ class GpApiGateway extends AbstractGateway {
 		exit();
 	}
 
-	public function process_threeDSecure_challengeNotification()
-	{
+	public function process_threeDSecure_challengeNotification() {
 		if ( ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) ) {
 			return;
 		}
@@ -222,8 +241,7 @@ class GpApiGateway extends AbstractGateway {
 		return WC()->customer->get_billing_email();
 	}
 
-	protected function get_billing_address()
-	{
+	protected function get_billing_address() {
 		return [
 			'streetAddress1' => WC()->customer->get_billing_address_1(),
 			'streetAddress2' => WC()->customer->get_billing_address_2(),
@@ -235,8 +253,7 @@ class GpApiGateway extends AbstractGateway {
 		];
 	}
 
-	protected function get_shipping_address()
-	{
+	protected function get_shipping_address() {
 		return [
 			'streetAddress1' => WC()->customer->get_shipping_address_1(),
 			'streetAddress2' => WC()->customer->get_shipping_address_2(),
