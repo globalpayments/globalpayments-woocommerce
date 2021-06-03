@@ -35,6 +35,14 @@ After you have installed and configured the main WooCommerce plugin use the foll
 2. Click Install, once installed click Activate
 3. Configure and Enable gateways in WooCommerce by adding your public and secret Api Keys
 
+== GP-API Sandbox credentials ==
+Access to our GP-API requires sandbox credentials which you can retrieve yourself via our <a href="https://developer.globalpay.com/" target="_blank">Developer Portal</a>:
+
+1. First go to the Developer Portal and make sure the green GP-API button is selected in the top right corner.
+2. Click on the icon in the top right and click Register.
+3. Once registered, click on the same icon in top right corner and click MyApps. Here we are going to create an app which is a set of GP API credentials used to access the API and generate access tokens.
+4. Click ‘Create
+
 == Changelog ==
 
 = 1.0.0-b.2 =
