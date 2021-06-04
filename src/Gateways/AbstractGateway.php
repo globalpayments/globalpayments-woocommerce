@@ -618,8 +618,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 */
 	protected function add_hooks() {
 		// hooks always active for the gateway
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'admin_enforce_single_gateway' ) );
+		if ( is_admin() ) {
+			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+			add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'admin_enforce_single_gateway' ) );
+		}
 
 		if ( 'no' === $this->enabled ) {
 			return;
