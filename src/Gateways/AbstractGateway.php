@@ -362,7 +362,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'type'        => 'checkbox',
 					'description' => sprintf(
 						/* translators: %s: Email address of support team */
-						__( 'Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href="mailto:%s?Subject=WooCommerce%%20Transaction%%20Descriptor%%20Option">support</a> with any questions regarding this option.', 'globalpayments-gateway-provider-for-woocommerce' ),
+						__( 'Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href="mailto:%s?Subject=WooCommerce%%20Card%%20Saving%%20Option">support</a> with any questions regarding this option.', 'globalpayments-gateway-provider-for-woocommerce' ),
 						$this->get_first_line_support_email()
 					),
 					'default'     => 'no',
