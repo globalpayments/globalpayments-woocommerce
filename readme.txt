@@ -45,6 +45,13 @@ Access to our GP-API requires sandbox credentials which you can retrieve yoursel
 
 == Changelog ==
 
+= 1.0.0 =
+* Add GP-API instructions for sandbox credentials
+* Handle new errors for card expiry_year
+* Move Heartland hooks to gateway class
+* Card saving admin note
+* Validate refund amount
+
 = 1.0.0-b.2 =
 * Fix toggleSubmitButton
 * Fix 3DS events
