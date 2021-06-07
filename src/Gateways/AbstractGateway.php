@@ -8,6 +8,7 @@ use Exception;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
 use WC_Payment_Gateway_CC;
 use WC_Order;
 use GlobalPayments\Api\Entities\Transaction;
@@ -693,8 +694,12 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		$is_order_txn_id_active = $this->is_transaction_active( $details );
 		$txn_type               = $is_order_txn_id_active ? self::TXN_TYPE_REVERSAL : self::TXN_TYPE_REFUND;
 
-		$order         = new WC_Order( $order_id );
-		$request       = $this->prepare_request( $txn_type, $order );
+		$order   = new WC_Order( $order_id );
+		$request = $this->prepare_request( $txn_type, $order );
+		$request_args = $request->get_args();
+		if ( empty( $request_args[ RequestArg::AMOUNT ] ) ) {
+			throw new Exception( __( 'Refund amount must be greater than zero.' ) );
+		}
 		$response      = $this->submit_request( $request );
 		$is_successful = $this->handle_response( $request, $response );
 
