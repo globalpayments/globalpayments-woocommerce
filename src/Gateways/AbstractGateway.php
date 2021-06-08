@@ -491,65 +491,64 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			),
 			'.card-cvv' => array(
 				'background'      => 'transparent url(' . $image_base . '/cvv.png) no-repeat right',
-				'background-size' => '60px'
+				'background-size' => '63px 40px'
 			),
 			'.card-cvv.card-type-amex' => array(
 				'background'      => 'transparent url(' . $image_base . '/cvv-amex.png) no-repeat right',
-				'background-size' => '60px'
+				'background-size' => '63px 40px'
 			),
 			'.card-number' => array(
 				'background'      => 'transparent url(' . $image_base . '/logo-unknown@2x.png) no-repeat right',
-				'background-size' => '52px'
+				'background-size' => '55px 35px'
 			),
 			'.card-number.invalid.card-type-amex' => array(
-				'background'            => 'transparent url(' . $image_base . '/amex-invalid.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '38px'
+				'background'            => 'transparent url(' . $image_base . '/logo-amex@2x.png) no-repeat right',
+				'background-position-y' => '-41px',
+				'background-size'       => '50px 90px'
 			),
 			'.card-number.invalid.card-type-discover' => array(
-				'background'            => 'transparent url(' . $image_base . '/discover-invalid.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '60px'
+				'background'            => 'transparent url(' . $image_base . '/logo-discover@2x.png) no-repeat right',
+				'background-position-y' => '-44px',
+				'background-size'       => '85px 90px'
 			),
 			'.card-number.invalid.card-type-jcb' => array(
-				'background'            => 'transparent url(' . $image_base . '/jcb-invalid.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '38px'
+				'background'            => 'transparent url(' . $image_base . '/logo-jcb@2x.png) no-repeat right',
+				'background-position-y' => '-44px',
+				'background-size'       => '55px 94px'
 			),
 			'.card-number.invalid.card-type-mastercard' => array(
-				'background'            => 'transparent url(' . $image_base . '/mastercard-invalid.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '40px'
+				'background'            => 'transparent url(' . $image_base . '/logo-mastercard@2x.png) no-repeat right',
+				'background-position-y' => '-41px',
+				'background-size'       => '82px 86px'
 			),
 			'.card-number.invalid.card-type-visa' => array(
-				'background'            => 'transparent url(' . $image_base . '/visa-invalid.svg) no-repeat center',
-				'background-position-x' => '98%',
-				'background-size'       => '50px',
+				'background'            => 'transparent url(' . $image_base . '/logo-visa@2x.png) no-repeat right',
+				'background-position-y' => '-44px',
+				'background-size'       => '83px 88px',
 			),
 			'.card-number.valid.card-type-amex' => array(
-				'background'            => 'transparent url(' . $image_base . '/amex.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '38px',
+				'background'            => 'transparent url(' . $image_base . '/logo-amex@2x.png) no-repeat right',
+				'background-position-y' => '3px',
+				'background-size'       => '50px 90px',
 			),
 			'.card-number.valid.card-type-discover' => array(
-				'background'            => 'transparent url(' . $image_base . '/discover.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '60px'
+				'background'            => 'transparent url(' . $image_base . '/logo-discover@2x.png) no-repeat right',
+				'background-position-y' => '1px',
+				'background-size'       => '85px 90px'
 			),
 			'.card-number.valid.card-type-jcb' => array(
-				'background'            => 'transparent url(' . $image_base . '/jcb.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '38px'
+				'background'            => 'transparent url(' . $image_base . '/logo-jcb@2x.png) no-repeat right top',
+				'background-position-y' => '2px',
+				'background-size'       => '55px 94px'
 			),
 			'.card-number.valid.card-type-mastercard' => array(
-				'background'            => 'transparent url(' . $image_base . '/mastercard.svg) no-repeat center',
-				'background-position-x' => '98%',
-				'background-size'       => '40px'
+				'background'            => 'transparent url(' . $image_base . '/logo-mastercard@2x.png) no-repeat right',
+				'background-position-y' => '2px',
+				'background-size'       => '82px 86px'
 			),
 			'.card-number.valid.card-type-visa' => array(
-				'background'            => 'transparent url(' . $image_base . '/visa.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '50px'
+				'background'            => 'transparent url(' . $image_base . '/logo-visa@2x.png) no-repeat right top',
+				'background-size'       => '82px 86px'
 			),
 			'.card-number::-ms-clear' => array(
 				'display' => 'none',

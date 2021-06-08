@@ -51,6 +51,7 @@ Access to our GP-API requires sandbox credentials which you can retrieve yoursel
 * Move Heartland hooks to gateway class
 * Card saving admin note
 * Validate refund amount
+* Add missing invalid card icons
 
 = 1.0.0-b.2 =
 * Fix toggleSubmitButton
