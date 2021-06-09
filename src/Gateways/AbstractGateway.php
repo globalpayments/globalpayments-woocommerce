@@ -193,21 +193,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 *
 	 * @return string
 	 */
-	abstract public function get_first_line_support_email();	
-	
-	/**
-	 * Avs Rejection Conditions
-	 *
-	 * @return string
-	 */
-	abstract public function avs_rejection_conditions();
-	
-	/**
-	 * CVV Rejection Conditions
-	 *
-	 * @return string
-	 */
-	abstract public function cvn_rejection_conditions();
+	abstract public function get_first_line_support_email();
 
 	/**
 	 * Get the current gateway provider
@@ -420,6 +406,27 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 						'maxlength' => 18,
 					),
 				),
+			    'check_avs_cvv' => array(
+			        'title'				=> __( 'Check AVS CVN', 'globalpayments-gateway-provider-for-woocommerce' ),
+			        'label'				=> __( 'Check AVS/CVN result codes and reverse transaction.', 'globalpayments-gateway-provider-for-woocommerce' ),
+			        'type'				=> 'checkbox',
+			        'description'		=> sprintf(
+			            __( 'This will check AVS/CVN result codes and reverse transaction.' )
+			            ),
+			        'default'			=> 'no'
+			    ),
+			    'avs_reject_conditions'    => array(
+			        'title'       => __( 'AVS Reject Conditions', 'globalpayments-gateway-provider-for-woocommerce' ),
+			        'type'        => 'multiselect',
+			        'description' => __( 'Choose for which AVS result codes, the transaction must be auto reveresed.'),
+			        'options'     => $this->avs_rejection_conditions(),
+			    ),
+			    'cvn_reject_conditions'    => array(
+			        'title'       => __( 'CVN Reject Conditions', 'globalpayments-gateway-provider-for-woocommerce' ),
+			        'type'        => 'multiselect',
+			        'description' => __( 'Choose for which CVN result codes, the transaction must be auto reveresed.'),
+			        'options'     => $this->cvn_rejection_conditions(),
+			    ),			    
 			)
 		);
 	}
@@ -795,6 +802,39 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		}
 
 		return $available_gateways;
+	}
+	
+	public function avs_rejection_conditions()
+	{
+	    return array(
+	        'A'  => 'Address matches, zip No Match',
+	        'N'  => 'Neither address or zip code match',
+	        'R'  => 'Retry - system unable to respond',
+	        'U'  => 'Visa / Discover card AVS not supported',
+	        'S'  => 'Master / Amex card AVS not supported',
+	        'Z'  => 'Visa / Discover card 9-digit zip code match, address no match',
+	        'W'  => 'Master / Amex card 9-digit zip code match, address no match',
+	        'Y'  => 'Visa / Discover card 5-digit zip code and address match',
+	        'X'  => 'Master / Amex card 5-digit zip code and address match',
+	        'G'  => 'Address not verified for International transaction',
+	        'B'  => 'Address match, Zip not verified',
+	        'C'  => 'Address and zip mismatch',
+	        'D'  => 'Address and zip match',
+	        'I'  => 'AVS not verified for International transaction',
+	        'M'  => 'Street address and postal code matches',
+	        'P'  => 'Address and Zip not verified'
+	    );
+	}
+	
+	public function cvn_rejection_conditions()
+	{
+	    return array(
+	        'N' => 'Not Matching',
+	        'P' => 'Not Processed',
+	        'S' => 'Result not present',
+	        'U' => 'Issuer not certified',
+	        '?' => 'CVV unrecognized'
+	    );
 	}
 
 }
