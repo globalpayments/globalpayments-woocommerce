@@ -103,9 +103,4 @@ class GeniusGateway extends AbstractGateway {
 		);
 	}
 	
-	public function cvn_rejection_conditions()
-    {}
-
-    public function avs_rejection_conditions()
-    {}
 }
