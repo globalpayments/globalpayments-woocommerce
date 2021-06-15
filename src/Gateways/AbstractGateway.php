@@ -272,19 +272,13 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		parent::tokenization_script();
 
 		// Global Payments styles for client-side tokenization
-		$css_style = Plugin::get_url( '/assets/frontend/css/globalpayments-secure-payment-fields.css' );
-		/**
-		 * Allow iframe styling according to theme
-		 *
-		 * @param $css_style CSS stylesheet
-		 */
-		$css_style = apply_filters( 'globalpayments_secure_payment_fields', $css_style );
 		wp_enqueue_style(
 			'globalpayments-secure-payment-fields',
-			$css_style,
+			Plugin::get_url( '/assets/frontend/css/globalpayments-secure-payment-fields.css' ),
 			array(),
 			WC()->version
 		);
+
 		// Global Payments scripts for handling client-side tokenization
 		wp_enqueue_script(
 			'globalpayments-secure-payment-fields-lib',
@@ -308,6 +302,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'id'              => $this->id,
 				'gateway_options' => $this->get_frontend_gateway_options(),
 				'field_options'   => $this->secure_payment_fields(),
+				'field_styles'    => $this->secure_payment_fields_styles(),
 			)
 		);
 
@@ -333,6 +328,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'challengeNotificationUrl'  => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
 					'checkEnrollmentUrl'        => WC()->api_request_url( 'globalpayments_threedsecure_checkenrollment' ),
 					'initiateAuthenticationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_initiateauthentication' ),
+					'ajaxCheckoutUrl'                   => \WC_AJAX::get_endpoint( 'checkout' ),
 				),
 				'order'           => array (
 					'amount'          => $this->get_session_amount(),
@@ -372,13 +368,13 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'payment_action'    => array(
 					'title'       => __( 'Payment Action', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'type'        => 'select',
-					'description' => __( 'Choose whether you wish to capture funds immediately, authorize payment only for a delayed capture, or verify and capture when the order ships.', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'description' => __( 'Choose whether you wish to capture funds immediately or authorize payment only for a delayed capture.', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'default'     => 'sale',
 					'desc_tip'    => true,
 					'options'     => array(
 						self::TXN_TYPE_SALE      => __( 'Authorize + Capture', 'globalpayments-gateway-provider-for-woocommerce' ),
 						self::TXN_TYPE_AUTHORIZE => __( 'Authorize only', 'globalpayments-gateway-provider-for-woocommerce' ),
-						self::TXN_TYPE_VERIFY    => __( 'Verify only', 'globalpayments-gateway-provider-for-woocommerce' ),
+						//self::TXN_TYPE_VERIFY    => __( 'Verify only', 'globalpayments-gateway-provider-for-woocommerce' ),
 					),
 				),
 				'allow_card_saving' => array(
@@ -466,6 +462,165 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		);
 	}
 
+	/**
+	 * CSS styles for secure payment fields.
+	 *
+	 * @return mixed|void
+	 */
+	protected function secure_payment_fields_styles() {
+		$image_base = $this->secure_payment_fields_asset_base_url() . '/images';
+
+		$secure_payment_fields_styles = array(
+			'html' => array(
+				'font-size'                => '100%',
+				'-webkit-text-size-adjust' => '100%',
+			),
+			'body' => array(),
+			'#secure-payment-field-wrapper' => array(
+				'position' => 'relative',
+			),
+			'#secure-payment-field' => array(
+				'background-color' => '#fff',
+				'border'           => '1px solid #ccc',
+				'border-radius'    => '4px',
+				'display'          => 'block',
+				'font-size'        => '14px',
+				'height'           => '35px',
+				'padding'          => '6px 12px',
+				'width'            => '100%',
+			),
+			'#secure-payment-field:focus' => array(
+				'border'     => '1px solid lightblue',
+				'box-shadow' => '0 1px 3px 0 #cecece',
+				'outline'    => 'none',
+			),
+
+			'button#secure-payment-field.submit' => array(
+				'border'             => '0',
+				'border-radius'      => '0',
+				'background'         => 'none',
+				'background-color'   => '#333333',
+				'border-color'       => '#333333',
+				'color'              => '#fff',
+				'cursor'             => 'pointer',
+				'padding'            => '.6180469716em 1.41575em',
+				'text-decoration'    => 'none',
+				'font-weight'        => '600',
+				'text-shadow'        => 'none',
+				'display'            => 'inline-block',
+				'-webkit-appearance' => 'none',
+				'height'             => 'initial',
+				'width'              => '100%',
+				'flex'               => 'auto',
+				'position'           => 'static',
+				'margin'             => '0',
+
+				'white-space'        => 'pre-wrap',
+				'margin-bottom'      => '0',
+				'float'              => 'none',
+
+				'font'               => '600 1.41575em/1.618 Source Sans Pro,HelveticaNeue-Light,Helvetica Neue Light,
+							Helvetica Neue,Helvetica,Arial,Lucida Grande,sans-serif !important'
+			),
+			'#secure-payment-field[type=button]:focus' => array(
+				'color'      => '#fff',
+				'background' => '#000000',
+			),
+			'#secure-payment-field[type=button]:hover' => array(
+				'color'      => '#fff',
+				'background' => '#000000',
+			),
+			'.card-cvv' => array(
+				'background'      => 'transparent url(' . $image_base . '/cvv.png) no-repeat right',
+				'background-size' => '60px'
+			),
+			'.card-cvv.card-type-amex' => array(
+				'background'      => 'transparent url(' . $image_base . '/cvv-amex.png) no-repeat right',
+				'background-size' => '60px'
+			),
+			'.card-number' => array(
+				'background'      => 'transparent url(' . $image_base . '/logo-unknown@2x.png) no-repeat right',
+				'background-size' => '52px'
+			),
+			'.card-number.invalid.card-type-amex' => array(
+				'background'            => 'transparent url(' . $image_base . '/amex-invalid.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '38px'
+			),
+			'.card-number.invalid.card-type-discover' => array(
+				'background'            => 'transparent url(' . $image_base . '/discover-invalid.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '60px'
+			),
+			'.card-number.invalid.card-type-jcb' => array(
+				'background'            => 'transparent url(' . $image_base . '/jcb-invalid.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '38px'
+			),
+			'.card-number.invalid.card-type-mastercard' => array(
+				'background'            => 'transparent url(' . $image_base . '/mastercard-invalid.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '40px'
+			),
+			'.card-number.invalid.card-type-visa' => array(
+				'background'            => 'transparent url(' . $image_base . '/visa-invalid.svg) no-repeat center',
+				'background-position-x' => '98%',
+				'background-size'       => '50px',
+			),
+			'.card-number.valid.card-type-amex' => array(
+				'background'            => 'transparent url(' . $image_base . '/amex.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '38px',
+			),
+			'.card-number.valid.card-type-discover' => array(
+				'background'            => 'transparent url(' . $image_base . '/discover.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '60px'
+			),
+			'.card-number.valid.card-type-jcb' => array(
+				'background'            => 'transparent url(' . $image_base . '/jcb.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '38px'
+			),
+			'.card-number.valid.card-type-mastercard' => array(
+				'background'            => 'transparent url(' . $image_base . '/mastercard.svg) no-repeat center',
+				'background-position-x' => '98%',
+				'background-size'       => '40px'
+			),
+			'.card-number.valid.card-type-visa' => array(
+				'background'            => 'transparent url(' . $image_base . '/visa.svg) no-repeat right center',
+				'background-position-x' => '98%',
+				'background-size'       => '50px'
+			),
+			'.card-number::-ms-clear' => array(
+				'display' => 'none',
+			),
+			'input[placeholder]' => array(
+				'letter-spacing' => '.5px',
+			),
+		);
+
+		/**
+		 * Allow hosted fields styling customization.
+		 *
+		 * @param array $secure_payment_fields_styles CSS styles.
+		 */
+		return apply_filters( 'globalpayments_secure_payment_fields_styles', json_encode( $secure_payment_fields_styles ) );
+	}
+
+	/**
+	 * Base assets URL for secure payment fields.
+	 *
+	 * @return string
+	 */
+	protected function secure_payment_fields_asset_base_url() {
+		if ( $this->is_production ) {
+			return 'https://js.globalpay.com/v1';
+		}
+
+		return 'https://js-cert.globalpay.com/v1';
+	}
+
 	public function save_payment_method_checkbox() {
 		if ( ! $this->allow_card_saving ) {
 			return;
@@ -506,6 +661,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	protected function add_hooks() {
 		// hooks always active for the gateway
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'admin_enforce_single_gateway' ) );
 
 		if ( 'no' === $this->enabled ) {
 			return;
@@ -818,7 +974,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		return $available_gateways;
 	}
-	
+
 	public function avs_rejection_conditions()
 	{
 	    return array(
@@ -850,5 +1006,47 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	        'U' => 'Issuer not certified',
 	        '?' => 'CVV unrecognized'
 	    );
+  }
+
+	/**
+	 * Enforce single GlobalPayments gateway activation.
+	 *
+	 * @param array $settings Admin settings
+	 * @return mixed
+	 */
+	public function admin_enforce_single_gateway( $settings ) {
+		if ( ! wc_string_to_bool( $settings['enabled'] ) ) {
+			return $settings;
+		}
+
+		$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+		foreach ( $available_gateways as $gateway_id => $gateway ) {
+			if ( $this->id !== $gateway_id && false !== strpos( $gateway_id, 'globalpayments_' ) ) {
+				$settings['enabled'] = 'no';
+				add_action ( 'woocommerce_sections_checkout', function() use ( $gateway ) {
+					echo '<div id="message" class="error inline"><p><strong>' .
+						__( 'You can enable only one GlobalPayments gateway at a time.
+							Please disable ' . $gateway->method_title . ' first!',
+							'globalpayments-gateway-provider-for-woocommerce'
+						) .
+						'</strong></p></div>';
+				});
+				return $settings;
+			}
+		}
+
+		return $settings;
+	}
+
+	/**
+	 * Enqueue admin scripts.
+	 *
+	 * @param string $hook_suffix The current admin page.
+	 */
+	public static function admin_enqueue_scripts( $hook_suffix ) {
+		if ( 'woocommerce_page_wc-settings' !== $hook_suffix ) {
+			return;
+		}
+		wp_enqueue_script ( 'globalpayments-enforce-single-gateway', Plugin::get_url( '/assets/admin/js/globalpayments-enforce-single-gateway.js' ) );
 	}
 }

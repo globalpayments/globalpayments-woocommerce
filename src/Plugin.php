@@ -54,6 +54,7 @@ class Plugin {
 			add_filter('woocommerce_get_order_item_totals', array( $gcthing, 'addItemsToPostOrderDisplay'), PHP_INT_MAX - 1, 2);
 			add_action('woocommerce_checkout_order_processed', array( $gcthing, 'processGiftCardsZeroTotal'), PHP_INT_MAX, 2);
 		}
+		add_filter( 'admin_enqueue_scripts', array( Gateways\AbstractGateway::class, 'admin_enqueue_scripts' ) );
 	}
 
 	/**
