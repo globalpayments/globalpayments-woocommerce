@@ -738,6 +738,21 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 			return false;
 		}
+		
+		//reverse incase of AVS/CVN failure
+		if(!empty($response->transactionReference->transactionId) && !empty($this->check_avs_cvv)){
+		    if(!empty($response->avsResponseCode) || !empty($response->cvnResponseCode)){
+		        //check admin selected decline condtions
+		        if(in_array($response->avsResponseCode, $this->avs_reject_conditions) ||
+		            in_array($response->cvnResponseCode, $this->cvn_reject_conditions)){
+		                Transaction::fromId( $response->transactionReference->transactionId )
+		                ->reverse( $request->order->data[ 'total' ] )
+		                ->execute();
+		                
+		                return false;
+		        }
+		    }
+		}
 
 		$handlers = array(
 			Handlers\PaymentActionHandler::class,
@@ -836,5 +851,4 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	        '?' => 'CVV unrecognized'
 	    );
 	}
-
 }
