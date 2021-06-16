@@ -532,6 +532,11 @@
 						this.showValidationError( 'card-cvv' );
 						break;
 					case 'MANDATORY_DATA_MISSING':
+						var n = reason.message.search( "card type" );
+						if ( n>=0 ) {
+							this.showValidationError( 'card-number' );
+							break;
+						}
 						var n = reason.message.search( "expiry_year" );
 						if ( n>=0 ) {
 							this.showValidationError( 'card-expiration' );
