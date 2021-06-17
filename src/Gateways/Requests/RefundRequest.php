@@ -19,7 +19,7 @@ class RefundRequest extends AbstractRequest {
 
 		return array(
 			RequestArg::CURRENCY    => $this->order->get_currency(),
-			RequestArg::AMOUNT      => $refund_amount,
+			RequestArg::AMOUNT      => ! empty( $refund_amount ) ? $refund_amount : null,
 			RequestArg::GATEWAY_ID  => $gateway_id,
 			RequestArg::DESCRIPTION => $description,
 		);
