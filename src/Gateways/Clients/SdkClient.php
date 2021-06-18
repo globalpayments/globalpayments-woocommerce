@@ -315,7 +315,7 @@ class SdkClient implements ClientInterface {
 				$gatewayConfig = new TransitConfig();
 				$gatewayConfig->acceptorConfig = new AcceptorConfig(); // defaults should work here
 				if ( $this->get_arg( RequestArg::TXN_TYPE ) === AbstractGateway::TXN_TYPE_CREATE_MANIFEST ) {
-					$gatewayConfig->deviceId = $this->args[ RequestArg::SERVICES_CONFIG ]['tsepDeviceId'];
+					$gatewayConfig->deviceId = $this->get_arg( RequestArg::SERVICES_CONFIG )['tsepDeviceId'];
 				}
 				break;
 			case GatewayProvider::GENIUS:
@@ -339,6 +339,12 @@ class SdkClient implements ClientInterface {
 	protected function set_object_data( $obj, array $data ) {
 		foreach ( $data as $key => $value ) {
 			if ( property_exists( $obj, $key ) ) {
+				if ( 
+					$key === 'deviceId' &&
+					$this->get_arg( RequestArg::TXN_TYPE ) === AbstractGateway::TXN_TYPE_CREATE_MANIFEST
+				) {
+					continue;
+				}
 				$obj->{$key} = $value;
 			}
 		}
