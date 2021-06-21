@@ -45,6 +45,9 @@ Access to our GP-API requires sandbox credentials which you can retrieve yoursel
 
 == Changelog ==
 
+= 1.0.1 =
+* Fix TransIT credential handling
+
 = 1.0.0 =
 * Add GP-API instructions for sandbox credentials
 * Handle new errors for card expiry_year
