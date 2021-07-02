@@ -414,12 +414,16 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			    'avs_reject_conditions'    => array(
 			        'title'       => __( 'AVS Reject Conditions', 'globalpayments-gateway-provider-for-woocommerce' ),
 			        'type'        => 'multiselect',
+			        'class'       => 'wc-enhanced-select',
+			        'css'         => 'width: 450px',
 			        'description' => __( 'Choose for which AVS result codes, the transaction must be auto reveresed.'),
 			        'options'     => $this->avs_rejection_conditions(),
 			    ),
 			    'cvn_reject_conditions'    => array(
 			        'title'       => __( 'CVN Reject Conditions', 'globalpayments-gateway-provider-for-woocommerce' ),
 			        'type'        => 'multiselect',
+			        'class'       => 'wc-enhanced-select',
+			        'css'         => 'width: 450px',
 			        'description' => __( 'Choose for which CVN result codes, the transaction must be auto reveresed.'),
 			        'options'     => $this->cvn_rejection_conditions(),
 			    ),			    
@@ -978,35 +982,35 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	public function avs_rejection_conditions()
 	{
 	    return array(
-	        'A'  => 'Address matches, zip No Match',
-	        'N'  => 'Neither address or zip code match',
-	        'R'  => 'Retry - system unable to respond',
-	        'U'  => 'Visa / Discover card AVS not supported',
-	        'S'  => 'Master / Amex card AVS not supported',
-	        'Z'  => 'Visa / Discover card 9-digit zip code match, address no match',
-	        'W'  => 'Master / Amex card 9-digit zip code match, address no match',
-	        'Y'  => 'Visa / Discover card 5-digit zip code and address match',
-	        'X'  => 'Master / Amex card 5-digit zip code and address match',
-	        'G'  => 'Address not verified for International transaction',
-	        'B'  => 'Address match, Zip not verified',
-	        'C'  => 'Address and zip mismatch',
-	        'D'  => 'Address and zip match',
-	        'I'  => 'AVS not verified for International transaction',
-	        'M'  => 'Street address and postal code matches',
-	        'P'  => 'Address and Zip not verified'
+	        'A'  => 'A - Address matches, zip No Match',
+	        'N'  => 'N - Neither address or zip code match',
+	        'R'  => 'R - Retry - system unable to respond',
+	        'U'  => 'U - Visa / Discover card AVS not supported',
+	        'S'  => 'S - Master / Amex card AVS not supported',
+	        'Z'  => 'Z - Visa / Discover card 9-digit zip code match, address no match',
+	        'W'  => 'W - Master / Amex card 9-digit zip code match, address no match',
+	        'Y'  => 'Y - Visa / Discover card 5-digit zip code and address match',
+	        'X'  => 'X - Master / Amex card 5-digit zip code and address match',
+	        'G'  => 'G - Address not verified for International transaction',
+	        'B'  => 'B - Address match, Zip not verified',
+	        'C'  => 'C - Address and zip mismatch',
+	        'D'  => 'D - Address and zip match',
+	        'I'  => 'I - AVS not verified for International transaction',
+	        'M'  => 'M - Street address and postal code matches',
+	        'P'  => 'P - Address and Zip not verified'
 	    );
 	}
 	
 	public function cvn_rejection_conditions()
 	{
 	    return array(
-	        'N' => 'Not Matching',
-	        'P' => 'Not Processed',
-	        'S' => 'Result not present',
-	        'U' => 'Issuer not certified',
-	        '?' => 'CVV unrecognized'
+	        'N' => 'N - Not Matching',
+	        'P' => 'P - Not Processed',
+	        'S' => 'S - Result not present',
+	        'U' => 'U - Issuer not certified',
+	        '?' => '? - CVV unrecognized'
 	    );
-	}
+    }
 
 	/**
 	 * Enforce single GlobalPayments gateway activation.
