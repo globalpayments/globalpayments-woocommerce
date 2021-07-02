@@ -70,7 +70,7 @@ class HeartlandGateway extends AbstractGateway {
 					__( 'This will display a gift card entry field directly below the credit card entry area.' )
 				),
 				'default'			=> 'no'
-			),			
+			),
 		);
 	}
 
@@ -209,5 +209,5 @@ class HeartlandGateway extends AbstractGateway {
 			'result'   => $is_successful ? 'success' : 'failure',
 			'redirect' => $is_successful ? $this->get_return_url( $order ) : false,
 		);
-	}	
+	}
 }
