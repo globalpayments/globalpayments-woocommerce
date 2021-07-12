@@ -48,7 +48,7 @@ Access to our GP-API requires sandbox credentials which you can retrieve yoursel
 = 1.0.2 =
 * Update PHP-SDK to v2.3.6
 * Fix GP-API 3DS Challenge for Live Mode
-* Fix GP-API Capture
+* Fix GP-API Capture for Live Mode
 
 = 1.0.1 =
 * Fix TransIT credential handling
