@@ -280,7 +280,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			'globalpayments_secure_payment_fields_params',
 			array(
 				'id'              => $this->id,
-				'gateway_options' => $this->get_frontend_gateway_options(),
+				'gateway_options' => $this->secure_payment_fields_config(),
 				'field_options'   => $this->secure_payment_fields(),
 				'field_styles'    => $this->secure_payment_fields_styles(),
 			)
@@ -385,6 +385,22 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			)
 		);
 	}
+
+    /**
+     * Configuration for the secure payment fields on the client side.
+     *
+     * @return array
+     */
+	protected function secure_payment_fields_config() {
+        try {
+            return $this->get_frontend_gateway_options();
+        } catch (\Exception $e) {
+            return array(
+                'error'    => true,
+                'message'  => $e->getMessage(),
+            );
+        }
+    }
 
 	/**
 	 * Configuration for the secure payment fields. Used on server- and
