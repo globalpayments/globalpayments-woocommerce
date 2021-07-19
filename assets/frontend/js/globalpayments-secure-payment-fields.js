@@ -185,6 +185,10 @@
 				console.log( 'Warning! Payment fields cannot be loaded' );
 				return;
 			}
+			var gatewayConfig = this.gatewayOptions;
+			if ( gatewayConfig.error ) {
+				this.showPaymentError( gatewayConfig.message );
+			}
 
 			// ensure the submit button's parent is on the page as this is added
 			// only after the initial page load
@@ -192,7 +196,7 @@
 				this.createSubmitButtonTarget();
 			}
 
-			GlobalPayments.configure( this.gatewayOptions );
+			GlobalPayments.configure( gatewayConfig );
 			this.cardForm = GlobalPayments.ui.form(
 				{
 					fields: this.getFieldConfiguration(),
