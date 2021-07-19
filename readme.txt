@@ -1,6 +1,6 @@
 === GlobalPayments WooCommerce ===
 Contributors: globalpayments
-Tags: woocommerce, woo, commerce, global, payments, heartland, payment, systems, tsys, genius, 3DS, gateway, token, tokenize, save cards
+Tags: unified, commerce, platform, global, payments, ucp, heartland, payment, systems, tsys, genius, 3DS, gateway, token, tokenize, save cards
 Requires at least: 5.4
 Tested up to: 5.7
 Stable tag: 1.1.0
@@ -14,7 +14,7 @@ This extension allows WooCommerce to use the available Global Payments payment g
 - Heartland Portico gateway
 - TSYS Genius gateway
 - TSYS TransIT gateway with TSEP
-- Unified Commerce API (GP-API) gateway
+- Unified Commerce Platform (UCP)
 - Credit Cards
 - Integrates with Woocommerce
 - Sale transactions (automatic capture or separate capture action later)
