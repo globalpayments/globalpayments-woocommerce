@@ -409,7 +409,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			        'description'		=> sprintf(
 			            __( 'This will check AVS/CVN result codes and reverse transaction.' )
 			            ),
-			        'default'			=> 'no'
+			        'default'			=> 'yes'
 			    ),
 			    'avs_reject_conditions'    => array(
 			        'title'       => __( 'AVS Reject Conditions', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -418,6 +418,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			        'css'         => 'width: 450px',
 			        'description' => __( 'Choose for which AVS result codes, the transaction must be auto reveresed.'),
 			        'options'     => $this->avs_rejection_conditions(),
+			        'default'     => array("N", "S", "U", "P", "R", "G", "C", "I"),
 			    ),
 			    'cvn_reject_conditions'    => array(
 			        'title'       => __( 'CVN Reject Conditions', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -426,6 +427,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			        'css'         => 'width: 450px',
 			        'description' => __( 'Choose for which CVN result codes, the transaction must be auto reveresed.'),
 			        'options'     => $this->cvn_rejection_conditions(),
+			        'default'     => array("P", "?", "N"),
 			    ),			    
 			)
 		);
@@ -900,7 +902,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		}
 		
 		//reverse incase of AVS/CVN failure
-		if(!empty($response->transactionReference->transactionId) && !empty($this->check_avs_cvv)){
+		if(!empty($response->transactionReference->transactionId) && $this->get_option('check_avs_cvv') === 'yes'){
 		    if(!empty($response->avsResponseCode) || !empty($response->cvnResponseCode)){
 		        //check admin selected decline condtions
 		        if(in_array($response->avsResponseCode, $this->avs_reject_conditions) ||
@@ -1041,70 +1043,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		return $settings;
 	}
-
-	public function avs_rejection_conditions()
-	{
-	    return array(
-	        'A'  => 'A - Address matches, zip No Match',
-	        'N'  => 'N - Neither address or zip code match',
-	        'R'  => 'R - Retry - system unable to respond',
-	        'U'  => 'U - Visa / Discover card AVS not supported',
-	        'S'  => 'S - Master / Amex card AVS not supported',
-	        'Z'  => 'Z - Visa / Discover card 9-digit zip code match, address no match',
-	        'W'  => 'W - Master / Amex card 9-digit zip code match, address no match',
-	        'Y'  => 'Y - Visa / Discover card 5-digit zip code and address match',
-	        'X'  => 'X - Master / Amex card 5-digit zip code and address match',
-	        'G'  => 'G - Address not verified for International transaction',
-	        'B'  => 'B - Address match, Zip not verified',
-	        'C'  => 'C - Address and zip mismatch',
-	        'D'  => 'D - Address and zip match',
-	        'I'  => 'I - AVS not verified for International transaction',
-	        'M'  => 'M - Street address and postal code matches',
-	        'P'  => 'P - Address and Zip not verified'
-	    );
-	}
 	
-	public function cvn_rejection_conditions()
-	{
-	    return array(
-	        'N' => 'N - Not Matching',
-	        'P' => 'P - Not Processed',
-	        'S' => 'S - Result not present',
-	        'U' => 'U - Issuer not certified',
-	        '?' => '? - CVV unrecognized'
-	    );
-    }
-
-	/**
-	 * Enforce single GlobalPayments gateway activation.
-	 *
-	 * @param array $settings Admin settings
-	 * @return mixed
-	 */
-	public function admin_enforce_single_gateway( $settings ) {
-		if ( ! wc_string_to_bool( $settings['enabled'] ) ) {
-			return $settings;
-		}
-
-		$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
-		foreach ( $available_gateways as $gateway_id => $gateway ) {
-			if ( $this->id !== $gateway_id && false !== strpos( $gateway_id, 'globalpayments_' ) ) {
-				$settings['enabled'] = 'no';
-				add_action ( 'woocommerce_sections_checkout', function() use ( $gateway ) {
-					echo '<div id="message" class="error inline"><p><strong>' .
-						__( 'You can enable only one GlobalPayments gateway at a time.
-							Please disable ' . $gateway->method_title . ' first!',
-							'globalpayments-gateway-provider-for-woocommerce'
-						) .
-						'</strong></p></div>';
-				});
-				return $settings;
-			}
-		}
-
-		return $settings;
-	}
-
+	
 	/**
 	 * Enqueue admin scripts.
 	 *
