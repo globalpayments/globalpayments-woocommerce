@@ -8,6 +8,7 @@ use Exception;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
 use WC_Payment_Gateway_CC;
 use WC_Order;
 use GlobalPayments\Api\Entities\Transaction;
@@ -109,7 +110,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 *
 	 * @var Clients\ClientInterface
 	 */
-	protected $client;	
+	protected $client;
 	
 	/**
 	 * AVS CVN auto reverse condition
@@ -369,7 +370,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'title'       => __( 'Payment Action', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'type'        => 'select',
 					'description' => __( 'Choose whether you wish to capture funds immediately or authorize payment only for a delayed capture.', 'globalpayments-gateway-provider-for-woocommerce' ),
-					'default'     => 'sale',
+					'default'     => self::TXN_TYPE_SALE,
 					'desc_tip'    => true,
 					'options'     => array(
 						self::TXN_TYPE_SALE      => __( 'Authorize + Capture', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -383,7 +384,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'type'        => 'checkbox',
 					'description' => sprintf(
 						/* translators: %s: Email address of support team */
-						__( 'Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href="mailto:%s?Subject=WooCommerce%%20Transaction%%20Descriptor%%20Option">support</a> with any questions regarding this option.', 'globalpayments-gateway-provider-for-woocommerce' ),
+						__( 'Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href="mailto:%s?Subject=WooCommerce%%20Card%%20Saving%%20Option">support</a> with any questions regarding this option.', 'globalpayments-gateway-provider-for-woocommerce' ),
 						$this->get_first_line_support_email()
 					),
 					'default'     => 'no',
@@ -538,65 +539,64 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			),
 			'.card-cvv' => array(
 				'background'      => 'transparent url(' . $image_base . '/cvv.png) no-repeat right',
-				'background-size' => '60px'
+				'background-size' => '63px 40px'
 			),
 			'.card-cvv.card-type-amex' => array(
 				'background'      => 'transparent url(' . $image_base . '/cvv-amex.png) no-repeat right',
-				'background-size' => '60px'
+				'background-size' => '63px 40px'
 			),
 			'.card-number' => array(
 				'background'      => 'transparent url(' . $image_base . '/logo-unknown@2x.png) no-repeat right',
-				'background-size' => '52px'
+				'background-size' => '55px 35px'
 			),
 			'.card-number.invalid.card-type-amex' => array(
-				'background'            => 'transparent url(' . $image_base . '/amex-invalid.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '38px'
+				'background'            => 'transparent url(' . $image_base . '/logo-amex@2x.png) no-repeat right',
+				'background-position-y' => '-41px',
+				'background-size'       => '50px 90px'
 			),
 			'.card-number.invalid.card-type-discover' => array(
-				'background'            => 'transparent url(' . $image_base . '/discover-invalid.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '60px'
+				'background'            => 'transparent url(' . $image_base . '/logo-discover@2x.png) no-repeat right',
+				'background-position-y' => '-44px',
+				'background-size'       => '85px 90px'
 			),
 			'.card-number.invalid.card-type-jcb' => array(
-				'background'            => 'transparent url(' . $image_base . '/jcb-invalid.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '38px'
+				'background'            => 'transparent url(' . $image_base . '/logo-jcb@2x.png) no-repeat right',
+				'background-position-y' => '-44px',
+				'background-size'       => '55px 94px'
 			),
 			'.card-number.invalid.card-type-mastercard' => array(
-				'background'            => 'transparent url(' . $image_base . '/mastercard-invalid.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '40px'
+				'background'            => 'transparent url(' . $image_base . '/logo-mastercard@2x.png) no-repeat right',
+				'background-position-y' => '-41px',
+				'background-size'       => '82px 86px'
 			),
 			'.card-number.invalid.card-type-visa' => array(
-				'background'            => 'transparent url(' . $image_base . '/visa-invalid.svg) no-repeat center',
-				'background-position-x' => '98%',
-				'background-size'       => '50px',
+				'background'            => 'transparent url(' . $image_base . '/logo-visa@2x.png) no-repeat right',
+				'background-position-y' => '-44px',
+				'background-size'       => '83px 88px',
 			),
 			'.card-number.valid.card-type-amex' => array(
-				'background'            => 'transparent url(' . $image_base . '/amex.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '38px',
+				'background'            => 'transparent url(' . $image_base . '/logo-amex@2x.png) no-repeat right',
+				'background-position-y' => '3px',
+				'background-size'       => '50px 90px',
 			),
 			'.card-number.valid.card-type-discover' => array(
-				'background'            => 'transparent url(' . $image_base . '/discover.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '60px'
+				'background'            => 'transparent url(' . $image_base . '/logo-discover@2x.png) no-repeat right',
+				'background-position-y' => '1px',
+				'background-size'       => '85px 90px'
 			),
 			'.card-number.valid.card-type-jcb' => array(
-				'background'            => 'transparent url(' . $image_base . '/jcb.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '38px'
+				'background'            => 'transparent url(' . $image_base . '/logo-jcb@2x.png) no-repeat right top',
+				'background-position-y' => '2px',
+				'background-size'       => '55px 94px'
 			),
 			'.card-number.valid.card-type-mastercard' => array(
-				'background'            => 'transparent url(' . $image_base . '/mastercard.svg) no-repeat center',
-				'background-position-x' => '98%',
-				'background-size'       => '40px'
+				'background'            => 'transparent url(' . $image_base . '/logo-mastercard@2x.png) no-repeat right',
+				'background-position-y' => '2px',
+				'background-size'       => '82px 86px'
 			),
 			'.card-number.valid.card-type-visa' => array(
-				'background'            => 'transparent url(' . $image_base . '/visa.svg) no-repeat right center',
-				'background-position-x' => '98%',
-				'background-size'       => '50px'
+				'background'            => 'transparent url(' . $image_base . '/logo-visa@2x.png) no-repeat right top',
+				'background-size'       => '82px 86px'
 			),
 			'.card-number::-ms-clear' => array(
 				'display' => 'none',
@@ -666,8 +666,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 */
 	protected function add_hooks() {
 		// hooks always active for the gateway
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'admin_enforce_single_gateway' ) );
+		if ( is_admin() ) {
+			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+			add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'admin_enforce_single_gateway' ) );
+		}
 
 		if ( 'no' === $this->enabled ) {
 			return;
@@ -739,8 +741,12 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		$is_order_txn_id_active = $this->is_transaction_active( $details );
 		$txn_type               = $is_order_txn_id_active ? self::TXN_TYPE_REVERSAL : self::TXN_TYPE_REFUND;
 
-		$order         = new WC_Order( $order_id );
-		$request       = $this->prepare_request( $txn_type, $order );
+		$order   = new WC_Order( $order_id );
+		$request = $this->prepare_request( $txn_type, $order );
+		$request_args = $request->get_args();
+		if ( empty( $request_args[ RequestArg::AMOUNT ] ) ) {
+			throw new Exception( __( 'Refund amount must be greater than zero.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+		}
 		$response      = $this->submit_request( $request );
 		$is_successful = $this->handle_response( $request, $response );
 
@@ -1043,8 +1049,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		return $settings;
 	}
-	
-	
+
 	/**
 	 * Enqueue admin scripts.
 	 *

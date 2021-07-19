@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGiftCards\HeartlandGiftGateway;
 use WC_Order;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
@@ -86,6 +87,27 @@ class HeartlandGateway extends AbstractGateway {
 			'versionNumber' => '1510',
 			'developerId' => '002914'
 		);
+	}
+
+	protected function add_hooks() {
+		parent::add_hooks();
+
+		if ($this->allow_gift_cards === true) {
+			$HeartlandGiftGateway = new HeartlandGiftGateway();
+
+			add_action('wp_ajax_nopriv_use_gift_card',                array($HeartlandGiftGateway, 'applyGiftCard'));
+			add_action('wp_ajax_use_gift_card',                       array($HeartlandGiftGateway, 'applyGiftCard'));
+			add_action('woocommerce_review_order_before_order_total', array($HeartlandGiftGateway, 'addGiftCards'));
+			add_action('woocommerce_cart_totals_before_order_total',  array($HeartlandGiftGateway, 'addGiftCards'));
+			add_filter('woocommerce_calculated_total',                array($HeartlandGiftGateway, 'updateOrderTotal'), 10, 2);
+			add_action('wp_ajax_nopriv_remove_gift_card',             array($HeartlandGiftGateway, 'removeGiftCard'));
+			add_action('wp_ajax_remove_gift_card',                    array($HeartlandGiftGateway, 'removeGiftCard'));
+
+			$gcthing = new HeartlandGiftCardOrder();
+
+			add_filter('woocommerce_get_order_item_totals', array( $gcthing, 'addItemsToPostOrderDisplay'), PHP_INT_MAX - 1, 2);
+			add_action('woocommerce_checkout_order_processed', array( $gcthing, 'processGiftCardsZeroTotal'), PHP_INT_MAX, 2);
+		}
 	}
 
 	protected function is_transaction_active( TransactionSummary $details ) {
@@ -185,7 +207,7 @@ class HeartlandGateway extends AbstractGateway {
 		$request       = $this->prepare_request( $this->payment_action, $order );
 		$response      = $this->submit_request( $request );
 		$is_successful = $this->handle_response( $request, $response );
-		
+
 		// Charge HPS gift cards if CC trans succeeds
 		if ( $is_successful && !empty( WC()->session->get( 'heartland_gift_card_applied' ) ) ) {
 			$gift_card_order_placement = new HeartlandGiftCardOrder();

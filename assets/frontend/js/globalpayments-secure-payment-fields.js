@@ -532,6 +532,16 @@
 						this.showValidationError( 'card-cvv' );
 						break;
 					case 'MANDATORY_DATA_MISSING':
+						var n = reason.message.search( "card type" );
+						if ( n>=0 ) {
+							this.showValidationError( 'card-number' );
+							break;
+						}
+						var n = reason.message.search( "expiry_year" );
+						if ( n>=0 ) {
+							this.showValidationError( 'card-expiration' );
+							break;
+						}
 						var n = reason.message.search( "expiry_month" );
 						if ( n>=0 ) {
 							this.showValidationError( 'card-expiration' );
@@ -556,6 +566,11 @@
 						var n = reason.message.search( "cvv contains unexpected data" );
 						if ( n>=0 ) {
 							this.showValidationError( 'card-cvv' );
+							break;
+						}
+						var n = reason.message.search( "expiry_year" );
+						if ( n>=0 ) {
+							this.showValidationError( 'card-expiration' );
 							break;
 						}
 					case 'SYSTEM_ERROR_DOWNSTREAM':

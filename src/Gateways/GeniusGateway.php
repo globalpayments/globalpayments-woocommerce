@@ -102,5 +102,4 @@ class GeniusGateway extends AbstractGateway {
 			'environment'    => $this->is_production ? Environment::PRODUCTION : Environment::TEST,
 		);
 	}
-	
 }
