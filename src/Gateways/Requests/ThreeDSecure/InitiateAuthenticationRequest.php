@@ -47,6 +47,7 @@ class InitiateAuthenticationRequest extends AbstractAuthenticationsRequest {
 				->withMethodUrlCompletion( $methodUrlCompletion )
 				->execute();
 
+			$response['liabilityShift'] = $threeDSecureData->liabilityShift;
 			// frictionless flow
 			if ($threeDSecureData->status !== 'CHALLENGE_REQUIRED') {
 				$response['result']              = $threeDSecureData->status;

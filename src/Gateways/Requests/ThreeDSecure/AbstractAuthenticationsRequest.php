@@ -7,6 +7,16 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\AbstractR
 defined('ABSPATH') || exit;
 
 abstract class AbstractAuthenticationsRequest extends AbstractRequest {
+
+	const YES = 'YES';
+
+	/**
+	 * Authentication statuses
+	 */
+	const AUTH_STATUS_NOT_ENROLLED          = 'NOT_ENROLLED';
+	const AUTH_STATUS_SUCCESS_AUTHENTICATED = 'SUCCESS_AUTHENTICATED';
+	const AUTH_STATUS_SUCCESS_ATTEMPT_MADE  = 'SUCCESS_ATTEMPT_MADE';
+
 	public function get_args() {
 		return array();
 	}
