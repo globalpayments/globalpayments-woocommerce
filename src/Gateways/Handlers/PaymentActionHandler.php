@@ -19,7 +19,6 @@ class PaymentActionHandler extends AbstractHandler {
 			return;
 		}
 
-		$this->add_order_note();
 		$txn_type = $this->request->get_transaction_type();
 
 		if ( ! in_array( $txn_type, $this->accepted_transaction_types, true ) ) {
@@ -27,6 +26,7 @@ class PaymentActionHandler extends AbstractHandler {
 		}
 
 		$this->save_meta_to_order( $this->request->order, array( 'payment_action' => $txn_type ) );
+		$this->add_order_note();
 
 		if ( AbstractGateway::TXN_TYPE_VERIFY !== $txn_type ) {
 			$this->request->order->payment_complete( $this->response->transactionId );
