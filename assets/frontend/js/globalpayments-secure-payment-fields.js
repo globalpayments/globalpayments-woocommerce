@@ -327,6 +327,8 @@
 						return false;
 					}
 					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" !== versionCheckData.liabilityShift ) {
+						self.createInputElement( 'serverTransId', null );
+						self.createInputElement( 'PaRes', null);
 						self.showPaymentError( '3DS Authentication failed. Please try again.' );
 						return false;
 					}
