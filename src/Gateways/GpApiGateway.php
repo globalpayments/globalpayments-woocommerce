@@ -44,7 +44,7 @@ class GpApiGateway extends AbstractGateway {
 	 *
 	 * @var string
 	 */
-	public $production_app_id;
+	public $app_id;
 
 	/**
 	 * Production App Key
@@ -52,7 +52,7 @@ class GpApiGateway extends AbstractGateway {
 	 *
 	 * @var string
 	 */
-	public $production_app_key;
+	public $app_key;
 
 	/**
 	 * Should live payments be accepted
@@ -118,13 +118,13 @@ class GpApiGateway extends AbstractGateway {
 					$this->get_first_line_support_email()
 				),
 			),
-			'production_app_id' => array(
+			'app_id' => array(
 				'title'       => __( 'Live App Id', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'description' => '',
 				'default'     => '',
 			),
-			'production_app_key' => array(
+			'app_key' => array(
 				'title'       => __( 'Live App Key', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'password',
 				'description' => '',
@@ -160,7 +160,7 @@ class GpApiGateway extends AbstractGateway {
 			return true;
 		}
 		if ( wc_string_to_bool( $this->is_production ) ) {
-			return ( empty( $this->production_app_id ) || empty( $this->production_app_key ) );
+			return ( empty( $this->app_id ) || empty( $this->app_key ) );
 		}
 		return ( empty( $this->sandbox_app_id ) || empty( $this->sandbox_app_key ) );
 	}
@@ -195,11 +195,11 @@ class GpApiGateway extends AbstractGateway {
 	}
 
 	protected function get_app_id() {
-		return $this->is_production ? $this->production_app_id : $this->sandbox_app_id;
+		return $this->is_production ? $this->app_id : $this->sandbox_app_id;
 	}
 
 	protected function get_app_key() {
-		return $this->is_production ? $this->production_app_key : $this->sandbox_app_key;
+		return $this->is_production ? $this->app_key : $this->sandbox_app_key;
 	}
 
 	protected function add_hooks() {
