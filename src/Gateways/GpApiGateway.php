@@ -254,7 +254,7 @@ class GpApiGateway extends AbstractGateway {
 				return $settings;
 			}
 		}
-		if ( empty( $settings['app_id'] ) || empty( $settings['app_key'] ) ) {
+		if ( empty( $settings['sandbox_app_id'] ) || empty( $settings['sandbox_app_key'] ) ) {
 			add_action( 'admin_notices', function() {
 				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide Sandbox Credentials. Gateway not enabled.' ) . '</strong></p></div>';
 			});
