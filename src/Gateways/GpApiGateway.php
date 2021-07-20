@@ -192,7 +192,7 @@ class GpApiGateway extends AbstractGateway {
 	protected function add_hooks() {
 		parent::add_hooks();
 
-		add_filter('woocommerce_gateway_title', array( $this, 'gateway_title' ), 10, 2 );
+		add_filter( 'woocommerce_gateway_title', array( $this, 'gateway_title' ), 10, 2 );
 		add_action( 'woocommerce_after_checkout_validation', array( $this, 'after_checkout_validation' ), 10, 2 );
 
 		/**
@@ -212,7 +212,13 @@ class GpApiGateway extends AbstractGateway {
 		if ( ! wc_string_to_bool( $this->enabled ) ) {
 			return $gateway_title;
 		}
-		return $this->is_production ? $gateway_title : $gateway_title . ' <b style="color: #e2401c">[' . __( 'SANDBOX_MODE' ) . ']</b>';
+		if ( $this->is_production ) {
+			return $gateway_title;
+		}
+		if ( ! is_checkout() && ! is_add_payment_method_page() ) {
+			return $gateway_title;
+		}
+		return $gateway_title . __( ' [SANDBOX_MODE]' );
 	}
 
 	public function after_checkout_validation( $data, $errors ) {
