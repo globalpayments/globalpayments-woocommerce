@@ -90,6 +90,8 @@
 			$( this.getForm() ).on( 'checkout_place_order_globalpayments_gpapi', this.initThreeDSecure.bind( this ) );
 			$( document.body ).on( 'checkout_error', function() {
 				$('#globalpayments_gpapi-checkout_validated').remove();
+				$('#globalpayments_gpapi-serverTransId').remove();
+				$('#globalpayments_gpapi-PaRes').remove();
 			} );
 
 			// Checkout
@@ -327,8 +329,6 @@
 						return false;
 					}
 					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" !== versionCheckData.liabilityShift ) {
-						self.createInputElement( 'serverTransId', null );
-						self.createInputElement( 'PaRes', null);
 						self.showPaymentError( '3DS Authentication failed. Please try again.' );
 						return false;
 					}
@@ -338,7 +338,7 @@
 					}
 					if ( "ONE" === versionCheckData.version ) {
 						self.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD || versionCheckData.serverTransactionId );
-						self.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes || null);
+						self.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes || '');
 						$form.submit();
 						return false;
 					}
@@ -359,7 +359,6 @@
 								return false;
 							}
 							self.createInputElement( 'serverTransId', authenticationData.serverTransactionId || authenticationData.challenge.response.data.threeDSServerTransID || versionCheckData.serverTransactionId );
-							self.createInputElement( 'PaRes', null );
 							$form.submit();
 							return true;
 						})
