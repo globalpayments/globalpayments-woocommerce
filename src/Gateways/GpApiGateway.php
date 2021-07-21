@@ -205,7 +205,6 @@ class GpApiGateway extends AbstractGateway {
 	protected function add_hooks() {
 		parent::add_hooks();
 
-		add_filter( 'woocommerce_gateway_title', array( $this, 'gateway_title' ), 10, 2 );
 		add_filter( 'pre_update_option_woocommerce_globalpayments_gpapi_settings', array( $this, 'woocommerce_globalpayments_gpapi_settings' ) );
 		add_action( 'woocommerce_after_checkout_validation', array( $this, 'after_checkout_validation' ), 10, 2 );
 
@@ -217,22 +216,6 @@ class GpApiGateway extends AbstractGateway {
 		add_action( 'woocommerce_api_globalpayments_threedsecure_methodnotification', array( $this, 'process_threeDSecure_methodNotification' ) );
 		add_action( 'woocommerce_api_globalpayments_threedsecure_initiateauthentication', array( $this, 'process_threeDSecure_initiateAuthentication' ) );
 		add_action( 'woocommerce_api_globalpayments_threedsecure_challengenotification', array( $this, 'process_threeDSecure_challengeNotification' ) );
-	}
-
-	public function gateway_title( $gateway_title, $gateway_id ) {
-		if ( self::GATEWAY_ID !== $gateway_id ) {
-			return $gateway_title;
-		}
-		if ( ! wc_string_to_bool( $this->enabled ) ) {
-			return $gateway_title;
-		}
-		if ( $this->is_production ) {
-			return $gateway_title;
-		}
-		if ( ! is_checkout() && ! is_add_payment_method_page() ) {
-			return $gateway_title;
-		}
-		return $gateway_title . __( ' [SANDBOX_MODE]' );
 	}
 
 	public function woocommerce_globalpayments_gpapi_settings( $settings ) {
