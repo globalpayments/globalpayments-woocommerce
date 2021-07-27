@@ -49,8 +49,6 @@ Access to our Unified Commerce Platform (UCP) requires sandbox credentials which
 * Renamed GP-API to Unified Commerce Platform (UCP)
 * Update PHP-SDK to v2.3.7
 * Update UCP 3DS
-* Add UCP Sandbox indicator at checkout
-* Add UCP separate credentials config for Live and Sandbox
 
 = 1.0.2 =
 * Update PHP-SDK to v2.3.6
