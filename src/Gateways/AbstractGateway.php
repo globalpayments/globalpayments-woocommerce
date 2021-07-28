@@ -176,6 +176,26 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	abstract public function get_first_line_support_email();
 
 	/**
+	 * Builds payment fields area - including environment indicator
+	 */
+	public function payment_fields() {
+		$this->environment_indicator();
+		parent::payment_fields();
+	}
+
+    /**
+     * Adds environment indicator in sandbox/test mode.
+     */
+	protected function environment_indicator() {
+		if ( isset( $this->is_production ) && ! $this->is_production
+		  || isset( $this->public_key ) && false === strpos( $this->public_key, 'pkapi_prod_' ) ) {
+			echo sprintf( '<div class="woocommerce-globalpayments-sandbox-warning">%s</div>',
+				__( 'This page is currently in sandbox/test mode. Do not use real/active card numbers.', 'globalpayments-gateway-provider-for-woocommerce' )
+			);
+		}
+	}
+
+	/**
 	 * Get the current gateway provider
 	 *
 	 * @return string
@@ -238,7 +258,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				$field['messages']['validation']
 			);
 		}
-
 		return $result;
 	}
 
