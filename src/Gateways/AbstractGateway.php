@@ -643,36 +643,12 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			return;
 		}
 		// hooks only active when the gateway is enabled
-		add_filter( 'woocommerce_gateway_title', array( $this, 'gateway_title' ), 10, 2 );
 		add_filter( 'woocommerce_credit_card_form_fields', array( $this, 'woocommerce_credit_card_form_fields' ) );
 
 		if ( is_add_payment_method_page() ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'tokenization_script' ) );
 			add_filter( 'woocommerce_available_payment_gateways', array( $this, 'woocommerce_available_payment_gateways') );
 		}
-	}
-
-	/**
-	 * Adds a clear indication on checkout and my account that the plugin is in Sandbox mode
-	 *
-	 * @param $gateway_title
-	 * @param $gateway_id
-	 * @return string
-	 */
-	public function gateway_title( $gateway_title, $gateway_id ) {
-		if ( false === strpos( $gateway_id, 'globalpayments_' ) ) {
-			return $gateway_title;
-		}
-		if ( ! wc_string_to_bool( $this->enabled ) ) {
-			return $gateway_title;
-		}
-		if ( $this->is_production ) {
-			return $gateway_title;
-		}
-		if ( ! is_checkout() && ! is_add_payment_method_page() ) {
-			return $gateway_title;
-		}
-		return $gateway_title . __( ' [SANDBOX_MODE]' );
 	}
 
 	/**
