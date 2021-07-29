@@ -50,6 +50,9 @@ Access to our Unified Commerce Platform (UCP) requires sandbox credentials which
 * Update PHP-SDK to v2.3.7
 * Update UCP 3DS
 
+= 1.0.3 =
+* Added AVS/CVV result based reversal conditions in admin and store.
+
 = 1.0.2 =
 * Update PHP-SDK to v2.3.6
 * Fix GP-API 3DS Challenge for Live Mode
