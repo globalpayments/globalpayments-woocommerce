@@ -3,7 +3,7 @@ Contributors: globalpayments
 Tags: woocommerce, woo, commerce, global, payments, heartland, payment, systems, tsys, genius, gpapi, gp-api, 3DS, gateway, token, tokenize, save cards
 Requires at least: 5.4
 Tested up to: 5.7
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: MIT
 License URI: https://github.com/globalpayments/globalpayments-woocommerce/blob/main/LICENSE
 
@@ -44,6 +44,9 @@ Access to our GP-API requires sandbox credentials which you can retrieve yoursel
 4. Click ‘Create
 
 == Changelog ==
+
+= 1.0.3 =
+* Added AVS/CVV result based reversal conditions in admin and store.
 
 = 1.0.2 =
 * Update PHP-SDK to v2.3.6
