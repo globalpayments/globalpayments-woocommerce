@@ -7,15 +7,17 @@ div[id^="GlobalPayments-overlay-"] {
 	z-index: 1001 !important;
 }
 
-.woocommerce-globalpayments-validation-error {
-	margin-bottom:2.617924em;
+.woocommerce-globalpayments-validation-error, .woocommerce-globalpayments-sandbox-warning {
 	background-color:#e2401c;
 	margin-left:0;
-	border-radius:2px;
+	border-radius:4px;
 	color:#fff;
 	clear:both;
 	border-left:.6180469716em solid rgba(0,0,0,.15);
-	padding:1em 2em 1em 3.5em;
+	padding:6px 12px;
 	position:relative;
-	list-style:none outside
+	list-style:none outside;
+	display:block;
+	width:100%;
+	font-size:14px;
 }

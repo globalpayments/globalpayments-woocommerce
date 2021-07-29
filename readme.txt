@@ -1,9 +1,9 @@
 === GlobalPayments WooCommerce ===
 Contributors: globalpayments
-Tags: woocommerce, woo, commerce, global, payments, heartland, payment, systems, tsys, genius, gpapi, gp-api, 3DS, gateway, token, tokenize, save cards
+Tags: woocommerce, woo, unified, commerce, platform, global, payments, ucp, heartland, payment, systems, tsys, genius, 3DS, gateway, token, tokenize, save cards
 Requires at least: 5.4
 Tested up to: 5.7
-Stable tag: 1.0.3
+Stable tag: 1.1.0
 License: MIT
 License URI: https://github.com/globalpayments/globalpayments-woocommerce/blob/main/LICENSE
 
@@ -14,7 +14,7 @@ This extension allows WooCommerce to use the available Global Payments payment g
 - Heartland Portico gateway
 - TSYS Genius gateway
 - TSYS TransIT gateway with TSEP
-- Global Payments API (GP-API) gateway
+- Unified Commerce Platform (UCP)
 - Credit Cards
 - Integrates with Woocommerce
 - Sale transactions (automatic capture or separate capture action later)
@@ -35,8 +35,8 @@ After you have installed and configured the main WooCommerce plugin use the foll
 2. Click Install, once installed click Activate
 3. Configure and Enable gateways in WooCommerce by adding your public and secret Api Keys
 
-== GP-API Sandbox credentials ==
-Access to our GP-API requires sandbox credentials which you can retrieve yourself via our <a href="https://developer.globalpay.com/" target="_blank">Developer Portal</a>:
+== UCP Sandbox credentials ==
+Access to our Unified Commerce Platform (UCP) requires sandbox credentials which you can retrieve yourself via our <a href="https://developer.globalpay.com/" target="_blank">Developer Portal</a>:
 
 1. First go to the Developer Portal and make sure the green GP-API button is selected in the top right corner.
 2. Click on the icon in the top right and click Register.
@@ -44,6 +44,11 @@ Access to our GP-API requires sandbox credentials which you can retrieve yoursel
 4. Click ‘Create
 
 == Changelog ==
+
+= 1.1.0 =
+* Renamed GP-API to Unified Commerce Platform (UCP)
+* Update PHP-SDK to v2.3.7
+* Update UCP 3DS
 
 = 1.0.3 =
 * Added AVS/CVV result based reversal conditions in admin and store.

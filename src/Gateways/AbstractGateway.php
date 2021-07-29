@@ -197,6 +197,26 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	abstract public function get_first_line_support_email();
 
 	/**
+	 * Builds payment fields area - including environment indicator
+	 */
+	public function payment_fields() {
+		$this->environment_indicator();
+		parent::payment_fields();
+	}
+
+    /**
+     * Adds environment indicator in sandbox/test mode.
+     */
+	protected function environment_indicator() {
+		if ( isset( $this->is_production ) && ! $this->is_production
+		  || isset( $this->public_key ) && false === strpos( $this->public_key, 'pkapi_prod_' ) ) {
+			echo sprintf( '<div class="woocommerce-globalpayments-sandbox-warning">%s</div>',
+				__( 'This page is currently in sandbox/test mode. Do not use real/active card numbers.', 'globalpayments-gateway-provider-for-woocommerce' )
+			);
+		}
+	}
+
+	/**
 	 * Get the current gateway provider
 	 *
 	 * @return string
@@ -259,7 +279,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				$field['messages']['validation']
 			);
 		}
-
 		return $result;
 	}
 
@@ -301,7 +320,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			'globalpayments_secure_payment_fields_params',
 			array(
 				'id'              => $this->id,
-				'gateway_options' => $this->get_frontend_gateway_options(),
+				'gateway_options' => $this->secure_payment_fields_config(),
 				'field_options'   => $this->secure_payment_fields(),
 				'field_styles'    => $this->secure_payment_fields_styles(),
 			)
@@ -329,7 +348,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'challengeNotificationUrl'  => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
 					'checkEnrollmentUrl'        => WC()->api_request_url( 'globalpayments_threedsecure_checkenrollment' ),
 					'initiateAuthenticationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_initiateauthentication' ),
-					'ajaxCheckoutUrl'                   => \WC_AJAX::get_endpoint( 'checkout' ),
+					'ajaxCheckoutUrl'           => \WC_AJAX::get_endpoint( 'checkout' ),
 				),
 				'order'           => array (
 					'amount'          => $this->get_session_amount(),
@@ -432,6 +451,22 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			    ),			    
 			)
 		);
+	}
+
+	/**
+	 * Configuration for the secure payment fields on the client side.
+	 *
+	 * @return array
+	 */
+	protected function secure_payment_fields_config() {
+		try {
+			return $this->get_frontend_gateway_options();
+		} catch (\Exception $e) {
+			return array(
+				'error'    => true,
+				'message'  => $e->getMessage(),
+			);
+		}
 	}
 
 	/**
@@ -649,7 +684,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 */
 	protected function secure_payment_field_html_format() {
 		return (
-		'<div class="form-row form-row-wide globalpayments %1$s %2$s">
+			'<div class="form-row form-row-wide globalpayments %1$s %2$s">
 				<label for="%1$s-%2$s">%3$s&nbsp;<span class="required">*</span></label>
 				<div id="%1$s-%2$s"></div>
 				<ul class="woocommerce-globalpayments-validation-error" style="display: none;">
@@ -956,22 +991,22 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	}
 
 	/**
-     * Adds delayed capture functionality to the "Edit Order" screen
-     *
-     * @param array $actions
-     *
-     * @return array
-     */
+	 * Adds delayed capture functionality to the "Edit Order" screen
+	 *
+	 * @param array $actions
+	 *
+	 * @return array
+	 */
 	public static function addCaptureOrderAction( $actions )
-    {
+	{
 		global $theorder;
 
 		if ( AbstractGateway::TXN_TYPE_AUTHORIZE !== $theorder->get_meta('_globalpayments_payment_action') ) {
 			return $actions;
 		}
-        $actions['capture_credit_card_authorization'] = 'Capture credit card authorization';
-        return $actions;
-    }
+		$actions['capture_credit_card_authorization'] = 'Capture credit card authorization';
+		return $actions;
+	}
 
 	/**
 	 * Disable adding new cards via 'My Account', if "Allow Card Saving" option not checked in admin.
@@ -979,7 +1014,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @param array $available_gateways
 	 * @return array
 	 */
-    public function woocommerce_available_payment_gateways( $available_gateways ) {
+	public function woocommerce_available_payment_gateways( $available_gateways ) {
 		if ( 'no' === $this->get_option( 'allow_card_saving' ) ) {
 			unset( $available_gateways[ $this->id ]);
 		}

@@ -33,6 +33,8 @@ class CheckEnrollmentRequest extends AbstractAuthenticationsRequest {
 
 			$response['enrolled']             = $threeDSecureData->enrolled ?? self::NOT_ENROLLED;
 			$response['version']              = $threeDSecureData->getVersion();
+			$response['status']               = $threeDSecureData->status;
+			$response['liabilityShift']       = $threeDSecureData->liabilityShift;
 			$response['serverTransactionId']  = $threeDSecureData->serverTransactionId;
 			$response['sessionDataFieldName'] = $threeDSecureData->sessionDataFieldName;
 
@@ -50,7 +52,6 @@ class CheckEnrollmentRequest extends AbstractAuthenticationsRequest {
 
 			if ( Secure3dVersion::ONE === $threeDSecureData->getVersion() ) {
 				$response['TermUrl']                              = $threeDSecureData->challengeReturnUrl;
-				$response['status']                               = $threeDSecureData->status;
 				$response['challengeMandated']                    = $threeDSecureData->challengeMandated;
 				$response['challenge']['requestUrl']              = $threeDSecureData->issuerAcsUrl;
 				$response['challenge']['encodedChallengeRequest'] = $threeDSecureData->payerAuthenticationRequest;

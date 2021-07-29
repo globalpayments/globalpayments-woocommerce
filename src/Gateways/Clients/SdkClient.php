@@ -25,6 +25,7 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\Data\PaymentTokenData;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestInterface;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure\AbstractAuthenticationsRequest;
 
 use WC_Payment_Token_CC;
 
@@ -61,6 +62,12 @@ class SdkClient implements ClientInterface {
 		AbstractGateway::TXN_TYPE_REFUND,
 		AbstractGateway::TXN_TYPE_REVERSAL,
 		AbstractGateway::TXN_TYPE_VOID,
+	);
+
+	protected $three_d_secure_auth_status = array(
+		AbstractAuthenticationsRequest::AUTH_STATUS_NOT_ENROLLED,
+		AbstractAuthenticationsRequest::AUTH_STATUS_SUCCESS_AUTHENTICATED,
+		AbstractAuthenticationsRequest::AUTH_STATUS_SUCCESS_ATTEMPT_MADE,
 	);
 
 	/**
@@ -279,13 +286,17 @@ class SdkClient implements ClientInterface {
 	}
 
 	protected function set_threedsecure_data() {
-		$threeDSecureData = Secure3dService::getAuthenticationData()
-			->withServerTransactionId( $this->get_arg( RequestArg::SERVER_TRANS_ID ) )
-			->withPayerAuthenticationResponse( $this->get_arg( RequestArg::PARES ) )
-			->execute();
-
-		if ( ! in_array( $threeDSecureData->eci, ["01", "02", "05", "06"] ) ) {
-			throw new ApiException( __( '3DS authentication failed' ) );
+		try {
+			$threeDSecureData = Secure3dService::getAuthenticationData()
+				->withServerTransactionId( $this->get_arg( RequestArg::SERVER_TRANS_ID ) )
+				->withPayerAuthenticationResponse( $this->get_arg( RequestArg::PARES ) )
+				->execute();
+		} catch (\Exception $e) {
+			throw new ApiException( __( '3DS Authentication failed. Please try again.' ) );
+		}
+		if ( AbstractAuthenticationsRequest::YES !== $threeDSecureData->liabilityShift
+			|| ! in_array( $threeDSecureData->status, $this->three_d_secure_auth_status ) ) {
+			throw new ApiException( __( '3DS Authentication failed. Please try again.' ) );
 		}
 		$this->card_data->threeDSecure = $threeDSecureData;
 	}

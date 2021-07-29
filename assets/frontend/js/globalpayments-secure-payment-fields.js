@@ -90,6 +90,8 @@
 			$( this.getForm() ).on( 'checkout_place_order_globalpayments_gpapi', this.initThreeDSecure.bind( this ) );
 			$( document.body ).on( 'checkout_error', function() {
 				$('#globalpayments_gpapi-checkout_validated').remove();
+				$('#globalpayments_gpapi-serverTransId').remove();
+				$('#globalpayments_gpapi-PaRes').remove();
 			} );
 
 			// Checkout
@@ -185,6 +187,10 @@
 				console.log( 'Warning! Payment fields cannot be loaded' );
 				return;
 			}
+			var gatewayConfig = this.gatewayOptions;
+			if ( gatewayConfig.error ) {
+				this.showPaymentError( gatewayConfig.message );
+			}
 
 			// ensure the submit button's parent is on the page as this is added
 			// only after the initial page load
@@ -192,7 +198,7 @@
 				this.createSubmitButtonTarget();
 			}
 
-			GlobalPayments.configure( this.gatewayOptions );
+			GlobalPayments.configure( gatewayConfig );
 			this.cardForm = GlobalPayments.ui.form(
 				{
 					fields: this.getFieldConfiguration(),
@@ -322,18 +328,17 @@
 						self.showPaymentError( versionCheckData.message );
 						return false;
 					}
-					// Card holder not enrolled in 3D Secure, continue the WooCommerce flow.
-					if ( "NOT_ENROLLED" === versionCheckData.enrolled ) {
+					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" !== versionCheckData.liabilityShift ) {
+						self.showPaymentError( '3DS Authentication failed. Please try again.' );
+						return false;
+					}
+					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" === versionCheckData.liabilityShift ) {
 						$form.submit();
 						return true;
 					}
 					if ( "ONE" === versionCheckData.version ) {
-						if ( GlobalPayments.ThreeDSecure.TransactionStatus.ChallengeRequired == versionCheckData.status && "N" == versionCheckData.challenge.response.data.transStatus ) {
-							self.showPaymentError( '3DS Authentication failed' );
-							return false;
-						}
-						self.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD );
-						self.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes );
+						self.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD || versionCheckData.serverTransactionId );
+						self.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes || '');
 						$form.submit();
 						return false;
 					}
@@ -353,11 +358,7 @@
 								self.showPaymentError( authenticationData.message );
 								return false;
 							}
-							if ( GlobalPayments.ThreeDSecure.TransactionStatus.ChallengeRequired == authenticationData.status && "N" == authenticationData.challenge.response.data.transStatus ) {
-								self.showPaymentError( '3DS Authentication failed' );
-								return false;
-							}
-							self.createInputElement( 'serverTransId', authenticationData.serverTransactionId || authenticationData.challenge.response.data.threeDSServerTransID );
+							self.createInputElement( 'serverTransId', authenticationData.serverTransactionId || authenticationData.challenge.response.data.threeDSServerTransID || versionCheckData.serverTransactionId );
 							$form.submit();
 							return true;
 						})

@@ -2,7 +2,10 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Handlers;
 
+use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
 
 class PaymentActionHandler extends AbstractHandler {
 	protected $accepted_transaction_types = array(
