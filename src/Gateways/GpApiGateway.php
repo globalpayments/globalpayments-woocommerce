@@ -138,7 +138,10 @@ class GpApiGateway extends AbstractGateway {
 		if ( empty( $this->merchant_contact_url ) ) {
 			return true;
 		}
-		return ( empty( $this->app_id ) || empty( $this->app_key ) );
+		if ( $this->is_production ) {
+			return ( empty( $this->app_id ) || empty( $this->app_key ) );
+		}
+		return ( empty( $this->sandbox_app_id ) || empty( $this->sandbox_app_key ) );
 	}
 
 	public function get_frontend_gateway_options() {
@@ -204,9 +207,18 @@ class GpApiGateway extends AbstractGateway {
 			});
 			$settings['enabled'] = 'no';
 		}
-		if ( empty( $settings['app_id'] ) || empty( $settings['app_key'] ) ) {
+		if ( wc_string_to_bool( $settings['is_production'] ) ) {
+			if ( empty( $settings['app_id'] ) || empty( $settings['app_key'] ) ) {
+				add_action( 'admin_notices', function() {
+					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide Live Credentials. Gateway not enabled.' ) . '</strong></p></div>';
+				});
+				$settings['enabled'] = 'no';
+				return $settings;
+			}
+		}
+		if ( empty( $settings['sandbox_app_id'] ) || empty( $settings['sandbox_app_key'] ) ) {
 			add_action( 'admin_notices', function() {
-				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide App Credentials. Gateway not enabled.' ) . '</strong></p></div>';
+				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide Sandbox Credentials. Gateway not enabled.' ) . '</strong></p></div>';
 			});
 			$settings['enabled'] = 'no';
 		}
