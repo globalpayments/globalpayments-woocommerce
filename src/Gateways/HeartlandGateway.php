@@ -15,7 +15,7 @@ class HeartlandGateway extends AbstractGateway {
 	public $gateway_provider = GatewayProvider::PORTICO;
 
 	/**
-	 * Merchant location public API key
+	 * Live Merchant location public API key
 	 *
 	 * Used for single-use tokenization on frontend
 	 *
@@ -24,13 +24,31 @@ class HeartlandGateway extends AbstractGateway {
 	public $public_key;
 
 	/**
-	 * Merchant location secret API key
+	 * Live Merchant location secret API key
 	 *
 	 * Used for gateway transactions on backend
 	 *
 	 * @var string
 	 */
 	public $secret_key;
+
+	/**
+	 * Sandbox Merchant location public API key
+	 *
+	 * Used for single-use tokenization on frontend
+	 *
+	 * @var string
+	 */
+	public $sandbox_public_key;
+
+	/**
+	 * Sandbox Merchant location secret API key
+	 *
+	 * Used for gateway transactions on backend
+	 *
+	 * @var string
+	 */
+	public $sandbox_secret_key;
 
 	/**
 	 * Allows payment via Heartland Marketing Solutions (gift cards)
@@ -51,18 +69,32 @@ class HeartlandGateway extends AbstractGateway {
 
 	public function get_gateway_form_fields() {
 		return array(
-			'public_key' => array(
-				'title'       => __( 'Public Key', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'text',
+			'is_production' => array(
+				'title'       => __( 'Live Mode', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
 				'description' => __( 'Get your API keys from your Heartland Online Payments account.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'no',
+			),
+			'public_key' => array(
+				'title'       => __( 'Live Public Key', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
 				'default'     => '',
 			),
 			'secret_key' => array(
-				'title'       => __( 'Secret Key', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'text',
-				'description' => __( 'Get your API keys from your Heartland Online Payments account.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Live Secret Key', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'password',
 				'default'     => '',
-			),			
+			),
+			'sandbox_public_key' => array(
+				'title'       => __( 'Sandbox Public Key', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
+				'default'     => '',
+			),
+			'sandbox_secret_key' => array(
+				'title'       => __( 'Sandbox Secret Key', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'password',
+				'default'     => '',
+			),
 			'allow_gift_cards' => array(
 				'title'				=> __( 'Enable Gift Cards', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'				=> __( 'Allow customers to use gift cards to pay for purchases in full or in part.', 'globalpayments-gateway-provider-for-woocommerce' ),
