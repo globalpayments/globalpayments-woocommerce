@@ -47,6 +47,14 @@
                     'merchant_key',
                     'web_api_key',
                 ],
+                globalpayments_transit: [
+                    'merchant_id',
+                    'user_id',
+                    'password',
+                    'device_id',
+                    'tsep_device_id',
+                    'transaction_key',
+                ],
             };
             var gateway_credentials = globalpayments_keys[ this.id ];
             if ( this.isLiveMode() ) {
