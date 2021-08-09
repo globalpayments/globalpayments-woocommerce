@@ -153,6 +153,8 @@ class GpApiGateway extends AbstractGateway {
 	}
 
 	public function get_backend_gateway_options() {
+		global $wp_version;
+
 		return array(
 			'appId'                    => $this->get_credential_setting( 'app_id' ),
 			'appKey'                   => $this->get_credential_setting( 'app_key' ),
@@ -163,6 +165,10 @@ class GpApiGateway extends AbstractGateway {
 			'methodNotificationUrl'    => WC()->api_request_url('globalpayments_threedsecure_methodnotification'),
 			'challengeNotificationUrl' => WC()->api_request_url('globalpayments_threedsecure_challengenotification'),
 			'merchantContactUrl'       => $this->merchant_contact_url,
+			'dynamicHeaders'           => [
+				'x-gp-platform' => 'wordpress;version=' . $wp_version . ';woocommerce;version=' . WC()->version,
+				'x-gp-extension' => 'globalpayments-woocommerce;version=' . Plugin::VERSION,
+			],
 		);
 	}
 
