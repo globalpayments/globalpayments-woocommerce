@@ -154,7 +154,7 @@ class GpApiGateway extends AbstractGateway {
 
 	public function get_backend_gateway_options() {
 		return array(
-			'appId'                    => $this->get_credential_setting( 'app_id '),
+			'appId'                    => $this->get_credential_setting( 'app_id' ),
 			'appKey'                   => $this->get_credential_setting( 'app_key' ),
 			'channel'                  => Channels::CardNotPresent,
 			'country'                  => wc_get_base_location()['country'],
