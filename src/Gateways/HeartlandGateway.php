@@ -109,13 +109,13 @@ class HeartlandGateway extends AbstractGateway {
 
 	public function get_frontend_gateway_options() {
 		return array(
-			'publicApiKey' => $this->public_key,
+			'publicApiKey' => $this->get_credential_setting( 'public_key' ),
 		);
 	}
 
 	public function get_backend_gateway_options() {
 		return array(
-			'secretApiKey' => $this->secret_key,
+			'secretApiKey' => $this->get_credential_setting( 'secret_key' ),
 			'versionNumber' => '1510',
 			'developerId' => '002914'
 		);
