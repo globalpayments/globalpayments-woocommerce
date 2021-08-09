@@ -704,6 +704,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		if ( is_admin() ) {
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 			add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'admin_enforce_single_gateway' ) );
+			add_filter( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		}
 
 		if ( 'no' === $this->enabled ) {
@@ -1090,10 +1091,34 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 *
 	 * @param string $hook_suffix The current admin page.
 	 */
-	public static function admin_enqueue_scripts( $hook_suffix ) {
-		if ( 'woocommerce_page_wc-settings' !== $hook_suffix ) {
+	public  function admin_enqueue_scripts( $hook_suffix ) {
+		if ( 'woocommerce_page_wc-settings' !== $hook_suffix || 'checkout' !== $_GET['tab'] ) {
 			return;
 		}
-		wp_enqueue_script ( 'globalpayments-enforce-single-gateway', Plugin::get_url( '/assets/admin/js/globalpayments-enforce-single-gateway.js' ) );
+		if ( empty( $_GET['section'] ) ) {
+			wp_enqueue_script (
+				'globalpayments-enforce-single-gateway',
+				Plugin::get_url( '/assets/admin/js/globalpayments-enforce-single-gateway.js' )
+			);
+			return;
+		}
+		$section = sanitize_text_field( wp_unslash( $_GET['section'] ) );
+		if ( false === strpos( $section, 'globalpayments_' ) ) {
+			return;
+		}
+		wp_enqueue_script(
+			'globalpayments-admin',
+			Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
+			array(),
+			WC()->version,
+			true
+		);
+		wp_localize_script(
+			'globalpayments-admin',
+			'globalpayments_admin_params',
+			array(
+				'gateway_id' => $section,
+			)
+		);
 	}
 }
