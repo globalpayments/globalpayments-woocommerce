@@ -33,14 +33,20 @@
          */
         toggleCredentialsSettings: function () {
             var globalpayments_keys = {
-              globalpayments_gpapi: [
+                globalpayments_gpapi: [
                   'app_id',
                   'app_key',
-              ],
+                ],
                 globalpayments_heartland: [
                     'public_key',
                     'secret_key',
-                ]
+                ],
+                globalpayments_genius: [
+                    'merchant_name',
+                    'merchant_site_id',
+                    'merchant_key',
+                    'web_api_key',
+                ],
             };
             var gateway_credentials = globalpayments_keys[ this.id ];
             if ( this.isLiveMode() ) {
