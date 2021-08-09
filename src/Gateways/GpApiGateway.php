@@ -154,8 +154,8 @@ class GpApiGateway extends AbstractGateway {
 
 	public function get_backend_gateway_options() {
 		return array(
-			'appId'                    => $this->get_app_id(),
-			'appKey'                   => $this->get_app_key(),
+			'appId'                    => $this->get_credential_setting( 'app_id '),
+			'appKey'                   => $this->get_credential_setting( 'app_key' ),
 			'channel'                  => Channels::CardNotPresent,
 			'country'                  => wc_get_base_location()['country'],
 			'developerId'              => '',
@@ -164,14 +164,6 @@ class GpApiGateway extends AbstractGateway {
 			'challengeNotificationUrl' => WC()->api_request_url('globalpayments_threedsecure_challengenotification'),
 			'merchantContactUrl'       => $this->merchant_contact_url,
 		);
-	}
-
-	private function get_app_id() {
-		return $this->is_production ? $this->app_id : $this->sandbox_app_id;
-	}
-
-	private function get_app_key() {
-		return $this->is_production ? $this->app_key : $this->sandbox_app_key;
 	}
 
 	protected function get_access_token() {

@@ -454,6 +454,16 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	}
 
 	/**
+	 * Get credential setting value based on environment.
+	 *
+	 * @param string $setting
+	 * @return mixed
+	 */
+	protected function get_credential_setting( $setting ) {
+		return $this->is_production ? $this->{$setting} : $this->{'sandbox_' . $setting};
+	}
+
+	/**
 	 * Configuration for the secure payment fields on the client side.
 	 *
 	 * @return array
