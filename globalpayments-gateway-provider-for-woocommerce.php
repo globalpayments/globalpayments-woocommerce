@@ -24,17 +24,13 @@ if ( is_readable( $autoloader ) ) {
 	add_action( 'plugins_loaded', array( \GlobalPayments\WooCommercePaymentGatewayProvider\Plugin::class, 'init' ) );
 }
 
-function globalpayments_v110_v111( WP_Upgrader $wp_upgrader, $hook_extra ) {
-	if ( 'plugin' !== $hook_extra[ 'type' ] || plugin_basename( __FILE__ ) == $hook_extra[ 'plugins' ] ) {
+function globalpayments_update_v110_v111( WP_Upgrader $wp_upgrader, $hook_extra ) {
+	if ( 'plugin' !== $hook_extra[ 'type' ] || ! in_array( plugin_basename( __FILE__ ), $hook_extra[ 'plugins' ] ) ) {
 		return;
 	}
 	if ( 'update' === $hook_extra[ 'action' ] || 'install' === $hook_extra[ 'action' ] ) {
 		$current_plugin_version = get_option( 'woocommerce_globalpayments_version' );
 		if ( ! empty( $current_plugin_version ) ) {
-			if ( version_compare( \GlobalPayments\WooCommercePaymentGatewayProvider\Plugin::VERSION, $current_plugin_version, '>') ) {
-				delete_option( 'woocommerce_globalpayments_version' );
-				update_option( 'woocommerce_globalpayments_version', \GlobalPayments\WooCommercePaymentGatewayProvider\Plugin::VERSION );
-			}
 			return;
 		}
 		$globalpayments_keys = [
@@ -68,7 +64,7 @@ function globalpayments_v110_v111( WP_Upgrader $wp_upgrader, $hook_extra ) {
 				|| 'globalpayments_heartland' !== $gateway_id && ! isset( $settings['is_production'] )
 				|| isset( $settings['is_production'] ) && ! wc_string_to_bool( $settings['is_production'] ) ) {
 				foreach ( $gateway_keys as $gateway_key ) {
-					if ( isset( $settings[$gateway_key] ) ) {
+					if ( ! empty( $settings[$gateway_key] ) ) {
 						$settings['sandbox_' . $gateway_key] = $settings[$gateway_key];
 						$settings[$gateway_key] = '';
 					}
@@ -76,7 +72,17 @@ function globalpayments_v110_v111( WP_Upgrader $wp_upgrader, $hook_extra ) {
 				update_option( 'woocommerce_' . $gateway_id . '_settings', $settings );
 			}
 		}
+	}
+}
+add_action( 'upgrader_process_complete', 'globalpayments_update_v110_v111', 9, 2 );
+
+function globalpayments_update_plugin_version( WP_Upgrader $wp_upgrader, $hook_extra ) {
+	if ( 'plugin' !== $hook_extra[ 'type' ] || ! in_array( plugin_basename( __FILE__ ), $hook_extra[ 'plugins' ] ) ) {
+		return;
+	}
+	if ( 'update' === $hook_extra[ 'action' ] || 'install' === $hook_extra[ 'action' ] ) {
+		delete_option( 'woocommerce_globalpayments_version' );
 		update_option( 'woocommerce_globalpayments_version', \GlobalPayments\WooCommercePaymentGatewayProvider\Plugin::VERSION );
 	}
 }
-add_action( 'upgrader_process_complete', 'globalpayments_v110_v111', 10, 2 );
+add_action( 'upgrader_process_complete', 'globalpayments_update_plugin_version', 10, 2 );

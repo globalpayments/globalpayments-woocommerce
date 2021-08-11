@@ -51,6 +51,13 @@ class HeartlandGateway extends AbstractGateway {
 	public $sandbox_secret_key;
 
 	/**
+	 * Should live payments be accepted
+	 *
+	 * @var bool
+	 */
+	public $is_production;
+
+	/**
 	 * Allows payment via Heartland Marketing Solutions (gift cards)
 	 *
 	 * @var bool
