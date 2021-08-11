@@ -59,18 +59,19 @@ function globalpayments_update_v110_v111( WP_Upgrader $wp_upgrader, $hook_extra 
 		];
 		foreach ( $globalpayments_keys as $gateway_id => $gateway_keys ) {
 			$settings = get_option( 'woocommerce_' . $gateway_id . '_settings' );
+			if ( 'globalpayments_heartland' === $gateway_id ) {
+				$settings['is_production'] = ( isset( $settings['public_key'] ) && false !== strpos( $settings['public_key'], 'pkapi_prod_' ) ) ? 'yes' : 'no';
+			}
 			// General rule: if the gateway is not set to "Live Mode", move the credentials in sandbox keys.
-			if ( ( 'globalpayments_heartland' === $gateway_id && isset( $settings['public_key'] ) && false === strpos( $settings['public_key'], 'pkapi_prod_' ) )
-				|| 'globalpayments_heartland' !== $gateway_id && ! isset( $settings['is_production'] )
-				|| isset( $settings['is_production'] ) && ! wc_string_to_bool( $settings['is_production'] ) ) {
+			if ( ! isset( $settings['is_production'] ) || ! wc_string_to_bool( $settings['is_production'] ) ) {
 				foreach ( $gateway_keys as $gateway_key ) {
 					if ( ! empty( $settings[$gateway_key] ) ) {
 						$settings['sandbox_' . $gateway_key] = $settings[$gateway_key];
 						$settings[$gateway_key] = '';
 					}
 				}
-				update_option( 'woocommerce_' . $gateway_id . '_settings', $settings );
 			}
+			update_option( 'woocommerce_' . $gateway_id . '_settings', $settings );
 		}
 	}
 }
