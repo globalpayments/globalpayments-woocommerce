@@ -218,29 +218,18 @@ class TransitGateway extends AbstractGateway {
 		$option_name = sprintf( 'woocommerce_%s_settings', $this->id );
 		$settings    = get_option( $option_name );
 
-		if ( $this->is_production ) {
-			$this->user_id  = $settings['user_id'];
-			$this->password = $settings['password'];
-
-			if ( empty( $this->transaction_key ) && ! empty( $this->user_id ) && ! empty( $this->password ) ) {
-				$transaction_key             = $this->create_transaction_key();
-				$settings['transaction_key'] = $transaction_key;
+		$prefix = ( wc_string_to_bool( $settings['is_production'] ) ) ? '' : 'sandbox_';
+		if ( empty( $settings[$prefix . 'transaction_key'] ) && ! empty( $settings[$prefix . 'user_id'] ) && ! empty( $settings[$prefix . 'password'] ) ) {
+			try {
+				$settings[$prefix . 'transaction_key']  = $this->create_transaction_key();
+			} catch ( \Exception $e ) {
+				add_action( 'admin_notices', function() {
+					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Invalid MultiPass User ID or Password. Please try again.' ) . '</strong></p></div>';
+				});
 			}
-
-			$settings['user_id']  = null;
-			$settings['password'] = null;
-		} else {
-			$this->sandbox_user_id  = $settings['sandbox_user_id'];
-			$this->sandbox_password = $settings['sandbox_password'];
-
-			if ( empty( $this->sandbox_transaction_key ) && ! empty( $this->sandbox_user_id ) && ! empty( $this->sandbox_password ) ) {
-				$sandbox_transaction_key             = $this->create_transaction_key();
-				$settings['sandbox_transaction_key'] = $sandbox_transaction_key;
-			}
-
-			$settings['sandbox_user_id']  = null;
-			$settings['sandbox_password'] = null;
 		}
+		$settings[$prefix . 'user_id']  = null;
+		$settings[$prefix . 'password'] = null;
 
 		update_option( $option_name, $settings );
 	}

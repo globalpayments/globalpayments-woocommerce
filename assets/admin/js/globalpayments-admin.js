@@ -25,7 +25,7 @@
          * @returns {*|jQuery}
          */
         isLiveMode: function() {
-            return $( '#woocommerce_' + this.id + '_is_production' ).is( ':checked' );
+            return $( this.getLiveModeSelector() ).is( ':checked' );
         },
 
         /**
