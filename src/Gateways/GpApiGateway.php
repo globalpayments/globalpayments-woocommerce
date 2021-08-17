@@ -25,19 +25,34 @@ class GpApiGateway extends AbstractGateway {
 	public $gateway_provider = GatewayProvider::GP_API;
 
 	/**
-	 * App ID
+	 * Live App ID
 	 *
 	 * @var string
 	 */
 	public $app_id;
 
 	/**
-	 * App Key
+	 * Live App Key
 	 *
 	 *
 	 * @var string
 	 */
 	public $app_key;
+
+	/**
+	 * Sandbox App ID
+	 *
+	 * @var string
+	 */
+	public $sandbox_app_id;
+
+	/**
+	 * Sandbox App Key
+	 *
+	 *
+	 * @var string
+	 */
+	public $sandbox_app_key;
 
 	/**
 	 * Should live payments be accepted
@@ -72,36 +87,37 @@ class GpApiGateway extends AbstractGateway {
 
 	public function get_gateway_form_fields() {
 		return array(
-			'app_id' => array(
-				'title'       => __( 'App Id', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'text',
-				'description' => __(
-					'Get your App Id and App Key from your <a href="https://developer.globalpay.com/user/register" target="_blank">Global Payments Developer Account</a>. ' .
-					'Please follow the instuctions provided in the <a href="https://wordpress.org/plugins/global-payments-woocommerce/" target="_blank">plugin description</a>.',
-					'globalpayments-gateway-provider-for-woocommerce'
-				),
-				'default'     => '',
-			),
-			'app_key' => array(
-				'title'       => __( 'App Key', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'password',
-				'description' => __(
-					'Get your App Id and App Key from your <a href="https://developer.globalpay.com/user/register" target="_blank">Global Payments Developer Account</a>. ' .
-					'Please follow the instuctions provided in the <a href="https://wordpress.org/plugins/global-payments-woocommerce/" target="_blank">plugin description</a>.',
-					'globalpayments-gateway-provider-for-woocommerce'
-				),
-				'default'     => '',
-			),
 			'is_production' => array(
 				'title'       => __( 'Live Mode', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
 				'description' => sprintf(
 				/* translators: %s: Email address of support team */
-					__( 'When you are ready for Live, please contact <a href="mailto:%s?Subject=WooCommerce%%20Live%%20Credentials">support</a> to get you live credentials.',
-						'globalpayments-gateway-provider-for-woocommerce' ),
+					__( 'Get your App Id and App Key from your <a href="https://developer.globalpay.com/user/register" target="_blank">Global Payments Developer Account</a>. ' .
+						'Please follow the instructions provided in the <a href="https://wordpress.org/plugins/global-payments-woocommerce/" target="_blank">plugin description</a>.<br/>' .
+						'When you are ready for Live, please contact <a href="mailto:%s?Subject=WooCommerce%%20Live%%20Credentials">support</a> to get you live credentials.',
+						'globalpayments-gateway-provider-for-woocommerce'
+					),
 					$this->get_first_line_support_email()
 				),
 				'default'     => 'no',
+			),
+			'app_id' => array(
+				'title'       => __( 'Live App Id', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
+			),
+			'app_key' => array(
+				'title'       => __( 'Live App Key', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'password',
+			),
+			'sandbox_app_id' => array(
+				'title'       => __( 'Sandbox App Id', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
+				'default'     => '',
+			),
+			'sandbox_app_key' => array(
+				'title'       => __( 'Sandbox App Key', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'password',
+				'default'     => '',
 			),
 			'section_general' => array(
 				'title' => __( 'General Settings', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -122,7 +138,10 @@ class GpApiGateway extends AbstractGateway {
 		if ( empty( $this->merchant_contact_url ) ) {
 			return true;
 		}
-		return ( empty( $this->app_id ) || empty( $this->app_key ) );
+		if ( $this->is_production ) {
+			return ( empty( $this->app_id ) || empty( $this->app_key ) );
+		}
+		return ( empty( $this->sandbox_app_id ) || empty( $this->sandbox_app_key ) );
 	}
 
 	public function get_frontend_gateway_options() {
@@ -134,9 +153,11 @@ class GpApiGateway extends AbstractGateway {
 	}
 
 	public function get_backend_gateway_options() {
+		global $wp_version;
+
 		return array(
-			'appId'                    => $this->app_id,
-			'appKey'                   => $this->app_key,
+			'appId'                    => $this->get_credential_setting( 'app_id' ),
+			'appKey'                   => $this->get_credential_setting( 'app_key' ),
 			'channel'                  => Channels::CardNotPresent,
 			'country'                  => wc_get_base_location()['country'],
 			'developerId'              => '',
@@ -144,6 +165,10 @@ class GpApiGateway extends AbstractGateway {
 			'methodNotificationUrl'    => WC()->api_request_url('globalpayments_threedsecure_methodnotification'),
 			'challengeNotificationUrl' => WC()->api_request_url('globalpayments_threedsecure_challengenotification'),
 			'merchantContactUrl'       => $this->merchant_contact_url,
+			'dynamicHeaders'           => [
+				'x-gp-platform' => 'wordpress;version=' . $wp_version . ';woocommerce;version=' . WC()->version,
+				'x-gp-extension' => 'globalpayments-woocommerce;version=' . Plugin::VERSION,
+			],
 		);
 	}
 
@@ -180,9 +205,18 @@ class GpApiGateway extends AbstractGateway {
 			});
 			$settings['enabled'] = 'no';
 		}
-		if ( empty( $settings['app_id'] ) || empty( $settings['app_key'] ) ) {
+		if ( wc_string_to_bool( $settings['is_production'] ) ) {
+			if ( empty( $settings['app_id'] ) || empty( $settings['app_key'] ) ) {
+				add_action( 'admin_notices', function() {
+					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide Live Credentials. Gateway not enabled.' ) . '</strong></p></div>';
+				});
+				$settings['enabled'] = 'no';
+				return $settings;
+			}
+		}
+		if ( empty( $settings['sandbox_app_id'] ) || empty( $settings['sandbox_app_key'] ) ) {
 			add_action( 'admin_notices', function() {
-				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide App Credentials. Gateway not enabled.' ) . '</strong></p></div>';
+				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide Sandbox Credentials. Gateway not enabled.' ) . '</strong></p></div>';
 			});
 			$settings['enabled'] = 'no';
 		}

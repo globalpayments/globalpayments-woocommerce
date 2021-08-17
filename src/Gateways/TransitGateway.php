@@ -10,14 +10,14 @@ defined( 'ABSPATH' ) || exit;
 
 class TransitGateway extends AbstractGateway {
 	/**
-	 * Merchant location's Merchant ID
+	 * Live Merchant location's Merchant ID
 	 *
 	 * @var string
 	 */
 	public $merchant_id;
 
 	/**
-	 * Merchant location's User ID
+	 * Live Merchant location's User ID
 	 *
 	 * Note: only needed to create transation key
 	 *
@@ -26,7 +26,7 @@ class TransitGateway extends AbstractGateway {
 	public $user_id;
 
 	/**
-	 * Merchant location's Password
+	 * Live Merchant location's Password
 	 *
 	 * Note: only needed to create transation key
 	 *
@@ -35,25 +35,71 @@ class TransitGateway extends AbstractGateway {
 	public $password;
 
 	/**
-	 * Merchant location's Device ID
+	 * Live Merchant location's Device ID
 	 *
 	 * @var string
 	 */
 	public $device_id;
 
 	/**
-	 * Device ID for TSEP entity specifically
+	 * Live Device ID for TSEP entity specifically
 	 *
 	 * @var string
 	 */
 	public $tsep_device_id;
 
 	/**
-	 * Merchant location's Transaction Key
+	 * Live Merchant location's Transaction Key
 	 *
 	 * @var string
 	 */
 	public $transaction_key;
+
+	/**
+	 * Sandbox Merchant location's Merchant ID
+	 *
+	 * @var string
+	 */
+	public $sandbox_merchant_id;
+
+	/**
+	 * Sandbox Merchant location's User ID
+	 *
+	 * Note: only needed to create transation key
+	 *
+	 * @var string
+	 */
+	public $sandbox_user_id;
+
+	/**
+	 * Sandbox Merchant location's Password
+	 *
+	 * Note: only needed to create transation key
+	 *
+	 * @var string
+	 */
+	public $sandbox_password;
+
+	/**
+	 * Sandbox Merchant location's Device ID
+	 *
+	 * @var string
+	 */
+	public $sandbox_device_id;
+
+	/**
+	 * Sandbox Device ID for TSEP entity specifically
+	 *
+	 * @var string
+	 */
+	public $sandbox_tsep_device_id;
+
+	/**
+	 * Sandbox Merchant location's Transaction Key
+	 *
+	 * @var string
+	 */
+	public $sandbox_transaction_key;
 
 	/**
 	 * Should live payments be accepted
@@ -88,46 +134,72 @@ class TransitGateway extends AbstractGateway {
 
 	public function get_gateway_form_fields() {
 		return array(
-			'merchant_id'     => array(
-				'title'       => __( 'Merchant ID', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'text',
+			'is_production'   => array(
+				'title'       => __( 'Live Mode', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
 				'description' => __( 'Get your API keys from your TSYS TransIT account.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'no',
+			),
+			'merchant_id'     => array(
+				'title'       => __( 'Live Merchant ID', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
 				'default'     => '',
 			),
 			'user_id'         => array(
-				'title'       => __( 'MultiPass User ID', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Live MultiPass User ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
-				'description' => __( 'Get your API keys from your TSYS TransIT account.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'     => '',
 			),
 			'password'        => array(
-				'title'       => __( 'Password', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'text',
-				'description' => __( 'Get your API keys from your TSYS TransIT account.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Live Password', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'password',
 				'default'     => '',
 			),
 			'device_id'       => array(
-				'title'       => __( 'Device ID', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Live Device ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
-				'description' => __( 'Get your API keys from your TSYS TransIT account.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'     => '',
 			),
 			'tsep_device_id'       => array(
-				'title'       => __( 'TSEP Device ID', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Live TSEP Device ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
-				'description' => __( 'Get your API keys from your TSYS TransIT account.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'     => '',
 			),
 			'transaction_key' => array(
-				'title'       => __( 'Transaction Key', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'text',
-				'description' => __( 'Get your API keys from your TSYS TransIT account.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Live Transaction Key', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'password',
+
 				'default'     => '',
 			),
-			'is_production'   => array(
-				'title'   => __( 'Live Mode', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'    => 'checkbox',
-				'default' => 'no',
+			'sandbox_merchant_id'     => array(
+				'title'       => __( 'Sandbox Merchant ID', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
+				'default'     => '',
+			),
+			'sandbox_user_id'         => array(
+				'title'       => __( 'Sandbox MultiPass User ID', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
+				'default'     => '',
+			),
+			'sandbox_password'        => array(
+				'title'       => __( 'Sandbox Password', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'password',
+				'default'     => '',
+			),
+			'sandbox_device_id'       => array(
+				'title'       => __( 'Sandbox Device ID', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
+				'default'     => '',
+			),
+			'sandbox_tsep_device_id'       => array(
+				'title'       => __( 'Sandbox TSEP Device ID', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
+				'default'     => '',
+			),
+			'sandbox_transaction_key' => array(
+				'title'       => __( 'Sandbox Transaction Key', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'password',
+				'default'     => '',
 			),
 		);
 	}
@@ -146,22 +218,25 @@ class TransitGateway extends AbstractGateway {
 		$option_name = sprintf( 'woocommerce_%s_settings', $this->id );
 		$settings    = get_option( $option_name );
 
-		$this->user_id  = $settings['user_id'];
-		$this->password = $settings['password'];
-
-		if ( empty( $this->transaction_key ) && ! empty( $this->user_id ) && ! empty( $this->password ) ) {
-			$transaction_key             = $this->create_transaction_key();
-			$settings['transaction_key'] = $transaction_key;
+		$prefix = ( wc_string_to_bool( $settings['is_production'] ) ) ? '' : 'sandbox_';
+		if ( empty( $settings[$prefix . 'transaction_key'] ) && ! empty( $settings[$prefix . 'user_id'] ) && ! empty( $settings[$prefix . 'password'] ) ) {
+			try {
+				$settings[$prefix . 'transaction_key']  = $this->create_transaction_key();
+			} catch ( \Exception $e ) {
+				add_action( 'admin_notices', function() {
+					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Invalid MultiPass User ID or Password. Please try again.' ) . '</strong></p></div>';
+				});
+			}
 		}
+		$settings[$prefix . 'user_id']  = null;
+		$settings[$prefix . 'password'] = null;
 
-		$settings['user_id']  = null;
-		$settings['password'] = null;
 		update_option( $option_name, $settings );
 	}
 
 	public function get_frontend_gateway_options() {
 		return array(
-			'deviceId' => $this->tsep_device_id,
+			'deviceId' => $this->get_credential_setting( 'tsep_device_id' ),
 			'manifest' => $this->create_manifest(),
 			'env'      => $this->is_production ? parent::ENVIRONMENT_PRODUCTION : parent::ENVIRONMENT_SANDBOX,
 		);
@@ -169,12 +244,12 @@ class TransitGateway extends AbstractGateway {
 
 	public function get_backend_gateway_options() {
 		return array(
-			'merchantId'     => $this->merchant_id,
-			'username'       => $this->user_id, // only needed to create transation key
-			'password'       => $this->password, // only needed to create transation key
-			'transactionKey' => $this->transaction_key,
-			'tsepDeviceId'	 => $this->tsep_device_id,
-			'deviceId'       => $this->device_id,
+			'merchantId'     => $this->get_credential_setting( 'merchant_id' ),
+			'username'       => $this->get_credential_setting( 'user_id' ), // only needed to create transation key
+			'password'       => $this->get_credential_setting( 'password' ), // only needed to create transation key
+			'transactionKey' => $this->get_credential_setting( 'transaction_key' ),
+			'tsepDeviceId'	 => $this->get_credential_setting( 'tsep_device_id' ),
+			'deviceId'       => $this->get_credential_setting( 'device_id' ),
 			'developerId'    => '003226G004', // provided during certification
 			'environment'    => $this->is_production ? Environment::PRODUCTION : Environment::TEST,
 		);

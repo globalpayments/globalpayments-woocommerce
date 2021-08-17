@@ -208,8 +208,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
      * Adds environment indicator in sandbox/test mode.
      */
 	protected function environment_indicator() {
-		if ( isset( $this->is_production ) && ! $this->is_production
-		  || isset( $this->public_key ) && false === strpos( $this->public_key, 'pkapi_prod_' ) ) {
+		if ( ! wc_string_to_bool( $this->is_production ) ) {
 			echo sprintf( '<div class="woocommerce-globalpayments-sandbox-warning">%s</div>',
 				__( 'This page is currently in sandbox/test mode. Do not use real/active card numbers.', 'globalpayments-gateway-provider-for-woocommerce' )
 			);
@@ -436,7 +435,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			        'type'        => 'multiselect',
 			        'class'       => 'wc-enhanced-select',
 			        'css'         => 'width: 450px',
-			        'description' => __( 'Choose for which AVS result codes, the transaction must be auto reveresed.'),
+			        'description' => __( 'Choose for which AVS result codes, the transaction must be auto reversed.'),
 			        'options'     => $this->avs_rejection_conditions(),
 			        'default'     => array("N", "S", "U", "P", "R", "G", "C", "I"),
 			    ),
@@ -445,12 +444,22 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			        'type'        => 'multiselect',
 			        'class'       => 'wc-enhanced-select',
 			        'css'         => 'width: 450px',
-			        'description' => __( 'Choose for which CVN result codes, the transaction must be auto reveresed.'),
+			        'description' => __( 'Choose for which CVN result codes, the transaction must be auto reversed.'),
 			        'options'     => $this->cvn_rejection_conditions(),
 			        'default'     => array("P", "?", "N"),
 			    ),			    
 			)
 		);
+	}
+
+	/**
+	 * Get credential setting value based on environment.
+	 *
+	 * @param string $setting
+	 * @return mixed
+	 */
+	protected function get_credential_setting( $setting ) {
+		return $this->is_production ? $this->{$setting} : $this->{'sandbox_' . $setting};
 	}
 
 	/**
@@ -704,6 +713,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		if ( is_admin() ) {
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 			add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'admin_enforce_single_gateway' ) );
+			add_filter( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		}
 
 		if ( 'no' === $this->enabled ) {
@@ -1090,10 +1100,34 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 *
 	 * @param string $hook_suffix The current admin page.
 	 */
-	public static function admin_enqueue_scripts( $hook_suffix ) {
-		if ( 'woocommerce_page_wc-settings' !== $hook_suffix ) {
+	public  function admin_enqueue_scripts( $hook_suffix ) {
+		if ( 'woocommerce_page_wc-settings' !== $hook_suffix || 'checkout' !== $_GET['tab'] ) {
 			return;
 		}
-		wp_enqueue_script ( 'globalpayments-enforce-single-gateway', Plugin::get_url( '/assets/admin/js/globalpayments-enforce-single-gateway.js' ) );
+		if ( empty( $_GET['section'] ) ) {
+			wp_enqueue_script (
+				'globalpayments-enforce-single-gateway',
+				Plugin::get_url( '/assets/admin/js/globalpayments-enforce-single-gateway.js' )
+			);
+			return;
+		}
+		$section = sanitize_text_field( wp_unslash( $_GET['section'] ) );
+		if ( false === strpos( $section, 'globalpayments_' ) ) {
+			return;
+		}
+		wp_enqueue_script(
+			'globalpayments-admin',
+			Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
+			array(),
+			WC()->version,
+			true
+		);
+		wp_localize_script(
+			'globalpayments-admin',
+			'globalpayments_admin_params',
+			array(
+				'gateway_id' => $section,
+			)
+		);
 	}
 }
