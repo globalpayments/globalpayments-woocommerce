@@ -341,32 +341,4 @@ class GpApiGateway extends AbstractGateway {
 		$cart_totals = WC()->session->get('cart_totals');
 		return round($cart_totals['total'], 2);
 	}
-
-	protected function get_customer_email() {
-		return WC()->customer->get_billing_email();
-	}
-
-	protected function get_billing_address() {
-		return [
-			'streetAddress1' => WC()->customer->get_billing_address_1(),
-			'streetAddress2' => WC()->customer->get_billing_address_2(),
-			'city'           => WC()->customer->get_billing_city(),
-			'state'          => WC()->customer->get_billing_state(),
-			'postalCode'     => WC()->customer->get_billing_postcode(),
-			'country'        => WC()->customer->get_billing_country(),
-			'countryCode'    => '',
-		];
-	}
-
-	protected function get_shipping_address() {
-		return [
-			'streetAddress1' => WC()->customer->get_shipping_address_1(),
-			'streetAddress2' => WC()->customer->get_shipping_address_2(),
-			'city'           => WC()->customer->get_shipping_city(),
-			'state'          => WC()->customer->get_shipping_state(),
-			'postalCode'     => WC()->customer->get_shipping_postcode(),
-			'country'        => WC()->customer->get_shipping_country(),
-			'countryCode'    => '',
-		];
-	}
 }

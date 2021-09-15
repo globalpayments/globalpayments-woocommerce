@@ -352,9 +352,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'order'           => array (
 					'amount'          => $this->get_session_amount(),
 					'currency'        => get_woocommerce_currency(),
-					'billingAddress'  => $this->get_billing_address(),
-					'shippingAddress' => $this->get_shipping_address(),
-					'customerEmail'   => $this->get_customer_email(),
 				),
 			)
 		);

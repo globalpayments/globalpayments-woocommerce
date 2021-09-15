@@ -146,21 +146,21 @@
 		},
 
 		/**
-		 * Convenience funnction to get CSS selector for the built-in 'Place Order' button
+		 * Convenience function to get CSS selector for the built-in 'Place Order' button
 		 *
 		 * @returns {string}
 		 */
 		getPlaceOrderButtonSelector: function () { return '#place_order'; },
 
 		/**
-		 * Convenience funnction to get CSS selector for the custom 'Place Order' button's parent element
+		 * Convenience function to get CSS selector for the custom 'Place Order' button's parent element
 		 *
 		 * @returns {string}
 		 */
 		getSubmitButtonTargetSelector: function () { return '#' + this.id + '-card-submit'; },
 
 		/**
-		 * Convenience funnction to get CSS selector for the radio input associated with our payment method
+		 * Convenience function to get CSS selector for the radio input associated with our payment method
 		 *
 		 * @returns {string}
 		 */
@@ -172,6 +172,45 @@
 		 * @returns {string}
 		 */
 		getStoredPaymentMethodsRadioSelector: function () { return '.payment_method_' + this.id + ' .wc-saved-payment-methods input'; },
+
+		/**
+		 * Checks if an order has input for the shipping address
+		 *
+		 * @returns {boolean|*|jQuery}
+		 */
+		isDifferentShippingAddress: function () { return $( '#ship-to-different-address-checkbox' ).length > 0 && $( '#ship-to-different-address-checkbox' ).is( ':checked' ); },
+
+		/**
+		 * Get checkout billing address
+		 *
+		 * @returns {{country: (*|jQuery), city: (*|jQuery), postalCode: (*|jQuery), streetAddress1: (*|jQuery), streetAddress2: (*|jQuery), state: (*|jQuery)}}
+		 */
+		getBillingAddressFormData: function () {
+			return {
+				streetAddress1: $( '#billing_address_1' ).val(),
+				streetAddress2: $( '#billing_address_2' ).val(),
+				city: $( '#billing_city' ).val(),
+				state: $( '#billing_state' ).val(),
+				postalCode: $( '#billing_postcode' ).val(),
+				country: $( '#billing_country' ).val(),
+			};
+		},
+
+		/**
+		 * Get checkout shipping address
+		 *
+		 * @returns {{country: (*|jQuery), city: (*|jQuery), postalCode: (*|jQuery), streetAddress1: (*|jQuery), streetAddress2: (*|jQuery), state: (*|jQuery)}}
+		 */
+		getShippingAddressFormData: function () {
+			return {
+				streetAddress1: $( '#shipping_address_1' ).val(),
+				streetAddress2: $( '#shipping_address_2' ).val(),
+				city: $( '#shipping_city' ).val(),
+				state: $( '#shipping_state' ).val(),
+				postalCode: $( '#shipping_postcode' ).val(),
+				country: $( '#shipping_country' ).val(),
+			};
+		},
 
 		/**
 		 * Renders the payment fields using GlobalPayments.js. Each field is securely hosted on
@@ -241,7 +280,6 @@
 			var paymentGatewaySelected = $( this.getPaymentMethodRadioSelector() ).is( ':checked' );
 			var savedCardsAvailable    = $( this.getStoredPaymentMethodsRadioSelector() + '[value!="new"]' ).length > 0;
 			var newSavedCardSelected   = 'new' === $( this.getStoredPaymentMethodsRadioSelector() + ':checked' ).val();
-
 			var shouldBeVisible = ( paymentGatewaySelected && ( ! savedCardsAvailable  || savedCardsAvailable && newSavedCardSelected ) );
 			if (shouldBeVisible) {
 				// our gateway was selected
@@ -343,6 +381,10 @@
 						return false;
 					}
 
+					var addressMatch = ! self.isDifferentShippingAddress();
+					var billingAddress = self.getBillingAddressFormData();
+					var shippingAddress = addressMatch ? billingAddress : self.getShippingAddressFormData();
+
 					GlobalPayments.ThreeDSecure.initiateAuthentication( self.threedsecure.initiateAuthenticationUrl, {
 						tokenResponse: self.tokenResponse,
 						wcTokenId: $( 'input[name="wc-' + self.id + '-payment-token"]:checked', _form ).val(),
@@ -351,7 +393,14 @@
 							windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
 							displayMode: 'lightbox',
 						},
-						order: self.order,
+						order: {
+							amount: self.order.amount,
+							currency: self.order.currency,
+							billingAddress: billingAddress,
+							shippingAddress: shippingAddress,
+							addressMatchIndicator: addressMatch,
+							customerEmail: $( '#billing_email' ).val(),
+						}
 					})
 						.then( function ( authenticationData ) {
 							if ( authenticationData.error ) {
@@ -514,7 +563,7 @@
 		 */
 		handleErrors: function ( error ) {
 			this.resetValidationErrors();
-
+			console.error(error);
 			if ( ! error.reasons ) {
 				return;
 			}
