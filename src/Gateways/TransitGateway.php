@@ -234,10 +234,13 @@ class TransitGateway extends AbstractGateway {
 		$settings    = get_option( $option_name );
 
 		$prefix = ( wc_string_to_bool( $settings['is_production'] ) ) ? '' : 'sandbox_';
-		if ( empty( $settings[$prefix . 'transaction_key'] ) && ! empty( $settings[$prefix . 'user_id'] ) && ! empty( $settings[$prefix . 'password'] ) ) {
+		if ( ! empty( $settings[$prefix . 'user_id'] ) && ! empty( $settings[$prefix . 'password'] ) ) {
 			try {
+
+				$this->configure_merchant_settings();
 				$settings[$prefix . 'transaction_key']  = $this->create_transaction_key();
 			} catch ( \Exception $e ) {
+				$settings[$prefix . 'transaction_key'] = '';
 				add_action( 'admin_notices', function() {
 					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Invalid MultiPass User ID or Password. Please try again.' ) . '</strong></p></div>';
 				});

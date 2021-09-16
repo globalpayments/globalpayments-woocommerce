@@ -227,8 +227,8 @@ class GpApiGateway extends AbstractGateway {
 					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide Live Credentials. Gateway not enabled.' ) . '</strong></p></div>';
 				});
 				$settings['enabled'] = 'no';
-				return $settings;
 			}
+			return $settings;
 		}
 		if ( empty( $settings['sandbox_app_id'] ) || empty( $settings['sandbox_app_key'] ) ) {
 			add_action( 'admin_notices', function() {
