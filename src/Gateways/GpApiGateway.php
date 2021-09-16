@@ -75,6 +75,13 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $developer_id = '';
 
+	/**
+	 * Should debug
+	 *
+	 * @var bool
+	 */
+	public $debug;
+
 	public function configure_method_settings() {
 		$this->id                 = self::GATEWAY_ID;
 		$this->method_title       = __( 'Unified Commerce Platform', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -123,6 +130,14 @@ class GpApiGateway extends AbstractGateway {
 				'title' => __( 'General Settings', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'  => 'title',
 			),
+			'debug' => array(
+				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Log all request to and from gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'no',
+				'desc_tip'    => true,
+			),
 			'merchant_contact_url' => array(
 				'title'             => __( 'Contact Url*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'              => 'text',
@@ -169,6 +184,7 @@ class GpApiGateway extends AbstractGateway {
 				'x-gp-platform' => 'wordpress;version=' . $wp_version . ';woocommerce;version=' . WC()->version,
 				'x-gp-extension' => 'globalpayments-woocommerce;version=' . Plugin::VERSION,
 			],
+			'debug'                    => $this->debug,
 		);
 	}
 

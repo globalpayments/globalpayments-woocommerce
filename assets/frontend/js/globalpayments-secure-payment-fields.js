@@ -566,6 +566,7 @@
 			this.resetValidationErrors();
 			console.error(error);
 			if ( ! error.reasons ) {
+				this.showPaymentError( 'Something went wrong. Please contact us to get assistance.' );
 				return;
 			}
 
