@@ -277,6 +277,7 @@
 		 * @returns
 		 */
 		toggleSubmitButtons: function () {
+
 			var paymentGatewaySelected = $( this.getPaymentMethodRadioSelector() ).is( ':checked' );
 			var savedCardsAvailable    = $( this.getStoredPaymentMethodsRadioSelector() + '[value!="new"]' ).length > 0;
 			var newSavedCardSelected   = 'new' === $( this.getStoredPaymentMethodsRadioSelector() + ':checked' ).val();
@@ -284,11 +285,11 @@
 			if (shouldBeVisible) {
 				// our gateway was selected
 				$( this.getSubmitButtonTargetSelector() ).show();
-				$( this.getPlaceOrderButtonSelector() ).hide();
+				$( this.getPlaceOrderButtonSelector() ).addClass( 'woocommerce-globalpayments-hidden' ).hide();
 			} else {
 				// another gateway was selected
 				$( this.getSubmitButtonTargetSelector() ).hide();
-				$( this.getPlaceOrderButtonSelector() ).show();
+				$( this.getPlaceOrderButtonSelector() ).removeClass( 'woocommerce-globalpayments-hidden' ).show();
 			}
 		},
 
