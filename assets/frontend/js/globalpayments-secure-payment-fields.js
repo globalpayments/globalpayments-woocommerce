@@ -277,7 +277,6 @@
 		 * @returns
 		 */
 		toggleSubmitButtons: function () {
-
 			var paymentGatewaySelected = $( this.getPaymentMethodRadioSelector() ).is( ':checked' );
 			var savedCardsAvailable    = $( this.getStoredPaymentMethodsRadioSelector() + '[value!="new"]' ).length > 0;
 			var newSavedCardSelected   = 'new' === $( this.getStoredPaymentMethodsRadioSelector() + ':checked' ).val();

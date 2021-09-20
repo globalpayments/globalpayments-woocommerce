@@ -236,7 +236,6 @@ class TransitGateway extends AbstractGateway {
 		$prefix = ( wc_string_to_bool( $settings['is_production'] ) ) ? '' : 'sandbox_';
 		if ( ! empty( $settings[$prefix . 'user_id'] ) && ! empty( $settings[$prefix . 'password'] ) ) {
 			try {
-
 				$this->configure_merchant_settings();
 				$settings[$prefix . 'transaction_key']  = $this->create_transaction_key();
 			} catch ( \Exception $e ) {
