@@ -15,6 +15,11 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
 defined('ABSPATH') || exit;
 
 class InitiateAuthenticationRequest extends AbstractAuthenticationsRequest {
+    /**
+     * @var array
+     */
+	private $_states = [ 'US', 'CA' ];
+
 	public function get_transaction_type() {
 		return AbstractGateway::TXN_TYPE_INITIATE_AUTHENTICATION;
 	}
@@ -38,6 +43,7 @@ class InitiateAuthenticationRequest extends AbstractAuthenticationsRequest {
 				->withOrderCreateDate( date( 'Y-m-d H:i:s' ) )
 				->withAddress( $this->mapAddress( $requestData->order->billingAddress ), AddressType::BILLING )
 				->withAddress( $this->mapAddress( $requestData->order->shippingAddress ), AddressType::SHIPPING )
+				->withAddressMatchIndicator( $requestData->order->addressMatchIndicator )
 				->withCustomerEmail( $requestData->order->customerEmail )
 				->withAuthenticationSource( $requestData->authenticationSource )
 				->withAuthenticationRequestType( $requestData->authenticationRequestType )
@@ -79,13 +85,12 @@ class InitiateAuthenticationRequest extends AbstractAuthenticationsRequest {
 		$browserData->colorDepth = $requestData->browserData->colorDepth;
 		$browserData->ipAddress = isset( $_SERVER['REMOTE_ADDR'] ) ? wc_clean( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		$browserData->javaEnabled = $requestData->browserData->javaEnabled ?? false;
-		$browserData->javaEnabled = true;
 		$browserData->javaScriptEnabled = $requestData->browserData->javascriptEnabled;
 		$browserData->language = $requestData->browserData->language;
 		$browserData->screenHeight = $requestData->browserData->screenHeight;
 		$browserData->screenWidth = $requestData->browserData->screenWidth;
 		$browserData->challengWindowSize = $requestData->challengeWindow->windowSize;
-		$browserData->timeZone = 0;
+		$browserData->timeZone = $requestData->browserData->timezoneOffset;
 		$browserData->userAgent = $requestData->browserData->userAgent;
 
 		return $browserData;
@@ -94,12 +99,15 @@ class InitiateAuthenticationRequest extends AbstractAuthenticationsRequest {
 	private function mapAddress( $addressData ) {
 		$address = new Address();
 		foreach ( $addressData as $key => $value ) {
-			if ( property_exists( $address, $key ) ) {
+			if ( property_exists( $address, $key ) && ! empty( $value ) ) {
+				if ( 'state' == $key && ! in_array( $value, $this->_states ) ) {
+					continue;
+				}
 				$address->{$key} = $value;
 			}
 		};
 
-		$address->countryCode = CountryUtils::getCountryCodeByCountry( $addressData->country );
+		$address->countryCode = CountryUtils::getNumericCodeByCountry( $addressData->country );
 
 		return $address;
 	}

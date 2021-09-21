@@ -122,6 +122,13 @@ class TransitGateway extends AbstractGateway {
 	 */
 	public $gateway_provider = GatewayProvider::TRANSIT;
 
+	/**
+	 * Should debug
+	 *
+	 * @var bool
+	 */
+	public $debug;
+
 	public function configure_method_settings() {
 		$this->id                 = 'globalpayments_transit';
 		$this->method_title       = __( 'TSYS TransIT', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -201,6 +208,14 @@ class TransitGateway extends AbstractGateway {
 				'type'        => 'password',
 				'default'     => '',
 			),
+			'debug' => array(
+				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Log all request to and from gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'no',
+				'desc_tip'    => true,
+			),
 		);
 	}
 
@@ -219,10 +234,12 @@ class TransitGateway extends AbstractGateway {
 		$settings    = get_option( $option_name );
 
 		$prefix = ( wc_string_to_bool( $settings['is_production'] ) ) ? '' : 'sandbox_';
-		if ( empty( $settings[$prefix . 'transaction_key'] ) && ! empty( $settings[$prefix . 'user_id'] ) && ! empty( $settings[$prefix . 'password'] ) ) {
+		if ( ! empty( $settings[$prefix . 'user_id'] ) && ! empty( $settings[$prefix . 'password'] ) ) {
 			try {
+				$this->configure_merchant_settings();
 				$settings[$prefix . 'transaction_key']  = $this->create_transaction_key();
 			} catch ( \Exception $e ) {
+				$settings[$prefix . 'transaction_key'] = '';
 				add_action( 'admin_notices', function() {
 					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Invalid MultiPass User ID or Password. Please try again.' ) . '</strong></p></div>';
 				});
@@ -252,6 +269,7 @@ class TransitGateway extends AbstractGateway {
 			'deviceId'       => $this->get_credential_setting( 'device_id' ),
 			'developerId'    => '003226G004', // provided during certification
 			'environment'    => $this->is_production ? Environment::PRODUCTION : Environment::TEST,
+			'debug'          => $this->debug,
 		);
 	}
 

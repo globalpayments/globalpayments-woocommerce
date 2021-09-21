@@ -21,12 +21,14 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\TransitConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Data\PaymentTokenData;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestInterface;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure\AbstractAuthenticationsRequest;
-
+use Psr\Log\LogLevel;
 use WC_Payment_Token_CC;
 
 defined( 'ABSPATH' ) || exit;
@@ -343,6 +345,13 @@ class SdkClient implements ClientInterface {
 			$gatewayConfig,
 			$this->args[ RequestArg::SERVICES_CONFIG ]
 		);
+		if ( $this->get_arg( RequestArg::SERVICES_CONFIG )['debug'] ) {
+			$gatewayConfig->requestLogger = new SampleRequestLogger( new Logger(
+				WC_LOG_DIR,
+				LogLevel::DEBUG,
+				[ 'prefix' => 'globalpayments-woocommerce.' . $this->get_arg( RequestArg::SERVICES_CONFIG )['gatewayProvider'] . '-', 'extension' => 'log', ]
+			) );
+		}
 
 		ServicesContainer::configureService( $config );
 	}

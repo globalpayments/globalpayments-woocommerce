@@ -21,3 +21,7 @@ div[id^="GlobalPayments-overlay-"] {
 	width:100%;
 	font-size:14px;
 }
+
+.woocommerce-globalpayments-hidden {
+	display: none !important;
+}

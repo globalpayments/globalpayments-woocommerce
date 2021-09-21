@@ -64,6 +64,13 @@ class HeartlandGateway extends AbstractGateway {
 	 */
 	public $allow_gift_cards;
 
+	/**
+	 * Should debug
+	 *
+	 * @var bool
+	 */
+	public $debug;
+
 	public function configure_method_settings() {
 		$this->id                 = 'globalpayments_heartland';
 		$this->method_title       = __( 'Heartland', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -102,6 +109,14 @@ class HeartlandGateway extends AbstractGateway {
 				'type'        => 'password',
 				'default'     => '',
 			),
+			'debug' => array(
+				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Log all request to and from gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'no',
+				'desc_tip'    => true,
+			),
 			'allow_gift_cards' => array(
 				'title'				=> __( 'Enable Gift Cards', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'				=> __( 'Allow customers to use gift cards to pay for purchases in full or in part.', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -122,9 +137,10 @@ class HeartlandGateway extends AbstractGateway {
 
 	public function get_backend_gateway_options() {
 		return array(
-			'secretApiKey' => $this->get_credential_setting( 'secret_key' ),
+			'secretApiKey'  => $this->get_credential_setting( 'secret_key' ),
 			'versionNumber' => '1510',
-			'developerId' => '002914'
+			'developerId'   => '002914',
+			'debug'         => $this->debug,
 		);
 	}
 

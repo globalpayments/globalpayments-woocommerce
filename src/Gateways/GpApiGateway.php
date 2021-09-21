@@ -75,6 +75,13 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $developer_id = '';
 
+	/**
+	 * Should debug
+	 *
+	 * @var bool
+	 */
+	public $debug;
+
 	public function configure_method_settings() {
 		$this->id                 = self::GATEWAY_ID;
 		$this->method_title       = __( 'Unified Commerce Platform', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -102,26 +109,34 @@ class GpApiGateway extends AbstractGateway {
 				'default'     => 'no',
 			),
 			'app_id' => array(
-				'title'       => __( 'Live App Id', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Live App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 			),
 			'app_key' => array(
-				'title'       => __( 'Live App Key', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Live App Key*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'password',
 			),
 			'sandbox_app_id' => array(
-				'title'       => __( 'Sandbox App Id', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Sandbox App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
 			),
 			'sandbox_app_key' => array(
-				'title'       => __( 'Sandbox App Key', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Sandbox App Key*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'password',
 				'default'     => '',
 			),
 			'section_general' => array(
 				'title' => __( 'General Settings', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'  => 'title',
+			),
+			'debug' => array(
+				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Log all request to and from gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'no',
+				'desc_tip'    => true,
 			),
 			'merchant_contact_url' => array(
 				'title'             => __( 'Contact Url*', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -169,6 +184,7 @@ class GpApiGateway extends AbstractGateway {
 				'x-gp-platform' => 'wordpress;version=' . $wp_version . ';woocommerce;version=' . WC()->version,
 				'x-gp-extension' => 'globalpayments-woocommerce;version=' . Plugin::VERSION,
 			],
+			'debug'                    => $this->debug,
 		);
 	}
 
@@ -211,8 +227,8 @@ class GpApiGateway extends AbstractGateway {
 					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide Live Credentials. Gateway not enabled.' ) . '</strong></p></div>';
 				});
 				$settings['enabled'] = 'no';
-				return $settings;
 			}
+			return $settings;
 		}
 		if ( empty( $settings['sandbox_app_id'] ) || empty( $settings['sandbox_app_key'] ) ) {
 			add_action( 'admin_notices', function() {
@@ -340,33 +356,5 @@ class GpApiGateway extends AbstractGateway {
 	protected function get_session_amount() {
 		$cart_totals = WC()->session->get('cart_totals');
 		return round($cart_totals['total'], 2);
-	}
-
-	protected function get_customer_email() {
-		return WC()->customer->get_billing_email();
-	}
-
-	protected function get_billing_address() {
-		return [
-			'streetAddress1' => WC()->customer->get_billing_address_1(),
-			'streetAddress2' => WC()->customer->get_billing_address_2(),
-			'city'           => WC()->customer->get_billing_city(),
-			'state'          => WC()->customer->get_billing_state(),
-			'postalCode'     => WC()->customer->get_billing_postcode(),
-			'country'        => WC()->customer->get_billing_country(),
-			'countryCode'    => '',
-		];
-	}
-
-	protected function get_shipping_address() {
-		return [
-			'streetAddress1' => WC()->customer->get_shipping_address_1(),
-			'streetAddress2' => WC()->customer->get_shipping_address_2(),
-			'city'           => WC()->customer->get_shipping_city(),
-			'state'          => WC()->customer->get_shipping_state(),
-			'postalCode'     => WC()->customer->get_shipping_postcode(),
-			'country'        => WC()->customer->get_shipping_country(),
-			'countryCode'    => '',
-		];
 	}
 }
