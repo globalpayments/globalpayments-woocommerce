@@ -130,7 +130,7 @@
 			}
 
 			$.post( this.threedsecure.ajaxCheckoutUrl, $( this.getForm() ).serialize())
-				.success( function( result ) {
+				.done( function( result ) {
 					if ( -1 !== result.messages.indexOf( self.id + '_checkout_validated' ) ) {
 						self.createInputElement( 'checkout_validated', 1 );
 						self.threeDSecure();
@@ -138,7 +138,7 @@
 						self.showPaymentError( result.messages );
 					}
 				})
-				.error(	function( jqXHR, textStatus, errorThrown ) {
+				.fail(	function( jqXHR, textStatus, errorThrown ) {
 					self.showPaymentError( errorThrown );
 				});
 
