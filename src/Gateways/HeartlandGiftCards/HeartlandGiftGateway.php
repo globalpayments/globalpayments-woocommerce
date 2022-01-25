@@ -14,10 +14,12 @@ defined('ABSPATH') || exit;
 
 class HeartlandGiftGateway
 {
-    function __construct()
+    function __construct($heartlandGateway = null)
     {
-        $HeartlandGateway = new HeartlandGateway();
-        $this->secret_api_key = $HeartlandGateway->get_backend_gateway_options()['secretApiKey'];
+        if(is_null($heartlandGateway)){
+            $heartlandGateway = new HeartlandGateway();
+        }
+        $this->secret_api_key = $heartlandGateway->get_backend_gateway_options()['secretApiKey'];
     }
 
     protected $temp_balance;

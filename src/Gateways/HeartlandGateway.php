@@ -148,7 +148,7 @@ class HeartlandGateway extends AbstractGateway {
 		parent::add_hooks();
 
 		if ($this->allow_gift_cards === true) {
-			$HeartlandGiftGateway = new HeartlandGiftGateway();
+		    $HeartlandGiftGateway = new HeartlandGiftGateway($this);
 
 			add_action('wp_ajax_nopriv_use_gift_card',                array($HeartlandGiftGateway, 'applyGiftCard'));
 			add_action('wp_ajax_use_gift_card',                       array($HeartlandGiftGateway, 'applyGiftCard'));
