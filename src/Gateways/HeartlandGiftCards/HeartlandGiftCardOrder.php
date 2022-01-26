@@ -13,7 +13,7 @@ class HeartlandGiftCardOrder
 {
     public function addItemsToPostOrderDisplay($rows, $order_object)
     {
-        $order_id = $order_object->id;
+        $order_id = $order_object->get_id();
 
         $applied_gift_cards = unserialize(get_post_meta($order_id, '_securesubmit_used_card_data', true));
         $original_balance   = get_post_meta($order_id, '_securesubmit_original_reported_total', true);
