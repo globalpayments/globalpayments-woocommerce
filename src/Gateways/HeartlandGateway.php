@@ -249,7 +249,7 @@ class HeartlandGateway extends AbstractGateway {
 			include_once  $path . '/../assets/frontend/HeartlandGiftFields.php';
 			wp_enqueue_style(
 				'heartland-gift-cards',
-				Plugin::get_url( '/../assets/frontend/css/heartland-gift-cards.css' ),
+				Plugin::get_url( '/assets/frontend/css/heartland-gift-cards.css' ),
 				array(),
 				WC()->version
 			);
