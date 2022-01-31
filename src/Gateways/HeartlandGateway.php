@@ -8,6 +8,7 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGiftCards\HeartlandGiftCardOrder;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -149,9 +150,9 @@ class HeartlandGateway extends AbstractGateway {
 
 		if ($this->allow_gift_cards === true) {
 		    $HeartlandGiftGateway = new HeartlandGiftGateway($this);
-
-			add_action('wp_ajax_nopriv_use_gift_card',                array($HeartlandGiftGateway, 'applyGiftCard'));
+			
 			add_action('wp_ajax_use_gift_card',                       array($HeartlandGiftGateway, 'applyGiftCard'));
+			add_action('wp_ajax_nopriv_use_gift_card',                array($HeartlandGiftGateway, 'applyGiftCard'));
 			add_action('woocommerce_review_order_before_order_total', array($HeartlandGiftGateway, 'addGiftCards'));
 			add_action('woocommerce_cart_totals_before_order_total',  array($HeartlandGiftGateway, 'addGiftCards'));
 			add_filter('woocommerce_calculated_total',                array($HeartlandGiftGateway, 'updateOrderTotal'), 10, 2);
@@ -246,7 +247,7 @@ class HeartlandGateway extends AbstractGateway {
 			$path = dirname(plugin_dir_path(__FILE__));
 
 			include_once  $path . '/../assets/frontend/HeartlandGiftFields.php';
-			wp_enqueue_style('heartland-gift-cards', $path . '/../assets/frontend/css/heartland-gift-cards.css');
+			wp_enqueue_style('heartland-gift-cards', Plugin::get_url('/assets/frontend/css/heartland-gift-cards.css'));
 		}
 	}
 
