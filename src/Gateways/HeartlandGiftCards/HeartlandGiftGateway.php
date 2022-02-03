@@ -251,8 +251,36 @@ class HeartlandGiftGateway
                 WC()->session->set('securesubmit_data', $securesubmit_data);
 
                 $message           = __('Total Before Gift Cards', 'wc_securesubmit');
-
-                $order_total_html  = '<tr id="securesubmit_order_total" class="order-total">';
+                
+                $ajaxUrl = admin_url('admin-ajax.php');
+                $order_total_html  = <<<EOT
+                <script data-cfasync="false" type="text/javascript">
+                    if( typeof ajaxurl === "undefined") {
+                        var ajaxurl = "{$ajaxUrl}";
+                    };
+                    jQuery(document).on( 'click', '.securesubmit-remove-gift-card', function (event) {
+                            event.preventDefault();
+                
+                            var removedCardID = jQuery(this).attr('id');
+                
+                            jQuery.ajax({
+                                  url: ajaxurl,
+                                  type: "POST",
+                                  data: {
+                                        action: 'remove_gift_card',
+                                        securesubmit_card_id: removedCardID
+                                  }
+                            }).done(function () {
+                                  jQuery('body').trigger('update_checkout');
+                                  jQuery(".button[name='update_cart']")
+                                        .prop("disabled", false)
+                                        .trigger("click");
+                            });
+                      });
+                </script>
+                EOT;
+                
+                $order_total_html .= '<tr id="securesubmit_order_total" class="order-total">';
                 $order_total_html .= '<th>' . $message . '</th>';
                 $order_total_html .= '<td data-title="' . esc_attr($message) . '">' . wc_price($original_total) . '</td>';
                 $order_total_html .= '</tr>';
