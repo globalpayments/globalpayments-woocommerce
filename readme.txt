@@ -3,7 +3,7 @@ Contributors: globalpayments
 Tags: woocommerce, woo, unified, commerce, platform, global, payments, ucp, heartland, payment, systems, tsys, genius, 3DS, gateway, token, tokenize, save cards
 Requires at least: 5.4
 Tested up to: 5.8
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: MIT
 License URI: https://github.com/globalpayments/globalpayments-woocommerce/blob/main/LICENSE
 
@@ -45,7 +45,10 @@ Access to our Unified Commerce Platform (UCP) requires sandbox credentials which
 
 == Changelog ==
 
-= 1.1.3=
+= 1.1.4 =
+* Add dependency for WC checkout frontend scripts.
+
+= 1.1.3 =
 * Added composer
 * Bug fix - globalpayments_gpapi-checkout_validated displayed although it should be hidden
 

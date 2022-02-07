@@ -310,7 +310,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		wp_enqueue_script(
 			'globalpayments-secure-payment-fields',
 			Plugin::get_url( '/assets/frontend/js/globalpayments-secure-payment-fields.js' ),
-			array( 'globalpayments-secure-payment-fields-lib', 'jquery' ),
+			array( 'globalpayments-secure-payment-fields-lib', 'wc-checkout' ),
 			WC()->version,
 			true
 		);
