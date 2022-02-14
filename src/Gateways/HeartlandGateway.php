@@ -158,6 +158,7 @@ class HeartlandGateway extends AbstractGateway {
 			add_filter('woocommerce_calculated_total',                array($HeartlandGiftGateway, 'updateOrderTotal'), 10, 2);
 			add_action('wp_ajax_nopriv_remove_gift_card',             array($HeartlandGiftGateway, 'removeGiftCard'));
 			add_action('wp_ajax_remove_gift_card',                    array($HeartlandGiftGateway, 'removeGiftCard'));
+			wp_enqueue_style('heartland-gift-cards', Plugin::get_url('/assets/frontend/css/heartland-gift-cards.css'));
 
 			$gcthing = new HeartlandGiftCardOrder();
 
@@ -246,8 +247,7 @@ class HeartlandGateway extends AbstractGateway {
 		if ( $this->allow_gift_cards === true ) {
 			$path = dirname(plugin_dir_path(__FILE__));
 
-			include_once  $path . '/../assets/frontend/HeartlandGiftFields.php';
-			wp_enqueue_style('heartland-gift-cards', Plugin::get_url('/assets/frontend/css/heartland-gift-cards.css'));
+			include_once  $path . '/../assets/frontend/HeartlandGiftFields.php';			
 		}
 	}
 
