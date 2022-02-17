@@ -8,6 +8,7 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGiftCards\HeartlandGiftCardOrder;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -246,7 +247,12 @@ class HeartlandGateway extends AbstractGateway {
 			$path = dirname(plugin_dir_path(__FILE__));
 
 			include_once  $path . '/../assets/frontend/HeartlandGiftFields.php';
-			wp_enqueue_style('heartland-gift-cards', $path . '/../assets/frontend/css/heartland-gift-cards.css');
+			wp_enqueue_style(
+				'heartland-gift-cards',
+				Plugin::get_url( '/assets/frontend/css/heartland-gift-cards.css' ),
+				array(),
+				WC()->version
+			);
 		}
 	}
 
