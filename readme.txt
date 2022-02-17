@@ -48,6 +48,9 @@ Access to our Unified Commerce Platform (UCP) requires sandbox credentials which
 = 1.1.5 =
 * Bug fix - Heartland gift card error
 
+= 1.1.4 =
+* Add dependency for WC checkout frontend scripts.
+
 = 1.1.3 =
 * Added composer
 * Bug fix - globalpayments_gpapi-checkout_validated displayed although it should be hidden
