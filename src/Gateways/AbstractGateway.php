@@ -720,7 +720,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		add_filter( 'woocommerce_credit_card_form_fields', array( $this, 'woocommerce_credit_card_form_fields' ) );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'tokenization_script' ) );
-		if ( is_add_payment_method_page() ) {			
+		if ( is_add_payment_method_page() ) {
 			add_filter( 'woocommerce_available_payment_gateways', array( $this, 'woocommerce_available_payment_gateways') );
 		}
 	}
