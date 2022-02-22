@@ -719,8 +719,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		// hooks only active when the gateway is enabled
 		add_filter( 'woocommerce_credit_card_form_fields', array( $this, 'woocommerce_credit_card_form_fields' ) );
 
+		add_action( 'wp_enqueue_scripts', array( $this, 'tokenization_script' ) );
 		if ( is_add_payment_method_page() ) {
-			add_action( 'wp_enqueue_scripts', array( $this, 'tokenization_script' ) );
 			add_filter( 'woocommerce_available_payment_gateways', array( $this, 'woocommerce_available_payment_gateways') );
 		}
 	}
@@ -953,8 +953,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		if(!empty($response->transactionReference->transactionId) && $this->get_option('check_avs_cvv') === 'yes'){
 		    if(!empty($response->avsResponseCode) || !empty($response->cvnResponseCode)){
 		        //check admin selected decline condtions
-		        if(in_array($response->avsResponseCode, $this->avs_reject_conditions) ||
-		            in_array($response->cvnResponseCode, $this->cvn_reject_conditions)){
+		        if(in_array($response->avsResponseCode, $this->get_option('avs_reject_conditions')) ||
+		            in_array($response->cvnResponseCode, $this->get_option('cvn_reject_conditions'))){
 		                Transaction::fromId( $response->transactionReference->transactionId )
 		                ->reverse( $request->order->data[ 'total' ] )
 		                ->execute();

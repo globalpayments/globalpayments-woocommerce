@@ -6,8 +6,6 @@
 namespace GlobalPayments\WooCommercePaymentGatewayProvider;
 
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGateway;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGiftCards\HeartlandGiftGateway;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGiftCards\HeartlandGiftCardOrder;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,7 +18,7 @@ class Plugin {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.1.4';
+	const VERSION = '1.1.5';
 
 	/**
 	 * Init the package.
@@ -32,6 +30,14 @@ class Plugin {
 			return;
 		}
 
+		//initialize gift related hooks for Heartland ajax requests
+		if(wp_doing_ajax() === true || !empty( $_GET['wc-ajax'])){
+    		$heartlandSettings = get_option( 'woocommerce_globalpayments_heartland_settings' );    	    
+    		if($heartlandSettings['enabled'] === 'yes' && $heartlandSettings['allow_gift_cards'] === 'yes'){
+    		  new HeartlandGateway();
+    		}
+		}
+		
 		add_filter( 'woocommerce_payment_gateways', array( self::class, 'add_gateways' ) );
 		add_action( 'woocommerce_order_actions', array( Gateways\AbstractGateway::class, 'addCaptureOrderAction' ) );
 		add_action( 'woocommerce_order_action_capture_credit_card_authorization', array( Gateways\AbstractGateway::class, 'capture_credit_card_authorization' ) );

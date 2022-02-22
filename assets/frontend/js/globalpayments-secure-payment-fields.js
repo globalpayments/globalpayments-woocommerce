@@ -631,6 +631,8 @@
 							break;
 						}
 					case 'ERROR':
+						if(reason.message == "IframeField: target cannot be found with given selector")
+							break;
 						this.showPaymentError( reason.message );
 						break;
 					default:
