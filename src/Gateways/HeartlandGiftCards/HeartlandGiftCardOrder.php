@@ -55,7 +55,7 @@ class HeartlandGiftCardOrder
             $gift_card_temp_balance = $gift_card->temp_balance;
             $gift_card_balance      = $giftcard_gateway->giftCardBalance($gift_card_number, $gift_card_pin);
 
-            if ($gift_card_balance[ 'message' ] < $gift_card_temp_balance) {
+            if ($gift_card_balance['message'] < $gift_card_temp_balance) {
                 $giftcard_gateway->removeGiftCard($gift_card->gift_card_id);
 
                 $balance_message = sprintf(__('The %s now has a lower balance than when it was originally applied to the order. It has been removed from the order. Please add it to the order again.', 'wc_securesubmit'), $gift_card->gift_card_name);
@@ -73,8 +73,8 @@ class HeartlandGiftCardOrder
                     __('%s was not able to be processed: %s', 'wc_securesubmit'),
                     $gift_card->gift_card_name,
                     substr($sale_response->responseMessage, 20)
-                );                
-                
+                );
+
                 // Void the already done transactions if any
                 if (!empty($gift_card_sales)) {
                     $giftcard_gateway->processGiftCardVoid($gift_card_sales, $order_awaiting_payment);
@@ -83,14 +83,16 @@ class HeartlandGiftCardOrder
                 throw new Exception($error_response_message);
             }
 
-            $used_amount_positive = abs($gift_card->used_amount);
+            $processedAmount = isset($sale_response->splitTenderCardAmount) ? $sale_response->splitTenderCardAmount :
+                $gift_card->used_amount;
+            $balanceDueAmount = isset($sale_response->splitTenderBalanceDue) ? $sale_response->splitTenderBalanceDue : $sale_response->balanceAmount;
 
             $gift_card_sales[$gift_card->gift_card_id] = new stdClass();
             $gift_card_sales[$gift_card->gift_card_id]->gift_card_name    = $gift_card->gift_card_name;
             $gift_card_sales[$gift_card->gift_card_id]->gift_card_id      = $gift_card->gift_card_id;
             $gift_card_sales[$gift_card->gift_card_id]->transaction_id    = $sale_response->transactionId;
-            $gift_card_sales[$gift_card->gift_card_id]->remaining_balance = $sale_response->balanceAmount;
-            $gift_card_sales[$gift_card->gift_card_id]->used_amount       = $used_amount_positive;
+            $gift_card_sales[$gift_card->gift_card_id]->remaining_balance = $balanceDueAmount;
+            $gift_card_sales[$gift_card->gift_card_id]->used_amount       = abs($processedAmount);
         }
 
         update_post_meta($order_awaiting_payment, '_securesubmit_used_card_data', serialize($gift_card_sales));
@@ -101,7 +103,9 @@ class HeartlandGiftCardOrder
 
             $note_text = sprintf(
                 __('%s was used on this order with a total used amount of %s. Transaction ID: %s ', 'wc_securesubmit'),
-                $gift_card_sale->gift_card_name, $balance_used, $gift_card_sale->transaction_id
+                $gift_card_sale->gift_card_name,
+                $balance_used,
+                $gift_card_sale->transaction_id
             );
 
             $order = new WC_Order($order_awaiting_payment);
@@ -133,9 +137,8 @@ class HeartlandGiftCardOrder
 
             $gift_card_array[$card->gift_card_id] = array(
                 'label' => $card->gift_card_name,
-                'value' => wc_price($card->used_amount * - 1),
+                'value' => wc_price($card->used_amount * -1),
             );
-
         }
 
         $rows_first_part = array_slice($rows, 0, $index_of_order_total, true);
