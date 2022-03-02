@@ -173,7 +173,7 @@ class GpApiGateway extends AbstractGateway {
 		return array(
 			'appId'                    => $this->get_credential_setting( 'app_id' ),
 			'appKey'                   => $this->get_credential_setting( 'app_key' ),
-			'channel'                  => Channels::CardNotPresent,
+			'channel'                  => Channel::CardNotPresent,
 			'country'                  => wc_get_base_location()['country'],
 			'developerId'              => '',
 			'environment'              => $this->is_production ? Environment::PRODUCTION : Environment::TEST,
