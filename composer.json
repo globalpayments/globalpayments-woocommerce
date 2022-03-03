@@ -14,7 +14,7 @@
         }
     },
     "require": {
-        "globalpayments/php-sdk": "2.3.13",
+        "globalpayments/php-sdk": "3.0.0",
         "psr/log": "^1.1"
     },
     "require-dev": {
@@ -23,6 +23,10 @@
         "phpstan/phpstan": "^0.12.69"
     },
     "scripts": {
-        "test": [ "phpcs", "phpstan analyse --level 8 src test", "phpunit" ]
+        "test": [
+            "phpcs",
+            "phpstan analyse --level 8 src test",
+            "phpunit"
+        ]
     }
 }
