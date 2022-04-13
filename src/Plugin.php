@@ -18,7 +18,7 @@ class Plugin {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.1.6';
+	const VERSION = '1.2.0';
 
 	/**
 	 * Init the package.
@@ -31,16 +31,24 @@ class Plugin {
 		}
 
 		//initialize gift related hooks for Heartland ajax requests
-		if(wp_doing_ajax() === true || !empty( $_GET['wc-ajax'])){
-    		$heartlandSettings = get_option( 'woocommerce_globalpayments_heartland_settings' );    	    
-    		if($heartlandSettings['enabled'] === 'yes' && $heartlandSettings['allow_gift_cards'] === 'yes'){
-    		  new HeartlandGateway();
-    		}
+		if ( true === wp_doing_ajax() || ! empty( $_GET['wc-ajax'] ) ) {
+			$heartlandSettings = get_option( 'woocommerce_globalpayments_heartland_settings' );
+			// prevent checkout blocker when Heartland settings not setted loop
+			if (
+			    !empty( $heartlandSettings )  &&
+                'yes' === $heartlandSettings['enabled'] &&
+                'yes' === $heartlandSettings['allow_gift_cards']
+            ) {
+				new HeartlandGateway();
+			}
 		}
-		
+
 		add_filter( 'woocommerce_payment_gateways', array( self::class, 'add_gateways' ) );
 		add_action( 'woocommerce_order_actions', array( Gateways\AbstractGateway::class, 'addCaptureOrderAction' ) );
-		add_action( 'woocommerce_order_action_capture_credit_card_authorization', array( Gateways\AbstractGateway::class, 'capture_credit_card_authorization' ) );
+		add_action( 'woocommerce_order_action_capture_credit_card_authorization', array(
+			Gateways\AbstractGateway::class,
+			'capture_credit_card_authorization'
+		) );
 	}
 
 	/**
@@ -56,6 +64,8 @@ class Plugin {
 			Gateways\GeniusGateway::class,
 			Gateways\TransitGateway::class,
 			Gateways\GpApiGateway::class,
+			Gateways\GooglePayGateway::class,
+			Gateways\ApplePayGateway::class,
 		);
 
 		foreach ( $gateways as $gateway ) {

@@ -6,7 +6,8 @@
 	GlobalPayments,
 	GlobalPayments3DS,
 	globalpayments_secure_payment_fields_params,
-	globalpayments_secure_payment_threedsecure_params
+	globalpayments_secure_payment_threedsecure_params,
+	helper
 ) {
 	/**
 	 * Frontend code for Global Payments in WooCommerce
@@ -74,20 +75,20 @@
 		 * @returns
 		 */
 		attachEventHandlers: function () {
-			var that = this;
+			var self = this;
 
 			// General
-			$( '#order_review, #add_payment_method' ).on( 'click', '.payment_methods input.input-radio', this.toggleSubmitButtons.bind( this ) );
+			$( '#order_review, #add_payment_method' ).on( 'click', '.payment_methods input.input-radio', helper.toggleSubmitButtons.bind( helper ) );
 
 			// Saved payment methods
 			$( document.body ).on(
 				'updated_checkout wc-credit-card-form-init',
 				function () {
-					$( '.payment_method_' + that.id + ' .wc-saved-payment-methods' ).on( 'change', ':input.woocommerce-SavedPaymentMethods-tokenInput', that.toggleSubmitButtons.bind( that ) );
+					$( '.payment_method_' + self.id + ' .wc-saved-payment-methods' ).on( 'change', ':input.woocommerce-SavedPaymentMethods-tokenInput', helper.toggleSubmitButtons.bind( helper ) );
 				}
 			);
 
-			$( this.getForm() ).on( 'checkout_place_order_globalpayments_gpapi', this.initThreeDSecure.bind( this ) );
+			$( helper.getForm() ).on( 'checkout_place_order_globalpayments_gpapi', this.initThreeDSecure.bind( this ) );
 			$( document.body ).on( 'checkout_error', function() {
 				$('#globalpayments_gpapi-checkout_validated').remove();
 				$('#globalpayments_gpapi-serverTransId').remove();
@@ -129,10 +130,10 @@
 				return true;
 			}
 
-			$.post( this.threedsecure.ajaxCheckoutUrl, $( this.getForm() ).serialize())
+			$.post( this.threedsecure.ajaxCheckoutUrl, $( helper.getForm() ).serialize())
 				.done( function( result ) {
 					if ( -1 !== result.messages.indexOf( self.id + '_checkout_validated' ) ) {
-						self.createInputElement( 'checkout_validated', 1 );
+						helper.createInputElement( self.id, 'checkout_validated', 1 );
 						self.threeDSecure();
 					} else {
 						self.showPaymentError( result.messages );
@@ -144,34 +145,6 @@
 
 			return false;
 		},
-
-		/**
-		 * Convenience function to get CSS selector for the built-in 'Place Order' button
-		 *
-		 * @returns {string}
-		 */
-		getPlaceOrderButtonSelector: function () { return '#place_order'; },
-
-		/**
-		 * Convenience function to get CSS selector for the custom 'Place Order' button's parent element
-		 *
-		 * @returns {string}
-		 */
-		getSubmitButtonTargetSelector: function () { return '#' + this.id + '-card-submit'; },
-
-		/**
-		 * Convenience function to get CSS selector for the radio input associated with our payment method
-		 *
-		 * @returns {string}
-		 */
-		getPaymentMethodRadioSelector: function () { return '.payment_methods input.input-radio[value="' + this.id + '"]'; },
-
-		/**
-		 * Convenience function to get CSS selector for stored card radio inputs
-		 *
-		 * @returns {string}
-		 */
-		getStoredPaymentMethodsRadioSelector: function () { return '.payment_method_' + this.id + ' .wc-saved-payment-methods input'; },
 
 		/**
 		 * Checks if an order has input for the shipping address
@@ -233,8 +206,8 @@
 
 			// ensure the submit button's parent is on the page as this is added
 			// only after the initial page load
-			if ( $( this.getSubmitButtonTargetSelector() ).length === 0 ) {
-				this.createSubmitButtonTarget();
+			if ( $( helper.getSubmitButtonTargetSelector( this.id ) ).length === 0 ) {
+				helper.createSubmitButtonTarget( this.id );
 			}
 
 			GlobalPayments.configure( gatewayConfig );
@@ -250,46 +223,12 @@
 			this.cardForm.on( 'error', this.handleErrors.bind( this ) );
 			GlobalPayments.on( 'error', this.handleErrors.bind( this ) );
 
+			var self = this;
 			// match the visibility of our payment form
 			this.cardForm.ready( function () {
-				this.toggleSubmitButtons();
+				helper.toggleSubmitButtons();
 			} );
-		},
 
-		/**
-		 * Creates the parent for the submit button
-		 *
-		 * @returns
-		 */
-		createSubmitButtonTarget: function () {
-			var el       = document.createElement( 'div' );
-			el.id        = this.getSubmitButtonTargetSelector().replace( '#', '' );
-			el.className = 'globalpayments ' + this.id + ' card-submit';
-			$( this.getPlaceOrderButtonSelector() ).after( el );
-			// match the visibility of our payment form
-			this.toggleSubmitButtons();
-		},
-
-		/**
-		 * Swaps the default WooCommerce 'Place Order' button for our iframe-d button
-		 * when one of our gateways is selected.
-		 *
-		 * @returns
-		 */
-		toggleSubmitButtons: function () {
-			var paymentGatewaySelected = $( this.getPaymentMethodRadioSelector() ).is( ':checked' );
-			var savedCardsAvailable    = $( this.getStoredPaymentMethodsRadioSelector() + '[value!="new"]' ).length > 0;
-			var newSavedCardSelected   = 'new' === $( this.getStoredPaymentMethodsRadioSelector() + ':checked' ).val();
-			var shouldBeVisible = ( paymentGatewaySelected && ( ! savedCardsAvailable  || savedCardsAvailable && newSavedCardSelected ) );
-			if (shouldBeVisible) {
-				// our gateway was selected
-				$( this.getSubmitButtonTargetSelector() ).show();
-				$( this.getPlaceOrderButtonSelector() ).addClass( 'woocommerce-globalpayments-hidden' ).hide();
-			} else {
-				// another gateway was selected
-				$( this.getSubmitButtonTargetSelector() ).hide();
-				$( this.getPlaceOrderButtonSelector() ).removeClass( 'woocommerce-globalpayments-hidden' ).show();
-			}
 		},
 
 		/**
@@ -309,9 +248,9 @@
 
 			this.tokenResponse = JSON.stringify(response);
 
-			var that = this;
+			var self = this;
 
-			this.cardForm.frames["card-cvv"].getCvv().then(function (c) {
+			this.cardForm.frames["card-cvv"].getCvv().then( function ( c ) {
 				
 				/**
 				 * CVV; needed for TransIT gateway processing only
@@ -326,18 +265,18 @@
 					 *
 					 * @type {HTMLInputElement}
 					 */
-					(document.getElementById( that.id + '-token_response' ));
+					(document.getElementById( self.id + '-token_response' ));
 				if ( ! tokenResponseElement) {
 					tokenResponseElement      = document.createElement( 'input' );
-					tokenResponseElement.id   = that.id + '-token_response';
-					tokenResponseElement.name = that.id + '[token_response]';
+					tokenResponseElement.id   = self.id + '-token_response';
+					tokenResponseElement.name = self.id + '[token_response]';
 					tokenResponseElement.type = 'hidden';
-					that.getForm().appendChild( tokenResponseElement );
+					helper.getForm().appendChild( tokenResponseElement );
 				}
 
 				response.details.cardSecurityCode = cvvVal;
 				tokenResponseElement.value = JSON.stringify( response );
-				that.placeOrder();
+				helper.placeOrder();
 			});
 		},
 
@@ -348,7 +287,7 @@
 			this.blockOnSubmit();
 
 			var self = this;
-			var _form = this.getForm();
+			var _form = helper.getForm();
 			var $form = $( _form );
 
 			GlobalPayments.ThreeDSecure.checkVersion( this.threedsecure.checkEnrollmentUrl, {
@@ -375,8 +314,8 @@
 						return true;
 					}
 					if ( "ONE" === versionCheckData.version ) {
-						self.createInputElement( 'serverTransId', versionCheckData.challenge.response.data.MD || versionCheckData.serverTransactionId );
-						self.createInputElement( 'PaRes', versionCheckData.challenge.response.data.PaRes || '');
+						helper.createInputElement( self.id, 'serverTransId', versionCheckData.challenge.response.data.MD || versionCheckData.serverTransactionId );
+						helper.createInputElement( self.id, 'PaRes', versionCheckData.challenge.response.data.PaRes || '');
 						$form.submit();
 						return false;
 					}
@@ -407,7 +346,7 @@
 								self.showPaymentError( authenticationData.message );
 								return false;
 							}
-							self.createInputElement( 'serverTransId', authenticationData.serverTransactionId || authenticationData.challenge.response.data.threeDSServerTransID || versionCheckData.serverTransactionId );
+							helper.createInputElement( self.id, 'serverTransId', authenticationData.serverTransactionId || authenticationData.challenge.response.data.threeDSServerTransID || versionCheckData.serverTransactionId );
 							$form.submit();
 							return true;
 						})
@@ -436,44 +375,6 @@
 			window.parent.postMessage({ data: { "transStatus":"N" }, event: "challengeNotification" }, window.location.origin );
 		},
 
-		createInputElement: function ( name, value ) {
-			var inputElement = (document.getElementById( this.id + '-' + name ));
-
-			if ( ! inputElement) {
-				inputElement      = document.createElement( 'input' );
-				inputElement.id   = this.id + '-' + name;
-				inputElement.name = this.id + '[' + name + ']';
-				inputElement.type = 'hidden';
-				this.getForm().appendChild( inputElement );
-			}
-
-			inputElement.value = value;
-		},
-
-		/**
-		 * Places/submits the order to WooCommerce
-		 *
-		 * Attempts to click the default 'Place Order' button that is used by payment methods.
-		 * This is to account for other plugins taking action based on that click event, even
-		 * though there are usually better options. If anything fails during that process,
-		 * we fall back to calling `this.placeOrder` manually.
-		 *
-		 * @returns
-		 */
-		placeOrder: function () {
-			try {
-				var originalSubmit = $( this.getPlaceOrderButtonSelector() );
-				if ( originalSubmit ) {
-					originalSubmit.click();
-					return;
-				}
-			} catch ( e ) {
-				/* om nom nom */
-			}
-
-			$( this.getForm() ).submit();
-		},
-
 		/**
 		 * Validates the tokenization response
 		 *
@@ -488,8 +389,8 @@
 
 			if (response.details) {
 				var expirationDate = new Date( response.details.expiryYear, response.details.expiryMonth - 1 );
-				var now            = new Date();
-				var thisMonth      = new Date( now.getFullYear(), now.getMonth() );
+				var now = new Date();
+				var thisMonth = new Date( now.getFullYear(), now.getMonth() );
 
 				if ( ! response.details.expiryYear || ! response.details.expiryMonth || expirationDate < thisMonth ) {
 					this.showValidationError( 'card-expiration' );
@@ -535,7 +436,7 @@
 		 * @returns
 		 */
 		showPaymentError: function ( message ) {
-			var $form     = $( this.getForm() );
+			var $form = $( helper.getForm() );
 
 			// Remove notices from all sources
 			$( '.woocommerce-NoticeGroup, .woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-globalpayments-checkout-error' ).remove();
@@ -662,7 +563,7 @@
 				},
 				'submit': {
 					text: this.getSubmitButtonText(),
-					target: this.getSubmitButtonTargetSelector()
+					target: helper.getSubmitButtonTargetSelector( this.id )
 				}
 			};
 		},
@@ -686,24 +587,6 @@
 		},
 
 		/**
-		 * Gets the current checkout form
-		 *
-		 * @returns {Element}
-		 */
-		getForm: function () {
-			var checkoutForms = [
-				// Order Pay
-				'form#order_review',
-				// Checkout
-				'form[name="checkout"]',
-				// Add payment method
-				'form#add_payment_method'
-			];
-			var forms = document.querySelectorAll( checkoutForms.join( ',' ) );
-			return forms.item( 0 );
-		},
-
-		/**
 		 * Blocks checkout UI
 		 *
 		 * Implementation pulled from `woocommerce/assets/js/frontend/checkout.js`
@@ -711,9 +594,8 @@
 		 * @returns
 		 */
 		blockOnSubmit: function () {
-			var $form     = $( this.getForm() );
+			var $form = $( helper.getForm() );
 			var form_data = $form.data();
-
 			if ( 1 !== form_data['blockUI.isBlocked'] ) {
 				$form.block(
 					{
@@ -733,7 +615,7 @@
 		 * @returns
 		 */
 		unblockOnError: function () {
-			var $form = $( this.getForm() );
+			var $form = $( helper.getForm() );
 			$form.unblock();
 		}
 	};
@@ -745,35 +627,41 @@
 	 *
 	 * @type {any}
 	 */
-	(window).jQuery,
+	( window ).jQuery,
 	/**
 	 * Global `wc_checkout_params` reference
 	 *
 	 * @type {any}
 	 */
-	(window).wc_checkout_params || {},
+	( window ).wc_checkout_params || {},
 	/**
 	 * Global `GlobalPayments` reference
 	 *
 	 * @type {any}
 	 */
-	(window).GlobalPayments,
+	( window ).GlobalPayments,
 	/**
 	 * Global `GlobalPayments` reference
 	 *
 	 * @type {any}
 	 */
-	(window).GlobalPayments.ThreeDSecure,
+	( window ).GlobalPayments.ThreeDSecure,
 	/**
 	 * Global `globalpayments_secure_payment_fields_params` reference
 	 *
 	 * @type {any}
 	 */
-	(window).globalpayments_secure_payment_fields_params,
+	( window ).globalpayments_secure_payment_fields_params || {},
 	/**
 	 * Global `globalpayments_secure_payment_threedsecure_params` reference
 	 *
 	 * @type {any}
 	 */
-	(window).globalpayments_secure_payment_threedsecure_params || {}
+	( window ).globalpayments_secure_payment_threedsecure_params || {},
+	/**
+	 * Global `helper` reference
+	 *
+	 * @type {any}
+	 */
+	( window ).GlobalPaymentsHelper
 ));
