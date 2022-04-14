@@ -94,43 +94,54 @@ class GpApiGateway extends AbstractGateway {
 
 	public function get_gateway_form_fields() {
 		return array(
-			'is_production' => array(
+			'is_production'        => array(
 				'title'       => __( 'Live Mode', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
 				'description' => sprintf(
 				/* translators: %s: Email address of support team */
 					__( 'Get your App Id and App Key from your <a href="https://developer.globalpay.com/user/register" target="_blank">Global Payments Developer Account</a>. ' .
-						'Please follow the instructions provided in the <a href="https://wordpress.org/plugins/global-payments-woocommerce/" target="_blank">plugin description</a>.<br/>' .
-						'When you are ready for Live, please contact <a href="mailto:%s?Subject=WooCommerce%%20Live%%20Credentials">support</a> to get you live credentials.',
+					    'Please follow the instructions provided in the <a href="https://wordpress.org/plugins/global-payments-woocommerce/" target="_blank">plugin description</a>.<br/>' .
+					    'When you are ready for Live, please contact <a href="mailto:%s?Subject=WooCommerce%%20Live%%20Credentials">support</a> to get you live credentials.',
 						'globalpayments-gateway-provider-for-woocommerce'
 					),
 					$this->get_first_line_support_email()
 				),
 				'default'     => 'no',
 			),
-			'app_id' => array(
-				'title'       => __( 'Live App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'text',
+			'app_id'               => array(
+				'title' => __( 'Live App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'  => 'text',
 			),
-			'app_key' => array(
-				'title'       => __( 'Live App Key*', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'password',
+			'app_key'              => array(
+				'title' => __( 'Live App Key*', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'  => 'password',
 			),
-			'sandbox_app_id' => array(
-				'title'       => __( 'Sandbox App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'text',
-				'default'     => '',
+			'sandbox_app_id'       => array(
+				'title'   => __( 'Sandbox App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'    => 'text',
+				'default' => '',
 			),
-			'sandbox_app_key' => array(
-				'title'       => __( 'Sandbox App Key*', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'password',
-				'default'     => '',
+			'sandbox_app_key'      => array(
+				'title'   => __( 'Sandbox App Key*', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'    => 'password',
+				'default' => '',
 			),
-			'section_general' => array(
+			'allow_card_saving'    => array(
+				'title'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => sprintf(
+				/* translators: %s: Email address of support team */
+					__( 'Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href="mailto:%s?Subject=WooCommerce%%20Card%%20Saving%%20Option">support</a> with any questions regarding this option.', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$this->get_first_line_support_email()
+				),
+				'default'     => 'no',
+			),
+			'section_general'      => array(
 				'title' => __( 'General Settings', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'  => 'title',
 			),
-			'debug' => array(
+			'debug'                => array(
 				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
@@ -156,6 +167,7 @@ class GpApiGateway extends AbstractGateway {
 		if ( $this->is_production ) {
 			return ( empty( $this->app_id ) || empty( $this->app_key ) );
 		}
+
 		return ( empty( $this->sandbox_app_id ) || empty( $this->sandbox_app_key ) );
 	}
 
@@ -177,11 +189,11 @@ class GpApiGateway extends AbstractGateway {
 			'country'                  => wc_get_base_location()['country'],
 			'developerId'              => '',
 			'environment'              => $this->is_production ? Environment::PRODUCTION : Environment::TEST,
-			'methodNotificationUrl'    => WC()->api_request_url('globalpayments_threedsecure_methodnotification'),
-			'challengeNotificationUrl' => WC()->api_request_url('globalpayments_threedsecure_challengenotification'),
+			'methodNotificationUrl'    => WC()->api_request_url( 'globalpayments_threedsecure_methodnotification' ),
+			'challengeNotificationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
 			'merchantContactUrl'       => $this->merchant_contact_url,
 			'dynamicHeaders'           => [
-				'x-gp-platform' => 'wordpress;version=' . $wp_version . ';woocommerce;version=' . WC()->version,
+				'x-gp-platform'  => 'wordpress;version=' . $wp_version . ';woocommerce;version=' . WC()->version,
 				'x-gp-extension' => 'globalpayments-woocommerce;version=' . Plugin::VERSION,
 			],
 			'debug'                    => $this->debug,
@@ -198,17 +210,32 @@ class GpApiGateway extends AbstractGateway {
 	protected function add_hooks() {
 		parent::add_hooks();
 
-		add_filter( 'pre_update_option_woocommerce_globalpayments_gpapi_settings', array( $this, 'woocommerce_globalpayments_gpapi_settings' ) );
-		add_action( 'woocommerce_after_checkout_validation', array( $this, 'after_checkout_validation' ), 10, 2 );
+		add_filter( 'pre_update_option_woocommerce_globalpayments_gpapi_settings', array(
+			$this,
+			'woocommerce_globalpayments_gpapi_settings'
+		) );
+		add_action( 'woocommerce_after_checkout_validation', array( $this, 'after_checkout_validation' ), 99, 2 );
 
 		/**
 		 * The WooCommerce API allows plugins make a callback to a special URL that will then load the specified class (if it exists)
 		 * and run an action. This is also useful for gateways that are not initialized.
 		 */
-		add_action( 'woocommerce_api_globalpayments_threedsecure_checkenrollment', array( $this, 'process_threeDSecure_checkEnrollment' ) );
-		add_action( 'woocommerce_api_globalpayments_threedsecure_methodnotification', array( $this, 'process_threeDSecure_methodNotification' ) );
-		add_action( 'woocommerce_api_globalpayments_threedsecure_initiateauthentication', array( $this, 'process_threeDSecure_initiateAuthentication' ) );
-		add_action( 'woocommerce_api_globalpayments_threedsecure_challengenotification', array( $this, 'process_threeDSecure_challengeNotification' ) );
+		add_action( 'woocommerce_api_globalpayments_threedsecure_checkenrollment', array(
+			$this,
+			'process_threeDSecure_checkEnrollment'
+		) );
+		add_action( 'woocommerce_api_globalpayments_threedsecure_methodnotification', array(
+			$this,
+			'process_threeDSecure_methodNotification'
+		) );
+		add_action( 'woocommerce_api_globalpayments_threedsecure_initiateauthentication', array(
+			$this,
+			'process_threeDSecure_initiateAuthentication'
+		) );
+		add_action( 'woocommerce_api_globalpayments_threedsecure_challengenotification', array(
+			$this,
+			'process_threeDSecure_challengeNotification'
+		) );
 	}
 
 	public function woocommerce_globalpayments_gpapi_settings( $settings ) {
@@ -216,26 +243,28 @@ class GpApiGateway extends AbstractGateway {
 			return $settings;
 		}
 		if ( empty( $settings['merchant_contact_url'] ) || 50 < strlen( $settings['merchant_contact_url'] ) ) {
-			add_action( 'admin_notices', function() {
+			add_action( 'admin_notices', function () {
 				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide a Contact Url (maxLength: 50). Gateway not enabled.' ) . '</strong></p></div>';
-			});
+			} );
 			$settings['enabled'] = 'no';
 		}
 		if ( wc_string_to_bool( $settings['is_production'] ) ) {
 			if ( empty( $settings['app_id'] ) || empty( $settings['app_key'] ) ) {
-				add_action( 'admin_notices', function() {
+				add_action( 'admin_notices', function () {
 					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide Live Credentials. Gateway not enabled.' ) . '</strong></p></div>';
-				});
+				} );
 				$settings['enabled'] = 'no';
 			}
+
 			return $settings;
 		}
 		if ( empty( $settings['sandbox_app_id'] ) || empty( $settings['sandbox_app_key'] ) ) {
-			add_action( 'admin_notices', function() {
+			add_action( 'admin_notices', function () {
 				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide Sandbox Credentials. Gateway not enabled.' ) . '</strong></p></div>';
-			});
+			} );
 			$settings['enabled'] = 'no';
 		}
+
 		return $settings;
 	}
 
@@ -266,7 +295,7 @@ class GpApiGateway extends AbstractGateway {
 		try {
 			$request = $this->prepare_request( parent::TXN_TYPE_CHECK_ENROLLMENT );
 			$this->client->submit_request( $request );
-		} catch (\Exception $e) {
+		} catch ( \Exception $e ) {
 			wp_send_json( [
 				'error'    => true,
 				'message'  => $e->getMessage(),
@@ -279,10 +308,10 @@ class GpApiGateway extends AbstractGateway {
 		try {
 			$request = $this->prepare_request( parent::TXN_TYPE_INITIATE_AUTHENTICATION );
 			$this->client->submit_request( $request );
-		} catch (\Exception $e) {
+		} catch ( \Exception $e ) {
 			wp_send_json( [
-				'error'    => true,
-				'message'  => $e->getMessage(),
+				'error'   => true,
+				'message' => $e->getMessage(),
 			] );
 		}
 	}
@@ -296,9 +325,9 @@ class GpApiGateway extends AbstractGateway {
 		}
 
 		$convertedThreeDSMethodData = wc_clean( json_decode( base64_decode( $_POST['threeDSMethodData'] ) ) );
-		$response = json_encode([
+		$response                   = json_encode( [
 			'threeDSServerTransID' => $convertedThreeDSMethodData->threeDSServerTransID,
-		]);
+		] );
 
 		wp_enqueue_script(
 			'globalpayments-threedsecure-lib',
@@ -324,10 +353,10 @@ class GpApiGateway extends AbstractGateway {
 			if ( isset( $_POST['cres'] ) ) {
 				$convertedCRes = wc_clean( json_decode( base64_decode( $_POST['cres'] ) ) );
 
-				$response = json_encode([
+				$response = json_encode( [
 					'threeDSServerTransID' => $convertedCRes->threeDSServerTransID,
 					'transStatus'          => $convertedCRes->transStatus ?? '',
-				]);
+				] );
 			}
 
 			if ( isset( $_POST['PaRes'] ) ) {
@@ -345,16 +374,17 @@ class GpApiGateway extends AbstractGateway {
 			wp_print_scripts();
 			exit();
 
-		} catch (Exception $e) {
+		} catch ( Exception $e ) {
 			wp_send_json( [
-				'error'    => true,
-				'message'  => $e->getMessage(),
+				'error'   => true,
+				'message' => $e->getMessage(),
 			] );
 		}
 	}
 
 	protected function get_session_amount() {
-		$cart_totals = WC()->session->get('cart_totals');
-		return round($cart_totals['total'], 2);
+		$cart_totals = WC()->session->get( 'cart_totals' );
+
+		return round( $cart_totals['total'], 2 );
 	}
 }

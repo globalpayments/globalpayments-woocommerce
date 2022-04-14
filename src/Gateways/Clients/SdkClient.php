@@ -152,17 +152,20 @@ class SdkClient implements ClientInterface {
 
 		if ( in_array( $this->get_arg( RequestArg::TXN_TYPE ), $this->refund_transactions, true ) ) {
 			$subject = Transaction::fromId( $this->get_arg( 'GATEWAY_ID' ) );
+
 			return $subject->{$this->get_arg( RequestArg::TXN_TYPE )}();
 		}
 
 		if ( $this->get_arg( RequestArg::TXN_TYPE ) === 'capture' ) {
 			$subject = Transaction::fromId( $this->get_arg( 'GATEWAY_ID' ) );
+
 			return $subject->{$this->get_arg( RequestArg::TXN_TYPE )}();
 		}
 
 		$subject =
 			in_array( $this->get_arg( RequestArg::TXN_TYPE ), $this->auth_transactions, true )
-			? $this->card_data : $this->previous_transaction;
+				? $this->card_data : $this->previous_transaction;
+
 		return $subject->{$this->get_arg( RequestArg::TXN_TYPE )}();
 	}
 
@@ -201,6 +204,16 @@ class SdkClient implements ClientInterface {
 			}
 		}
 
+		if ( $this->has_arg( RequestArg::DIGITAL_WALLET_TOKEN ) ) {
+			$this->card_data             = new CreditCardData();
+			$this->card_data->token      = $this->get_arg( RequestArg::DIGITAL_WALLET_TOKEN );
+			$this->card_data->mobileType = $this->get_arg( RequestArg::MOBILE_TYPE );
+		}
+
+		if ( $this->has_arg( RequestArg::TRANSACTION_MODIFIER ) ) {
+			$this->builder_args['modifier'] = array( $this->get_arg( RequestArg::TRANSACTION_MODIFIER ) );
+		}
+
 		if ( $this->has_arg( RequestArg::BILLING_ADDRESS ) ) {
 			$this->prepare_address( AddressType::BILLING, $this->get_arg( RequestArg::BILLING_ADDRESS ) );
 		}
@@ -217,16 +230,16 @@ class SdkClient implements ClientInterface {
 			$this->builder_args['authAmount'] = array( $this->get_arg( RequestArg::AUTH_AMOUNT ) );
 		}
 
-		if ( $token !== null && !empty( $token->get_meta( 'card_brand_txn_id' ) ) ) {
+		if ( $token !== null && ! empty( $token->get_meta( 'card_brand_txn_id' ) ) ) {
 			$this->prepare_stored_credential_data( $token->get_meta( 'card_brand_txn_id' ) );
 		}
 	}
 
 	protected function prepare_stored_credential_data( $card_brand_txn_id ) {
-		$storedCredsDetails = new StoredCredential();
-		$storedCredsDetails->initiator = StoredCredentialInitiator::CARDHOLDER;
+		$storedCredsDetails                         = new StoredCredential();
+		$storedCredsDetails->initiator              = StoredCredentialInitiator::CARDHOLDER;
 		$storedCredsDetails->cardBrandTransactionId = $card_brand_txn_id;
-		
+
 		return $storedCredsDetails;
 	}
 
@@ -253,11 +266,11 @@ class SdkClient implements ClientInterface {
 		/**
 		 * Defaulting to Discover since it's currently the only card type not
 		 * returned by JS library in the case of Discover CUP cards.
-		 */		
+		 */
 		$this->card_data->cardType = CardType::DISCOVER;
 
 		// map for use with GlobalPayments SDK
-		switch( $token->get_card_type() ) {
+		switch ( $token->get_card_type() ) {
 			case "visa":
 				$this->card_data->cardType = CardType::VISA;
 				break;
@@ -290,14 +303,14 @@ class SdkClient implements ClientInterface {
 	protected function set_threedsecure_data() {
 		try {
 			$threeDSecureData = Secure3dService::getAuthenticationData()
-				->withServerTransactionId( $this->get_arg( RequestArg::SERVER_TRANS_ID ) )
-				->withPayerAuthenticationResponse( $this->get_arg( RequestArg::PARES ) )
-				->execute();
-		} catch (\Exception $e) {
+			                                   ->withServerTransactionId( $this->get_arg( RequestArg::SERVER_TRANS_ID ) )
+			                                   ->withPayerAuthenticationResponse( $this->get_arg( RequestArg::PARES ) )
+			                                   ->execute();
+		} catch ( \Exception $e ) {
 			throw new ApiException( __( '3DS Authentication failed. Please try again.' ) );
 		}
 		if ( AbstractAuthenticationsRequest::YES !== $threeDSecureData->liabilityShift
-			|| ! in_array( $threeDSecureData->status, $this->three_d_secure_auth_status ) ) {
+		     || ! in_array( $threeDSecureData->status, $this->three_d_secure_auth_status ) ) {
 			throw new ApiException( __( '3DS Authentication failed. Please try again.' ) );
 		}
 		$this->card_data->threeDSecure = $threeDSecureData;
@@ -325,7 +338,7 @@ class SdkClient implements ClientInterface {
 				$gatewayConfig = new PorticoConfig();
 				break;
 			case GatewayProvider::TRANSIT:
-				$gatewayConfig = new TransitConfig();
+				$gatewayConfig                 = new TransitConfig();
 				$gatewayConfig->acceptorConfig = new AcceptorConfig(); // defaults should work here
 				if ( $this->get_arg( RequestArg::TXN_TYPE ) === AbstractGateway::TXN_TYPE_CREATE_MANIFEST ) {
 					$gatewayConfig->deviceId = $this->get_arg( RequestArg::SERVICES_CONFIG )['tsepDeviceId'];
@@ -349,7 +362,9 @@ class SdkClient implements ClientInterface {
 			$gatewayConfig->requestLogger = new SampleRequestLogger( new Logger(
 				WC_LOG_DIR,
 				LogLevel::DEBUG,
-				[ 'prefix' => 'globalpayments-woocommerce.' . $this->get_arg( RequestArg::SERVICES_CONFIG )['gatewayProvider'] . '-', 'extension' => 'log', ]
+				[ 'prefix'    => 'globalpayments-woocommerce.' . $this->get_arg( RequestArg::SERVICES_CONFIG )['gatewayProvider'] . '-',
+				  'extension' => 'log',
+				]
 			) );
 		}
 
@@ -359,7 +374,7 @@ class SdkClient implements ClientInterface {
 	protected function set_object_data( $obj, array $data ) {
 		foreach ( $data as $key => $value ) {
 			if ( property_exists( $obj, $key ) ) {
-				if ( 
+				if (
 					$key === 'deviceId' &&
 					$this->get_arg( RequestArg::TXN_TYPE ) === AbstractGateway::TXN_TYPE_CREATE_MANIFEST
 				) {
@@ -368,6 +383,7 @@ class SdkClient implements ClientInterface {
 				$obj->{$key} = $value;
 			}
 		}
+
 		return $obj;
 	}
 }
