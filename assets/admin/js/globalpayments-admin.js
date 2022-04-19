@@ -4,9 +4,13 @@
     $,
     globalpayments_admin_params
 ) {
+    var digitalWallet = [ 'globalpayments_googlepay', 'globalpayments_applepay' ];
+
     function GlobalPaymentsAdmin( globalpayments_admin_params ) {
         this.id = globalpayments_admin_params.gateway_id;
-        this.toggleCredentialsSettings();
+        if ( !digitalWallet.includes(globalpayments_admin_params.gateway_id) ) {
+            this.toggleCredentialsSettings();
+        }
         this.attachEventHandlers();
     };
     GlobalPaymentsAdmin.prototype = {
