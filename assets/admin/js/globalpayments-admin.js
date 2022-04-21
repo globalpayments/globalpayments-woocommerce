@@ -4,11 +4,9 @@
     $,
     globalpayments_admin_params
 ) {
-    var digitalWallet = [ 'globalpayments_googlepay', 'globalpayments_applepay' ];
-
     function GlobalPaymentsAdmin( globalpayments_admin_params ) {
         this.id = globalpayments_admin_params.gateway_id;
-        if ( !digitalWallet.includes(globalpayments_admin_params.gateway_id) ) {
+        if ( 1 != globalpayments_admin_params.is_digital_wallet) {
             this.toggleCredentialsSettings();
         }
         this.attachEventHandlers();
