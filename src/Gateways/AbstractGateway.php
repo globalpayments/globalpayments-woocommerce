@@ -1162,6 +1162,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		if ( false === strpos( $section, 'globalpayments_' ) ) {
 			return;
 		}
+		if ( $this->id != $section ) {
+			return;
+		}
 		wp_enqueue_script(
 			'globalpayments-admin',
 			Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
@@ -1174,6 +1177,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			'globalpayments_admin_params',
 			array(
 				'gateway_id' => $section,
+				'gateway' => $this->id,
+				'is_digital_wallet' => $this->is_digital_wallet
 			)
 		);
 		wp_enqueue_style(
