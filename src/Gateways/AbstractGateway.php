@@ -1159,34 +1159,36 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			return;
 		}
 		$section = sanitize_text_field( wp_unslash( $_GET['section'] ) );
-		if ( false === strpos( $section, 'globalpayments_' ) ) {
-			return;
-		}
+
 		if ( $this->id != $section ) {
 			return;
 		}
-		wp_enqueue_script(
-			'globalpayments-admin',
-			Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
-			array(),
-			WC()->version,
-			true
-		);
-		wp_localize_script(
-			'globalpayments-admin',
-			'globalpayments_admin_params',
-			array(
-				'gateway_id' => $section,
-				'gateway' => $this->id,
-				'is_digital_wallet' => $this->is_digital_wallet
-			)
-		);
-		wp_enqueue_style(
-			'globalpayments-admin',
-			Plugin::get_url( '/assets/admin/css/globalpayments-admin.css' ),
-			array(),
-			WC()->version
-		);
+		if ( !$this->is_digital_wallet) {
+			wp_enqueue_script(
+				'globalpayments-admin',
+				Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
+				array(),
+				WC()->version,
+				true
+			);
+			wp_localize_script(
+				'globalpayments-admin',
+				'globalpayments_admin_params',
+				array(
+					'gateway_id' => $section,
+				)
+			);
+		}
+
+		if ( $this->is_digital_wallet ) {
+			wp_enqueue_style(
+				'globalpayments-admin',
+				Plugin::get_url( '/assets/admin/css/globalpayments-admin.css' ),
+				array(),
+				WC()->version
+			);
+		}
+
 	}
 
 }
