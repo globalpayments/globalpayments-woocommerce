@@ -525,6 +525,11 @@
 							this.showValidationError( 'card-expiration' );
 							break;
 						}
+						var n = reason.message.search("card.number");
+						if (n >= 0) {
+							this.showValidationError('card-number');
+							break;
+						}
 					case 'SYSTEM_ERROR_DOWNSTREAM':
 						var n = reason.message.search( "card expdate" );
 						if ( n>=0 ) {
