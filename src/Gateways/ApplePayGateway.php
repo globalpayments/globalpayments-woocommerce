@@ -94,7 +94,7 @@ class ApplePayGateway extends AbstractGateway {
 	public function configure_method_settings() {
 		$this->id                 = self::GATEWAY_ID;
 		$this->method_title       = __( 'GlobalPayments - Apple Pay', 'globalpayments-gateway-provider-for-woocommerce' );
-		$this->method_description = __( 'Connect to the Apple Pay gateway via UCP', 'globalpayments-gateway-provider-for-woocommerce' );
+		$this->method_description = __( 'Connect to the Apple Pay gateway via Unified Payments', 'globalpayments-gateway-provider-for-woocommerce' );
 	}
 
 	public function get_first_line_support_email() {

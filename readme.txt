@@ -1,9 +1,9 @@
 === GlobalPayments WooCommerce ===
 Contributors: globalpayments
-Tags: woocommerce, woo, unified, commerce, platform, global, payments, ucp, heartland, payment, systems, tsys, genius, 3DS, gateway, token, tokenize, save cards
+Tags: woocommerce, woo, unified, commerce, platform, global, payments, heartland, payment, systems, tsys, genius, 3DS, gateway, token, tokenize, save cards
 Requires at least: 5.4
 Tested up to: 5.9.3
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: MIT
 License URI: https://github.com/globalpayments/globalpayments-woocommerce/blob/main/LICENSE
 
@@ -14,7 +14,7 @@ This extension allows WooCommerce to use the available Global Payments payment g
 - Heartland Portico gateway
 - TSYS Genius gateway
 - TSYS TransIT gateway with TSEP
-- Unified Commerce Platform (UCP)
+- Unified Payments
 - Credit Cards
 - Integrates with Woocommerce
 - Sale transactions (automatic capture or separate capture action later)
@@ -37,8 +37,8 @@ After you have installed and configured the main WooCommerce plugin use the foll
 2. Click Install, once installed click Activate
 3. Configure and Enable gateways in WooCommerce by adding your public and secret Api Keys
 
-== UCP Sandbox credentials ==
-Access to our Unified Commerce Platform (UCP) requires sandbox credentials which you can retrieve yourself via our <a href="https://developer.globalpay.com/" target="_blank">Developer Portal</a>:
+== Unified Payments Sandbox credentials ==
+Access to our Unified Payments requires sandbox credentials which you can retrieve yourself via our <a href="https://developer.globalpay.com/" target="_blank">Developer Portal</a>:
 
 1. First go to the Developer Portal and make sure the green GP-API button is selected in the top right corner.
 2. Click on the icon in the top right and click Register.
@@ -46,6 +46,10 @@ Access to our Unified Commerce Platform (UCP) requires sandbox credentials which
 4. Click ‘Create
 
 == Changelog ==
+
+= 1.2.1 =
+* Renamed Unified Commerce Platform (UCP) to Unified Payments
+* Bug fix - Live mode toggle in Digital Wallets javascript
 
 = 1.2.0 =
 * Added Digital Wallets - Google Pay
