@@ -50,6 +50,7 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 = 1.2.1 =
 * Renamed Unified Commerce Platform (UCP) to Unified Payments
 * Bug fix - Live mode toggle in Digital Wallets javascript
+* Update PHP-SDK to v3.0.5
 
 = 1.2.0 =
 * Added Digital Wallets - Google Pay
