@@ -84,8 +84,8 @@ class GpApiGateway extends AbstractGateway {
 
 	public function configure_method_settings() {
 		$this->id                 = self::GATEWAY_ID;
-		$this->method_title       = __( 'Unified Commerce Platform', 'globalpayments-gateway-provider-for-woocommerce' );
-		$this->method_description = __( 'Connect to the Global Payments Unified Commerce Platform', 'globalpayments-gateway-provider-for-woocommerce' );
+		$this->method_title       = __( 'Unified Payments', 'globalpayments-gateway-provider-for-woocommerce' );
+		$this->method_description = __( 'Connect to the Unified Payments Gateway', 'globalpayments-gateway-provider-for-woocommerce' );
 	}
 
 	public function get_first_line_support_email() {

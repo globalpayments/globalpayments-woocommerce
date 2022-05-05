@@ -81,7 +81,7 @@ class GooglePayGateway extends AbstractGateway {
 	public function configure_method_settings() {
 		$this->id                 = self::GATEWAY_ID;
 		$this->method_title       = __( 'GlobalPayments - Google Pay', 'googlepay-gateway-provider-for-woocommerce' );
-		$this->method_description = __( 'Connect to the Google Pay gateway via UCP', 'globalpayments-gateway-provider-for-woocommerce' );
+		$this->method_description = __( 'Connect to the Google Pay gateway via Unified Payments Gateway', 'globalpayments-gateway-provider-for-woocommerce' );
 	}
 
 	public function get_frontend_gateway_options() {
