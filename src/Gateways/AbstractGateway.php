@@ -365,12 +365,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'challengeNotificationUrl'  => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
 					'checkEnrollmentUrl'        => WC()->api_request_url( 'globalpayments_threedsecure_checkenrollment' ),
 					'initiateAuthenticationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_initiateauthentication' ),
+					'orderInfoUrl'              => WC()->api_request_url( 'globalpayments_threedsecure_order_info' ),
 					'ajaxCheckoutUrl'           => \WC_AJAX::get_endpoint( 'checkout' ),
-				),
-				'order'        => array(
-					'amount'   => $this->get_session_amount(),
-					'currency' => get_woocommerce_currency(),
-				),
+				)
 			)
 		);
 	}

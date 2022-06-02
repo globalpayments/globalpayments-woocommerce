@@ -236,6 +236,10 @@ class GpApiGateway extends AbstractGateway {
 			$this,
 			'process_threeDSecure_challengeNotification'
 		) );
+		add_action( 'woocommerce_api_globalpayments_threedsecure_order_info', array(
+			$this,
+			'get_threeDSecure_order_info'
+		) );
 	}
 
 	public function woocommerce_globalpayments_gpapi_settings( $settings ) {
@@ -380,6 +384,21 @@ class GpApiGateway extends AbstractGateway {
 				'message' => $e->getMessage(),
 			] );
 		}
+	}
+
+	public function get_threeDSecure_order_info() {
+		if ( ( 'GET' !== $_SERVER['REQUEST_METHOD'] ) ) {
+			return;
+		}
+
+		$response = new \stdClass();
+		$response->amount = $this->get_session_amount();
+		$response->currency = get_woocommerce_currency();
+
+		wp_send_json( [
+			'error'   => false,
+			'message' => $response,
+		] );
 	}
 
 	protected function get_session_amount() {

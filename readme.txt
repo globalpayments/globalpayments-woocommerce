@@ -47,6 +47,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 
 == Changelog ==
 
+= 1.2.2 =
+* Bug fix - 3DS amount not updated when a customer added/removed a coupon 
+
 = 1.2.1 =
 * Renamed Unified Commerce Platform (UCP) to Unified Payments
 * Bug fix - Live mode toggle in Digital Wallets javascript

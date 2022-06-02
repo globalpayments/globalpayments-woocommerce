@@ -57,7 +57,7 @@
 		/**
 		 * Order info
 		 */
-		this.order = threeDSecureOptions.order;
+		this.order = {};
 
 		/**
 		 *
@@ -134,7 +134,15 @@
 				.done( function( result ) {
 					if ( -1 !== result.messages.indexOf( self.id + '_checkout_validated' ) ) {
 						helper.createInputElement( self.id, 'checkout_validated', 1 );
-						self.threeDSecure();
+
+						$.get( self.threedsecure.orderInfoUrl )
+							.done( function( result ) {
+								self.order = result.message;
+								self.threeDSecure();
+							})
+							.fail( function( jqXHR, textStatus, errorThrown ) {
+								console.log( errorThrown );
+							});
 					} else {
 						self.showPaymentError( result.messages );
 					}
