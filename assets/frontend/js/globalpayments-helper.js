@@ -15,7 +15,7 @@
 		 *
 		 * @type {object}
 		 */
-		this.order = {};
+		this.order = options.order;
 
 		this.attachEventHandlers();
 	};

@@ -321,6 +321,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			'globalpayments_helper_params',
 			array(
 				'orderInfoUrl' => WC()->api_request_url( 'globalpayments_order_info' ),
+				'order'        => array(
+					'amount' 	=> $this->get_session_amount(),
+					'currency'	=> get_woocommerce_currency(),
+				)
 			)
 		);
 
