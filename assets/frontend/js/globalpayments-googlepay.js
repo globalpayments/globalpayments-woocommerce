@@ -1,10 +1,9 @@
 ( function (
 	$,
 	globalpayments_googlepay_params,
-	globalpayments_order,
 	helper
 ) {
-	function GooglePayWoocommerce ( options, order ) {
+	function GooglePayWoocommerce ( options ) {
 		/**
 		 * Payment gateway id
 		 *
@@ -17,7 +16,7 @@
 		 *
 		 * @type {object}
 		 */
-		this.order = order;
+		this.order = {};
 
 		/**
 		 * Payment gateway options
@@ -156,7 +155,7 @@
 		getGoogleTransactionInfo: function () {
 			return {
 				totalPriceStatus: 'FINAL',
-				totalPrice: this.order.amount,
+				totalPrice: this.order.amount.toString(),
 				currencyCode: this.order.currency
 			};
 		},
@@ -191,7 +190,8 @@
 		},
 
 		onGooglePaymentButtonClicked: function () {
-			var self = this
+			var self = this;
+			this.order = helper.order;
 			var paymentDataRequest = this.getGooglePaymentDataRequest();
 			paymentDataRequest.transactionInfo = this.getGoogleTransactionInfo();
 
@@ -211,10 +211,9 @@
 		},
 	}
 
-	new GooglePayWoocommerce( globalpayments_googlepay_params, globalpayments_order );
+	new GooglePayWoocommerce( globalpayments_googlepay_params );
 }(
 	( window ).jQuery,
 	( window ).globalpayments_googlepay_params || {},
-	( window ).globalpayments_order || {},
 	( window ).GlobalPaymentsHelper
 ) );

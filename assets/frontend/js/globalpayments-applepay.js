@@ -1,10 +1,9 @@
 ( function (
 	$,
 	globalpayments_applepay_params,
-	globalpayments_order,
 	helper
 ) {
-	function ApplePayWoocommerce ( options, order ) {
+	function ApplePayWoocommerce ( options ) {
 		/**
 		 * Payment gateway id
 		 *
@@ -17,7 +16,7 @@
 		 *
 		 * @type {object}
 		 */
-		this.order = order;
+		this.order = {};
 
 		/**
 		 * Payment gateway options
@@ -78,6 +77,7 @@
 
 		createApplePaySession: function () {
 			var self = this;
+			this.order = helper.order;
 
 			try {
 				var applePaySession = new ApplePaySession( 1, self.getPaymentRequest() );
@@ -153,7 +153,7 @@
 				supportedNetworks: this.getAllowedCardNetworks(),
 				total: {
 					label: this.getDisplayName(),
-					amount: this.order.amount
+					amount: this.order.amount.toString()
 				},
 			};
 		},
@@ -185,10 +185,9 @@
 		},
 	}
 
-	new ApplePayWoocommerce( globalpayments_applepay_params, globalpayments_order );
+	new ApplePayWoocommerce( globalpayments_applepay_params );
 }(
 	( window ).jQuery,
 	( window ).globalpayments_applepay_params || {},
-	( window ).globalpayments_order || {},
 	( window ).GlobalPaymentsHelper
 ));

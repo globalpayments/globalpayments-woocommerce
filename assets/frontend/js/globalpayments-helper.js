@@ -1,9 +1,52 @@
 (function (
-	$
+	$,
+	globalpayments_helper_params
 ) {
-	function Helper() {};
+	function Helper( options ) {
+		/**
+		 * Helper options
+		 *
+		 * @type {object}
+		 */
+		this.helperOptions = options;
+
+		/**
+		 * The current order
+		 *
+		 * @type {object}
+		 */
+		this.order = {};
+
+		this.attachEventHandlers();
+	};
 
 	Helper.prototype = {
+		/**
+		 * Add important event handlers for controlling the payment experience during checkout
+		 *
+		 * @returns
+		 */
+		attachEventHandlers: function () {
+			var self = this;
+
+			$( document.body ).on(
+				'updated_checkout',
+				function () {
+					self.blockOnSubmit();
+
+					$.get( self.helperOptions.orderInfoUrl )
+						.done( function( result ) {
+							self.order = result.message;
+						})
+						.fail( function( jqXHR, textStatus, errorThrown ) {
+							console.log(errorThrown);
+						})
+						.always( function() {
+							self.unblockOnError();
+						});
+				}
+			);
+		},
 		/**
 		 * Convenience function to get CSS selector for the built-in 'Place Order' button
 		 *
@@ -147,11 +190,45 @@
 			}
 			$( this.getForm() ).submit();
 		},
+
+		/**
+		 * Blocks checkout UI
+		 *
+		 * Implementation pulled from `woocommerce/assets/js/frontend/checkout.js`
+		 *
+		 * @returns
+		 */
+		blockOnSubmit: function () {
+			var $form = $( this.getForm() );
+			var form_data = $form.data();
+			if ( 1 !== form_data['blockUI.isBlocked'] ) {
+				$form.block(
+					{
+						message: null,
+						overlayCSS: {
+							background: '#fff',
+							opacity: 0.6
+						}
+					}
+				);
+			}
+		},
+
+		/**
+		 * Unblocks checkout UI
+		 *
+		 * @returns
+		 */
+		unblockOnError: function () {
+			var $form = $( this.getForm() );
+			$form.unblock();
+		}
 	};
 
 	if ( ! window.GlobalPaymentsHelper ) {
-		window.GlobalPaymentsHelper = new Helper();
+		window.GlobalPaymentsHelper = new Helper( globalpayments_helper_params );
 	}
 } (
-	( window ).jQuery
+	( window ).jQuery,
+	( window ).globalpayments_helper_params || {}
 ) );

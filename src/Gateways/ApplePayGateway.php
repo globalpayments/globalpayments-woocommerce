@@ -210,12 +210,6 @@ class ApplePayGateway extends AbstractGateway {
 		}
 	}
 
-	protected function get_session_amount() {
-		$cart_totals = WC()->session->get( 'cart_totals' );
-
-		return round( $cart_totals['total'], 2 );
-	}
-
 	public function validate_merchant() {
 	    $responseValidationUrl = json_decode( file_get_contents( 'php://input' ) );
 		if ( empty($responseValidationUrl) ) {
@@ -312,15 +306,6 @@ class ApplePayGateway extends AbstractGateway {
 			array(
 				'id'              => $this->id,
 				'gateway_options' => $this->get_frontend_gateway_options(),
-			)
-		);
-
-		wp_localize_script(
-			'globalpayments-wc-applepay',
-			'globalpayments_order',
-			array(
-				'amount'   => (string) $this->get_session_amount(),
-				'currency' => get_woocommerce_currency(),
 			)
 		);
 
