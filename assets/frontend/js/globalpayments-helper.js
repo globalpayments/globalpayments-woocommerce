@@ -30,7 +30,7 @@
 			var self = this;
 
 			$( document.body ).on(
-				'updated_checkout',
+				'applied_coupon_in_checkout removed_coupon_in_checkout',
 				function () {
 					self.blockOnSubmit();
 
