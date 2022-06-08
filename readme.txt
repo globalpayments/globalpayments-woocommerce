@@ -3,7 +3,7 @@ Contributors: globalpayments
 Tags: woocommerce, woo, unified, commerce, platform, global, payments, heartland, payment, systems, tsys, genius, 3DS, gateway, token, tokenize, save cards
 Requires at least: 5.4
 Tested up to: 5.9.3
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: MIT
 License URI: https://github.com/globalpayments/globalpayments-woocommerce/blob/main/LICENSE
 
@@ -48,7 +48,7 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 == Changelog ==
 
 = 1.2.2 =
-* Bug fix - 3DS/Digital Wallets amount not updated when a customer added/removed a coupon 
+* Bug fix - 3DS/Digital Wallets amount not updated when a customer added/removed a coupon
 
 = 1.2.1 =
 * Renamed Unified Commerce Platform (UCP) to Unified Payments
