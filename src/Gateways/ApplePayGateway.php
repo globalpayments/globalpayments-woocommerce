@@ -292,6 +292,18 @@ class ApplePayGateway extends AbstractGateway {
 			true
 		);
 
+		wp_localize_script(
+			'globalpayments-helper',
+			'globalpayments_helper_params',
+			array(
+				'orderInfoUrl' => WC()->api_request_url( 'globalpayments_order_info' ),
+				'order'        => array(
+					'amount' 	=> $this->get_session_amount(),
+					'currency'	=> get_woocommerce_currency(),
+				)
+			)
+		);
+
 		wp_enqueue_script(
 			'globalpayments-wc-applepay',
 			Plugin::get_url( '/assets/frontend/js/globalpayments-applepay.js' ),
