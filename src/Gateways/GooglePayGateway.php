@@ -190,6 +190,18 @@ class GooglePayGateway extends AbstractGateway {
 			true
 		);
 
+		wp_localize_script(
+			'globalpayments-helper',
+			'globalpayments_helper_params',
+			array(
+				'orderInfoUrl' => WC()->api_request_url( 'globalpayments_order_info' ),
+				'order'        => array(
+					'amount' 	=> $this->get_session_amount(),
+					'currency'	=> get_woocommerce_currency(),
+				)
+			)
+		);
+
 		wp_enqueue_script(
 			'globalpayments-wc-googlepay',
 			Plugin::get_url( '/assets/frontend/js/globalpayments-googlepay.js' ),
@@ -206,15 +218,6 @@ class GooglePayGateway extends AbstractGateway {
 				'gateway_options' => $this->get_frontend_gateway_options(),
 			)
 		);
-
-		wp_localize_script(
-			'globalpayments-wc-googlepay',
-			'globalpayments_order',
-			array(
-				'amount'   => (string) $this->get_session_amount(),
-				'currency' => get_woocommerce_currency(),
-			)
-		);
 	}
 
 	public function payment_fields() {
@@ -222,12 +225,6 @@ class GooglePayGateway extends AbstractGateway {
 			$this->tokenization_script();
 			echo '<div>' . __( 'Pay with Google Pay', 'globalpayments-gateway-provider-for-woocommerce' ) . '</div>';
 		}
-	}
-
-	protected function get_session_amount() {
-		$cart_totals = WC()->session->get( 'cart_totals' );
-
-		return round( $cart_totals['total'], 2 );
 	}
 
 	public function mapResponseCodeToFriendlyMessage( $responseCode ) {

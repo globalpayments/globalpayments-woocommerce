@@ -381,10 +381,4 @@ class GpApiGateway extends AbstractGateway {
 			] );
 		}
 	}
-
-	protected function get_session_amount() {
-		$cart_totals = WC()->session->get( 'cart_totals' );
-
-		return round( $cart_totals['total'], 2 );
-	}
 }
