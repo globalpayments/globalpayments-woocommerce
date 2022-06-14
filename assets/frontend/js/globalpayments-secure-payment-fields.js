@@ -57,7 +57,7 @@
 		/**
 		 * Order info
 		 */
-		this.order = threeDSecureOptions.order;
+		this.order = {};
 
 		/**
 		 *
@@ -122,7 +122,7 @@
 		 */
 		initThreeDSecure: function ( e ) {
 			e.preventDefault;
-			this.blockOnSubmit();
+			helper.blockOnSubmit();
 
 			var self = this;
 
@@ -134,6 +134,7 @@
 				.done( function( result ) {
 					if ( -1 !== result.messages.indexOf( self.id + '_checkout_validated' ) ) {
 						helper.createInputElement( self.id, 'checkout_validated', 1 );
+						self.order = helper.order;
 						self.threeDSecure();
 					} else {
 						self.showPaymentError( result.messages );
@@ -217,7 +218,7 @@
 					styles: this.getStyleConfiguration()
 				}
 			);
-			this.cardForm.on( 'submit', 'click', this.blockOnSubmit.bind( this ) );
+			this.cardForm.on( 'submit', 'click', helper.blockOnSubmit.bind( this ) );
 			this.cardForm.on( 'token-success', this.handleResponse.bind( this ) );
 			this.cardForm.on( 'token-error', this.handleErrors.bind( this ) );
 			this.cardForm.on( 'error', this.handleErrors.bind( this ) );
@@ -284,7 +285,7 @@
 		 * 3DS Process
 		 */
 		threeDSecure: function () {
-			this.blockOnSubmit();
+			helper.blockOnSubmit();
 
 			var self = this;
 			var _form = helper.getForm();
@@ -425,7 +426,7 @@
 		showValidationError: function (fieldType) {
 			$( '.' + this.id + '.' + fieldType + ' .woocommerce-globalpayments-validation-error' ).show();
 
-			this.unblockOnError();
+			helper.unblockOnError();
 		},
 
 		/**
@@ -450,7 +451,7 @@
 				scrollTop: ( $form.offset().top - 100 )
 			}, 1000 );
 
-			this.unblockOnError();
+			helper.unblockOnError();
 
 			$( document.body ).trigger( 'checkout_error' );
 		},
@@ -589,39 +590,6 @@
 		 */
 		getSubmitButtonText: function () {
 			return $( '#place_order' ).data( 'value' ) || $( '#place_order' ).attr( 'value' );
-		},
-
-		/**
-		 * Blocks checkout UI
-		 *
-		 * Implementation pulled from `woocommerce/assets/js/frontend/checkout.js`
-		 *
-		 * @returns
-		 */
-		blockOnSubmit: function () {
-			var $form = $( helper.getForm() );
-			var form_data = $form.data();
-			if ( 1 !== form_data['blockUI.isBlocked'] ) {
-				$form.block(
-					{
-						message: null,
-						overlayCSS: {
-							background: '#fff',
-							opacity: 0.6
-						}
-					}
-				);
-			}
-		},
-
-		/**
-		 * Unblocks checkout UI
-		 *
-		 * @returns
-		 */
-		unblockOnError: function () {
-			var $form = $( helper.getForm() );
-			$form.unblock();
 		}
 	};
 

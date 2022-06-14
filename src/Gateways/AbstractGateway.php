@@ -315,6 +315,18 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			WC()->version,
 			true
 		);
+		
+		wp_localize_script(
+			'globalpayments-helper',
+			'globalpayments_helper_params',
+			array(
+				'orderInfoUrl' => WC()->api_request_url( 'globalpayments_order_info' ),
+				'order'        => array(
+					'amount' 	=> $this->get_session_amount(),
+					'currency'	=> get_woocommerce_currency(),
+				)
+			)
+		);
 
 		// Global Payments scripts for handling client-side tokenization
 		wp_enqueue_script(
@@ -366,11 +378,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'checkEnrollmentUrl'        => WC()->api_request_url( 'globalpayments_threedsecure_checkenrollment' ),
 					'initiateAuthenticationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_initiateauthentication' ),
 					'ajaxCheckoutUrl'           => \WC_AJAX::get_endpoint( 'checkout' ),
-				),
-				'order'        => array(
-					'amount'   => $this->get_session_amount(),
-					'currency' => get_woocommerce_currency(),
-				),
+				)
 			)
 		);
 	}
@@ -747,6 +755,11 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			add_filter( 'woocommerce_credit_card_form_fields', array( $this, 'woocommerce_credit_card_form_fields' ) );
 		}
 
+		add_action( 'woocommerce_api_globalpayments_order_info', array(
+			$this,
+			'get_order_info'
+		) );
+
 		if ( is_add_payment_method_page() ) {
 			if ( ! $this->is_digital_wallet ) {
 				add_action( 'wp_enqueue_scripts', array( $this, 'tokenization_script' ) );
@@ -1052,6 +1065,27 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		$actions['capture_credit_card_authorization'] = 'Capture credit card authorization';
 
 		return $actions;
+	}
+
+	public function get_order_info() {
+		if ( ( 'GET' !== $_SERVER['REQUEST_METHOD'] ) ) {
+			return;
+		}
+
+		$response = new \stdClass();
+		$response->amount = $this->get_session_amount();
+		$response->currency = get_woocommerce_currency();
+
+		wp_send_json( [
+			'error'   => false,
+			'message' => $response,
+		] );
+	}
+
+	public function get_session_amount() {
+		$cart_totals = WC()->session->get( 'cart_totals' );
+
+		return round( $cart_totals['total'], 2 );
 	}
 
 	/**
