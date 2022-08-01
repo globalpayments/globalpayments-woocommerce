@@ -25,6 +25,9 @@ class AuthorizationRequest extends AbstractRequest {
 			RequestArg::SERVER_TRANS_ID => $this->data[ $this->gateway_id ]['serverTransId'] ?? null,
 			RequestArg::PARES           => ! empty( $this->data[ $this->gateway_id ]['PaRes'] ) ? $this->data[ $this->gateway_id ]['PaRes'] : null,
 		);
+		if ( isset ( $this->data['entry_mode'] ) ) {
+			$response[ RequestArg::ENTRY_MODE ] = $this->data['entry_mode'];
+		}
 
 		if ( isset ( $this->data[ $this->gateway_id ]['digital_wallet_token_response'] ) ) {
 			$response[ RequestArg::DIGITAL_WALLET_TOKEN ] = $this->remove_slashes_from_token( $this->data[ $this->gateway_id ]['digital_wallet_token_response'] );

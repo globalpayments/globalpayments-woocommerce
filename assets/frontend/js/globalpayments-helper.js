@@ -108,7 +108,6 @@
 			var savedCardsAvailable    = $( this.getStoredPaymentMethodsRadioSelector( selectedPaymentGatewayId ) + '[value!="new"]' ).length > 0;
 			// user selects (new) card as payment method
 			var newSavedCardSelected   = 'new' === $( this.getStoredPaymentMethodsRadioSelector( selectedPaymentGatewayId ) + ':checked' ).val();
-
 			// selected payment method is card or digital wallet
 			if ( ! savedCardsAvailable  || savedCardsAvailable && newSavedCardSelected ) {
 				$( this.getSubmitButtonTargetSelector( selectedPaymentGatewayId ) ).show();
@@ -133,7 +132,9 @@
 				// Checkout
 				'form[name="checkout"]',
 				// Add payment method
-				'form#add_payment_method'
+				'form#add_payment_method',
+				// Admin Order Pay
+				'form#wc-globalpayments-pay-order-form',
 			];
 			var forms = document.querySelectorAll( checkoutForms.join( ',' ) );
 

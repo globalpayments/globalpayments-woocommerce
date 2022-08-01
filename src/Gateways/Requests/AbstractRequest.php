@@ -84,4 +84,17 @@ abstract class AbstractRequest implements RequestInterface {
 
 		return wc_clean( $this->data[ $key ] );
 	}
+
+	/**
+	 * Set Request Data
+	 *
+	 * @param array
+	 */
+	public function set_request_data ( array $data ) {
+		if ( ! empty( $this->data ) ) {
+			$this->data = array_merge( $this->data, $data );
+		} else {
+			$this->data = $data;
+		}
+	}
 }

@@ -8,6 +8,7 @@ abstract class RequestArg {
 	const CARD_DATA            = 'CARD_DATA';
 	const CARD_HOLDER_NAME     = 'CARD_HOLDER_NAME';
 	const CURRENCY             = 'CURRENCY';
+	const ENTRY_MODE           = 'ENTRY_MODE';
 	const PARES                = 'PARES';
 	const PERMISSIONS          = 'PERMISSIONS';
 	const SERVER_TRANS_ID      = 'SERVER_TRANS_ID';

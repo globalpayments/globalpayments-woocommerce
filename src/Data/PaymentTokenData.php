@@ -51,6 +51,10 @@ class PaymentTokenData {
 			$token = $this->get_single_use_token();
 		}
 
+		if ( empty( $token ) ) {
+			throw new \Exception( __( 'Unable to retrieve payment token.' ) );
+		}
+
 		return $token;
 	}
 
@@ -139,8 +143,11 @@ class PaymentTokenData {
 		}
 
 		$token = WC_Payment_Tokens::get( $token_id );
+		if ( ! isset( $token ) ) {
+			return null;
+		}
 
-		if ( null === $token || $token->get_user_id() !== get_current_user_id() ) {
+		if ( $token->get_user_id() !== get_current_user_id() && ! wc_current_user_has_role( 'administrator' ) ) {
 			return null;
 		}
 
