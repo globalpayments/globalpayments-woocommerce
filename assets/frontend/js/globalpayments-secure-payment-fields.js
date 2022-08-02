@@ -112,6 +112,12 @@
 				$( document ).ready( this.renderPaymentFields.bind( this ) );
 				return;
 			}
+
+			// Admin Pay for Order
+			$( document.body ).on( 'globalpayments_pay_order_modal_loaded', this.renderPaymentFields.bind( this ) );
+			$( document.body ).on( 'globalpayments_pay_order_modal_error', function( event, message ) {
+				self.showPaymentError( message );
+			} );
 		},
 
 		/**
@@ -453,7 +459,9 @@
 
 			helper.unblockOnError();
 
-			$( document.body ).trigger( 'checkout_error' );
+			if ( 1 == wc_checkout_params.is_checkout ) {
+				$( document.body ).trigger( 'checkout_error' );
+			}
 		},
 
 		/**
@@ -589,8 +597,9 @@
 		 * @returns {string}
 		 */
 		getSubmitButtonText: function () {
-			return $( '#place_order' ).data( 'value' ) || $( '#place_order' ).attr( 'value' );
-		}
+			var selector = helper.getPlaceOrderButtonSelector();
+			return $( selector ).data( 'value' ) || $( selector ).attr( 'value' );
+		},
 	};
 
 	new GlobalPaymentsWooCommerce( globalpayments_secure_payment_fields_params, globalpayments_secure_payment_threedsecure_params );

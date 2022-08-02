@@ -7,11 +7,13 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure\CheckEnrollmentRequest;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\PayOrderTrait;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
 class GpApiGateway extends AbstractGateway {
+	use PayOrderTrait;
 	/**
 	 * Gateway ID
 	 */
@@ -210,6 +212,13 @@ class GpApiGateway extends AbstractGateway {
 	protected function add_hooks() {
 		parent::add_hooks();
 
+		if ( is_admin() ) {
+			// Admin Pay for Order hooks
+			add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'pay_order_modal' ), 99 );
+			add_filter( 'globalpayments_secure_payment_fields_styles', array( $this, 'pay_order_modal_secure_payment_fields_styles' ) );
+		}
+		add_action( 'woocommerce_api_globalpayments_pay_order', array( $this, 'pay_order_modal_process_payment' ), 99 );
+		add_action( 'woocommerce_api_globalpayments_get_payment_methods', array( $this, 'pay_order_modal_get_payment_methods' ) );
 		add_filter( 'pre_update_option_woocommerce_globalpayments_gpapi_settings', array(
 			$this,
 			'woocommerce_globalpayments_gpapi_settings'
@@ -244,14 +253,16 @@ class GpApiGateway extends AbstractGateway {
 		}
 		if ( empty( $settings['merchant_contact_url'] ) || 50 < strlen( $settings['merchant_contact_url'] ) ) {
 			add_action( 'admin_notices', function () {
-				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide a Contact Url (maxLength: 50). Gateway not enabled.' ) . '</strong></p></div>';
+				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' .
+				     __( 'Please provide a Contact Url (maxLength: 50). Gateway not enabled.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
 			} );
 			$settings['enabled'] = 'no';
 		}
 		if ( wc_string_to_bool( $settings['is_production'] ) ) {
 			if ( empty( $settings['app_id'] ) || empty( $settings['app_key'] ) ) {
 				add_action( 'admin_notices', function () {
-					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide Live Credentials. Gateway not enabled.' ) . '</strong></p></div>';
+					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' .
+					     __( 'Please provide Live Credentials. Gateway not enabled.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
 				} );
 				$settings['enabled'] = 'no';
 			}
@@ -260,7 +271,8 @@ class GpApiGateway extends AbstractGateway {
 		}
 		if ( empty( $settings['sandbox_app_id'] ) || empty( $settings['sandbox_app_key'] ) ) {
 			add_action( 'admin_notices', function () {
-				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Please provide Sandbox Credentials. Gateway not enabled.' ) . '</strong></p></div>';
+				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' .
+				     __( 'Please provide Sandbox Credentials. Gateway not enabled.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
 			} );
 			$settings['enabled'] = 'no';
 		}

@@ -48,6 +48,12 @@
 			if ( 1 == wc_checkout_params.is_checkout ) {
 				$( document.body ).on( 'updated_checkout', this.initialize.bind( this ) );
 			}
+
+			// Order Pay
+			if ( $( document.body ).hasClass( 'woocommerce-order-pay' ) ) {
+				$( document ).ready( this.initialize.bind( this ) );
+				return;
+			}
 		},
 
 		initialize: function () {

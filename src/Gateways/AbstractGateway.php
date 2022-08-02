@@ -5,15 +5,13 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 defined( 'ABSPATH' ) || exit;
 
 use Exception;
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 use WC_Payment_Gateway_CC;
 use WC_Order;
 use GlobalPayments\Api\Entities\Transaction;
-
-use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 /**
  * Shared gateway method implementations
@@ -140,8 +138,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 */
 	public $cvn_reject_conditions;
 
-	public function __construct() {
+	public function __construct( $is_provider = false ) {
+
 		$this->client     = new Clients\SdkClient();
+
 		$this->has_fields = true;
 		$this->supports   = array(
 			'products',
@@ -164,9 +164,12 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		$this->init_form_fields();
 		$this->init_settings();
 		$this->configure_merchant_settings();
+
+		if ( $is_provider ) {
+			return;
+		}
+
 		$this->add_hooks();
-
-
 	}
 
 	/**
@@ -228,6 +231,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * Get the current gateway provider
 	 *
 	 * @return string
+	 * @throws Exception
 	 */
 	public function get_gateway_provider() {
 		if ( ! $this->gateway_provider ) {
@@ -315,7 +319,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			WC()->version,
 			true
 		);
-		
+
 		wp_localize_script(
 			'globalpayments-helper',
 			'globalpayments_helper_params',
@@ -340,7 +344,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		wp_enqueue_script(
 			'globalpayments-secure-payment-fields',
 			Plugin::get_url( '/assets/frontend/js/globalpayments-secure-payment-fields.js' ),
-			array( 'globalpayments-secure-payment-fields-lib', 'wc-checkout' ),
+			is_admin() ? array( 'globalpayments-secure-payment-fields-lib' ) : array( 'globalpayments-secure-payment-fields-lib', 'wc-checkout' ),
 			WC()->version,
 			true
 		);
@@ -356,7 +360,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		);
 
 		// Global Payments scripts for handling 3DS
-		if ( GatewayProvider::GP_API !== $this->gateway_provider ) {
+		if ( GpApiGateway::GATEWAY_ID !== $this->id || ! is_checkout() ) {
 			return;
 		}
 
@@ -450,7 +454,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'label'       => __( 'Check AVS/CVN result codes and reverse transaction.', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'type'        => 'checkbox',
 					'description' => sprintf(
-						__( 'This will check AVS/CVN result codes and reverse transaction.' )
+						__( 'This will check AVS/CVN result codes and reverse transaction.', 'globalpayments-gateway-provider-for-woocommerce' )
 					),
 					'default'     => 'yes'
 				),
@@ -459,7 +463,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'type'        => 'multiselect',
 					'class'       => 'wc-enhanced-select',
 					'css'         => 'width: 450px',
-					'description' => __( 'Choose for which AVS result codes, the transaction must be auto reversed.' ),
+					'description' => __( 'Choose for which AVS result codes, the transaction must be auto reversed.', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'options'     => $this->avs_rejection_conditions(),
 					'default'     => array( "N", "S", "U", "P", "R", "G", "C", "I" ),
 				),
@@ -468,7 +472,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'type'        => 'multiselect',
 					'class'       => 'wc-enhanced-select',
 					'css'         => 'width: 450px',
-					'description' => __( 'Choose for which CVN result codes, the transaction must be auto reversed.' ),
+					'description' => __( 'Choose for which CVN result codes, the transaction must be auto reversed.', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'options'     => $this->cvn_rejection_conditions(),
 					'default'     => array( "P", "?", "N" ),
 				),
@@ -563,7 +567,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'font-size'        => '14px',
 				'height'           => '35px',
 				'padding'          => '6px 12px',
-				'width'            => '100%',
 			),
 			'#secure-payment-field:focus'   => array(
 				'border'     => '1px solid lightblue',
@@ -745,6 +748,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'admin_enforce_single_gateway'
 			) );
 			add_filter( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+			add_action( 'woocommerce_new_order', array( $this, 'admin_add_order_note_after_order_created' ) );
 		}
 
 		if ( 'no' === $this->enabled ) {
@@ -772,17 +776,59 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	}
 
 	/**
+	 * Add order note when creating an order from admin with transaction ID
+	 *
+	 * @param int $order_id
+	 *
+	 * @return bool
+	 */
+	public function admin_add_order_note_after_order_created( $order_id ) {
+		if ( ! $order_id ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( empty( $order) ) {
+			return;
+		}
+		if ( $this->id != $order->get_payment_method() ) {
+			return;
+		}
+		if ( empty( $order->get_transaction_id() )) {
+			return;
+		}
+
+		$order->add_order_note( __( 'Order created with Transaction ID: ' ) . $order->get_transaction_id() );
+
+	}
+
+	/**
 	 * Handle payment functions
 	 *
 	 * @param int $order_id
 	 *
 	 * @return array
+	 * @throws ApiException
 	 */
 	public function process_payment( $order_id ) {
 		$order         = new WC_Order( $order_id );
 		$request       = $this->prepare_request( $this->payment_action, $order );
 		$response      = $this->submit_request( $request );
 		$is_successful = $this->handle_response( $request, $response );
+
+		if ( $is_successful ) {
+			$note_text = sprintf(
+				'%1$s%2$s %3$s. Transaction ID: %4$s.',
+				get_woocommerce_currency_symbol( $order->get_currency() ),
+				$order->get_total(),
+				$this->payment_action == self::TXN_TYPE_AUTHORIZE ?
+					__( 'authorized', 'globalpayments-gateway-provider-for-woocommerce' ) :
+					__( 'charged', 'globalpayments-gateway-provider-for-woocommerce' ),
+				$order->get_transaction_id()
+			);
+
+			$order->add_order_note( $note_text );
+		}
 
 		return array(
 			'result'   => $is_successful ? 'success' : 'failure',
@@ -794,6 +840,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * Handle adding new cards via 'My Account'
 	 *
 	 * @return array
+	 * @throws Exception
 	 */
 	public function add_payment_method() {
 		$request  = $this->prepare_request( self::TXN_TYPE_VERIFY );
@@ -819,10 +866,11 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * Handle online refund requests via WP Admin > WooCommerce > Edit Order
 	 *
 	 * @param int $order_id
-	 * @param null|number $amount
+	 * @param null $amount
 	 * @param string $reason
 	 *
-	 * @return array
+	 * @return bool
+	 * @throws ApiException
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
 		$details                = $this->get_transaction_details( $order_id );
@@ -831,6 +879,18 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		$order        = new WC_Order( $order_id );
 		$request      = $this->prepare_request( $txn_type, $order );
+
+		if ( null != $amount ) {
+			$amount = str_replace( ',', '.', $amount );
+			$amount = number_format( (float)round( $amount, 2, PHP_ROUND_HALF_UP ), 2, '.', '' );
+			if ( ! is_numeric( $amount ) ) {
+				throw new Exception( __( 'Refund amount must be a valid number', 'globalpayments-gateway-provider-for-woocommerce' ) );
+			}
+		}
+		$request->set_request_data( array(
+			'refund_amount' => $amount,
+			'refund_reason' => $reason,
+		));
 		$request_args = $request->get_args();
 		if ( 0 >= (float)$request_args[ RequestArg::AMOUNT ] ) {
 			throw new Exception( __( 'Refund amount must be greater than zero.', 'globalpayments-gateway-provider-for-woocommerce' ) );
@@ -853,13 +913,12 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	/**
 	 * Handle capture auth requests via WP Admin > WooCommerce > Edit Order
 	 *
-	 * @param int $order_id
+	 * @param $order
 	 *
-	 * @return array
+	 * @return Transaction
+	 * @throws Exception
 	 */
-	public static function capture_credit_card_authorization( $order_id ) {
-		$order = new WC_Order( $order_id );
-
+	public static function capture_credit_card_authorization( $order ) {
 		switch ( $order->get_payment_method() ) {
 			case "globalpayments_heartland":
 				$gateway = new HeartlandGateway();
@@ -884,6 +943,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 			if ( "00" === $response->responseCode && "Success" === $response->responseMessage
 			     || 'SUCCESS' === $response->responseCode && "CAPTURED" === $response->responseMessage ) {
+				delete_post_meta( $order->get_id(), '_globalpayments_payment_action' );
 				$order->add_order_note(
 					"Transaction captured. Transaction ID for the capture: " . $response->transactionReference->transactionId
 				);
@@ -904,9 +964,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	/**
 	 * Handle online refund requests via WP Admin > WooCommerce > Edit Order > Order actions
 	 *
-	 * @param int $order_id
+	 * @param $order_id
 	 *
-	 * @return TransactionSummary
+	 * @return Transaction
+	 * @throws Exception
 	 */
 	public function get_transaction_details( $order_id ) {
 		$order    = new WC_Order( $order_id );
@@ -919,10 +980,11 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	/**
 	 * Creates the necessary request based on the transaction type
 	 *
-	 * @param WC_Order $order
-	 * @param string $txn_type
+	 * @param $txn_type
+	 * @param WC_Order|null $order
 	 *
 	 * @return Requests\RequestInterface
+	 * @throws Exception
 	 */
 	protected function prepare_request( $txn_type, WC_Order $order = null ) {
 		$map = array(
@@ -971,6 +1033,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @param Transaction $response
 	 *
 	 * @return bool
+	 * @throws ApiException
 	 */
 	protected function handle_response( Requests\RequestInterface $request, Transaction $response ) {
 		if ( $response->responseCode !== '00' && 'SUCCESS' !== $response->responseCode || $response->responseMessage === 'Partially Approved' ) {
@@ -1056,7 +1119,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 *
 	 * @return array
 	 */
-	public static function addCaptureOrderAction( $actions ) {
+	public static function add_capture_order_action( $actions ) {
 		global $theorder;
 
 		if ( AbstractGateway::TXN_TYPE_AUTHORIZE !== $theorder->get_meta( '_globalpayments_payment_action' ) ) {
@@ -1083,6 +1146,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	}
 
 	public function get_session_amount() {
+		if ( is_admin() ) {
+			return null;
+		}
 		$cart_totals = WC()->session->get( 'cart_totals' );
 
 		return round( $cart_totals['total'], 2 );
@@ -1197,7 +1263,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		if ( $this->id != $section ) {
 			return;
 		}
-		if ( !$this->is_digital_wallet) {
+		if ( ! $this->is_digital_wallet ) {
 			wp_enqueue_script(
 				'globalpayments-admin',
 				Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
@@ -1222,7 +1288,5 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				WC()->version
 			);
 		}
-
 	}
-
 }

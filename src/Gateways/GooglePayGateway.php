@@ -71,7 +71,7 @@ class GooglePayGateway extends AbstractGateway {
 	public function __construct() {
 		parent::__construct();
 
-		$this->gateway = new GpApiGateway();
+		$this->gateway = new GpApiGateway( true );
 	}
 
 	public function get_first_line_support_email() {
@@ -102,9 +102,9 @@ class GooglePayGateway extends AbstractGateway {
 	public function get_gateway_form_fields() {
 		return array(
 			'global_payments_merchant_id' => array(
-				'title'             => __( 'Global Payments Merchant Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'             => __( 'Global Payments Client ID*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'              => 'text',
-				'description'       => __( 'Your MerchantID provided by Global Payments.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description'       => __( 'Your Client ID provided by Global Payments.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'custom_attributes' => array( 'required' => 'required' ),
 			),
 			'google_merchant_id'          => array(

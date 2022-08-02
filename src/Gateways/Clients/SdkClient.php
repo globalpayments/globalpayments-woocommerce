@@ -13,6 +13,8 @@ use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Gateways\IPaymentGateway;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\PaymentMethods\Interfaces\IAuthable;
+use GlobalPayments\Api\PaymentMethods\Interfaces\IChargable;
 use GlobalPayments\Api\ServiceConfigs\AcceptorConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GeniusConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
@@ -96,6 +98,9 @@ class SdkClient implements ClientInterface {
 	public function execute() {
 		$this->configure_sdk();
 		$builder = $this->get_transaction_builder();
+		if ( ! isset( $builder ) ) {
+			throw new \Exception( __( 'Unable to perform request.' ) );
+		}
 		if ( 'transactionDetail' === $this->args['TXN_TYPE'] ) {
 			return $builder->execute();
 		}
@@ -165,8 +170,9 @@ class SdkClient implements ClientInterface {
 		$subject =
 			in_array( $this->get_arg( RequestArg::TXN_TYPE ), $this->auth_transactions, true )
 				? $this->card_data : $this->previous_transaction;
-
-		return $subject->{$this->get_arg( RequestArg::TXN_TYPE )}();
+		if ( $subject instanceof IChargable || $subject instanceof IAuthable ) {
+			return $subject->{$this->get_arg( RequestArg::TXN_TYPE )}();
+		}
 	}
 
 	protected function prepare_request_args( RequestInterface $request ) {
@@ -293,6 +299,10 @@ class SdkClient implements ClientInterface {
 
 		if ( isset( PaymentTokenData::$tsepCvv ) ) {
 			$this->card_data->cvn = PaymentTokenData::$tsepCvv;
+		}
+
+		if ( $this->has_arg( RequestArg::ENTRY_MODE ) ) {
+			$this->card_data->entryMethod = $this->get_arg( RequestArg::ENTRY_MODE );
 		}
 	}
 

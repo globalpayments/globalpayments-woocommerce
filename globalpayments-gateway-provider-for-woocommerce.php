@@ -3,15 +3,15 @@
  * Plugin Name: GlobalPayments WooCommerce
  * Plugin URI: https://github.com/globalpayments/globalpayments-woocommerce
  * Description: This extension allows WooCommerce to use the available Global Payments payment gateways. All card data is tokenized using the respective gateway's tokenization service.
- * Version: 1.2.2
- * Requires PHP: 5.5.9
- * WC tested up to: 6.3.1
+ * Version: 1.3.0
+ * Requires PHP: 7.1
+ * WC tested up to: 6.6.0
  * Author: Global Payments
 */
 
 defined( 'ABSPATH' ) || exit;
 
-if ( version_compare( PHP_VERSION, '5.5.9', '<' ) ) {
+if ( version_compare( PHP_VERSION, '7.1', '<' ) ) {
 	return;
 }
 
