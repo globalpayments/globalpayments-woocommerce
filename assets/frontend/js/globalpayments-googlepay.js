@@ -86,6 +86,13 @@
 		},
 
 		/**
+		 * Merchant  name
+		 */
+		getGoogleMerchantName: function () {
+			return this.gatewayOptions.merchant_name;
+		},
+
+		/**
 		 * Environment
 		 */
 		getEnvironment: function () {
@@ -152,7 +159,8 @@
 			paymentDataRequest.allowedPaymentMethods = [ this.getCardPaymentMethod() ];
 			paymentDataRequest.transactionInfo = this.getGoogleTransactionInfo();
 			paymentDataRequest.merchantInfo = {
-				merchantId: this.getGoogleMerchantId()
+				merchantId: this.getGoogleMerchantId(),
+				merchantName: this.getGoogleMerchantName()
 			}
 
 			return paymentDataRequest;
