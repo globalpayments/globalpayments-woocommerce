@@ -116,12 +116,12 @@ class GooglePayGateway extends AbstractGateway {
 				'custom_attributes' => array( 'required' => 'required' ),
 			),
 			'google_merchant_id'          => array(
-				'title'       => __( 'Google Merchant Id', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Google Merchant ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
-				'description' => __( 'Your MerchantID provided by Google.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Your Merchant ID provided by Google.', 'globalpayments-gateway-provider-for-woocommerce' ),
 			),
 			'google_merchant_name'          => array(
-				'title'       => __( 'Google Merchant Name', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Google Merchant Display Name', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'description' => __( 'Displayed to the customer in the Google Pay dialog.', 'globalpayments-gateway-provider-for-woocommerce' ),
 			),
