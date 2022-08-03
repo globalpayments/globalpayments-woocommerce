@@ -79,17 +79,17 @@
 		},
 
 		/**
-		 * Merchant display name
+		 * Google Merchant Id
 		 */
 		getGoogleMerchantId: function () {
 			return this.gatewayOptions.google_merchant_id;
 		},
 
 		/**
-		 * Merchant  name
+		 * Google Merchant Display Name
 		 */
 		getGoogleMerchantName: function () {
-			return this.gatewayOptions.merchant_name;
+			return this.gatewayOptions.google_merchant_name;
 		},
 
 		/**
