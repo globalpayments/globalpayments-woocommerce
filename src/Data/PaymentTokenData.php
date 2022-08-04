@@ -51,10 +51,6 @@ class PaymentTokenData {
 			$token = $this->get_single_use_token();
 		}
 
-		if ( empty( $token ) ) {
-			throw new \Exception( __( 'Unable to retrieve payment token.' ) );
-		}
-
 		return $token;
 	}
 
