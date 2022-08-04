@@ -55,6 +55,13 @@ class GooglePayGateway extends AbstractGateway {
 	public $google_merchant_id;
 
 	/**
+	 * Google Merchant Name
+	 *
+	 * @var string
+	 */
+	public $google_merchant_name;
+
+	/**
 	 * Google pay button color
 	 *
 	 * @var string
@@ -88,6 +95,7 @@ class GooglePayGateway extends AbstractGateway {
 		return array(
 			'env'                         => $this->gateway->is_production ? Environment::PRODUCTION : Environment::TEST,
 			'google_merchant_id'          => $this->google_merchant_id,
+			'google_merchant_name'        => $this->google_merchant_name,
 			'global_payments_merchant_id' => $this->global_payments_merchant_id,
 			'cc_types'                    => $this->cc_types,
 			'button_color'                => $this->button_color,
@@ -108,9 +116,14 @@ class GooglePayGateway extends AbstractGateway {
 				'custom_attributes' => array( 'required' => 'required' ),
 			),
 			'google_merchant_id'          => array(
-				'title'       => __( 'Google Merchant Id', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( 'Google Merchant ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
-				'description' => __( 'Your MerchantID provided by Google.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Your Merchant ID provided by Google.', 'globalpayments-gateway-provider-for-woocommerce' ),
+			),
+			'google_merchant_name'          => array(
+				'title'       => __( 'Google Merchant Display Name', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
+				'description' => __( 'Displayed to the customer in the Google Pay dialog.', 'globalpayments-gateway-provider-for-woocommerce' ),
 			),
 			'cc_types'                    => array(
 				'title'   => __( 'Accepted Cards*', 'globalpayments-gateway-provider-for-woocommerce' ),
