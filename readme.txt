@@ -50,6 +50,7 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 
 = 1.4.0 =
 * Unified Payments - added Card Holder Name for Hosted Fields
+* Add Merchant Name option for the Google Pay gateway
 
 = 1.3.0 =
 * Unified Payments - Added Admin Pay for Order (process payments over the phone)
