@@ -492,6 +492,10 @@
 					case 'INVALID_CARD_SECURITY_CODE':
 						this.showValidationError( 'card-cvv' );
 						break;
+					case 'INVALID_CARD_HOLDER_NAME':
+					case 'TOO_LONG_DATA':
+						this.showValidationError('card-holder-name');
+						break;
 					case 'MANDATORY_DATA_MISSING':
 						var n = reason.message.search( "card type" );
 						if ( n>=0 ) {
@@ -562,7 +566,7 @@
 		 * @returns {object}
 		 */
 		getFieldConfiguration: function () {
-			return {
+			var fields = {
 				'card-number': {
 					placeholder: this.fieldOptions['card-number-field'].placeholder,
 					target: '#' + this.id + '-' + this.fieldOptions['card-number-field'].class
@@ -580,6 +584,13 @@
 					target: helper.getSubmitButtonTargetSelector( this.id )
 				}
 			};
+			if ( this.fieldOptions.hasOwnProperty( 'card-holder-name-field' ) ) {
+				fields["card-holder-name"] = {
+					placeholder: this.fieldOptions['card-holder-name-field'].placeholder,
+					target: '#' + this.id + '-' + this.fieldOptions['card-holder-name-field'].class
+				}
+			}
+			return fields;
 		},
 
 		/**

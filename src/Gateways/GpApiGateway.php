@@ -175,9 +175,10 @@ class GpApiGateway extends AbstractGateway {
 
 	public function get_frontend_gateway_options() {
 		return array(
-			'accessToken' => $this->get_access_token(),
-			'apiVersion'  => GpApiConnector::GP_API_VERSION,
-			'env'         => $this->is_production ? parent::ENVIRONMENT_PRODUCTION : parent::ENVIRONMENT_SANDBOX,
+			'accessToken'           => $this->get_access_token(),
+			'apiVersion'            => GpApiConnector::GP_API_VERSION,
+			'env'                   => $this->is_production ? parent::ENVIRONMENT_PRODUCTION : parent::ENVIRONMENT_SANDBOX,
+			'requireCardHolderName' => true,
 		);
 	}
 
@@ -207,6 +208,19 @@ class GpApiGateway extends AbstractGateway {
 		$response = $this->submit_request( $request );
 
 		return $response->token;
+	}
+
+	protected function secure_payment_fields() {
+		$fields = parent::secure_payment_fields();
+		$fields['card-holder-name-field'] = array(
+			'class'       => 'card-holder-name',
+			'label'       => esc_html__( 'Card Holder Name', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'placeholder' => esc_html__( 'Jane Smith', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'messages'    => array(
+				'validation' => esc_html__( 'Please enter a valid Card Holder Name', 'globalpayments-gateway-provider-for-woocommerce' ),
+			),
+		);
+		return $fields;
 	}
 
 	protected function add_hooks() {

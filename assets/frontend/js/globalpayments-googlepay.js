@@ -79,10 +79,17 @@
 		},
 
 		/**
-		 * Merchant display name
+		 * Google Merchant Id
 		 */
 		getGoogleMerchantId: function () {
 			return this.gatewayOptions.google_merchant_id;
+		},
+
+		/**
+		 * Google Merchant Display Name
+		 */
+		getGoogleMerchantName: function () {
+			return this.gatewayOptions.google_merchant_name;
 		},
 
 		/**
@@ -152,7 +159,8 @@
 			paymentDataRequest.allowedPaymentMethods = [ this.getCardPaymentMethod() ];
 			paymentDataRequest.transactionInfo = this.getGoogleTransactionInfo();
 			paymentDataRequest.merchantInfo = {
-				merchantId: this.getGoogleMerchantId()
+				merchantId: this.getGoogleMerchantId(),
+				merchantName: this.getGoogleMerchantName()
 			}
 
 			return paymentDataRequest;

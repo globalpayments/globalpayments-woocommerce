@@ -47,6 +47,11 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+
+= 1.4.0 =
+* Unified Payments - added Card Holder Name for Hosted Fields
+* Add Merchant Name option for the Google Pay gateway
+
 = 1.3.0 =
 * Unified Payments - Added Admin Pay for Order (process payments over the phone)
 * Added Admin option for Apple Pay button color
