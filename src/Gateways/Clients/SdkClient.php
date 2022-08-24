@@ -114,12 +114,24 @@ class SdkClient implements ClientInterface {
 			$this->set_threedsecure_data();
 		}
 		$response = $builder->execute();
-		if ( ! is_null( $this->card_data ) && $response instanceof Transaction && $response->token ) {
+		if (
+			$this->is_gateway(GatewayProvider::PORTICO)
+			&& !is_null($this->card_data)
+			&& $response instanceof Transaction
+			&& $response->token
+		) {
 			$this->card_data->token = $response->token;
 			$this->card_data->updateTokenExpiry();
 		}
 
 		return $response;
+	}
+
+	protected function is_gateway($gatewayProvider)
+	{
+		return isset($this->args['SERVICES_CONFIG'])
+			&& isset($this->args['SERVICES_CONFIG']['gatewayProvider'])
+			&& $this->args['SERVICES_CONFIG']['gatewayProvider'] === $gatewayProvider;
 	}
 
 	public function submit_request( RequestInterface $request ) {
