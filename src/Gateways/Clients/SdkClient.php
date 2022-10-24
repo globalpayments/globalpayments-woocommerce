@@ -4,6 +4,7 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Clients;
 
 use GlobalPayments\Api\Builders\TransactionBuilder;
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\AddressType;
@@ -69,9 +70,9 @@ class SdkClient implements ClientInterface {
 	);
 
 	protected $three_d_secure_auth_status = array(
-		AbstractAuthenticationsRequest::AUTH_STATUS_NOT_ENROLLED,
-		AbstractAuthenticationsRequest::AUTH_STATUS_SUCCESS_AUTHENTICATED,
-		AbstractAuthenticationsRequest::AUTH_STATUS_SUCCESS_ATTEMPT_MADE,
+		Secure3dStatus::NOT_ENROLLED,
+		Secure3dStatus::SUCCESS_AUTHENTICATED,
+		Secure3dStatus::SUCCESS_ATTEMPT_MADE,
 	);
 
 	/**
@@ -99,7 +100,7 @@ class SdkClient implements ClientInterface {
 		$this->configure_sdk();
 		$builder = $this->get_transaction_builder();
 		if ( ! isset( $builder ) ) {
-			throw new \Exception( __( 'Unable to perform request.' ) );
+			throw new \Exception( __( 'Unable to perform request.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 		}
 		if ( 'transactionDetail' === $this->args['TXN_TYPE'] ) {
 			return $builder->execute();
@@ -326,14 +327,13 @@ class SdkClient implements ClientInterface {
 		try {
 			$threeDSecureData = Secure3dService::getAuthenticationData()
 			                                   ->withServerTransactionId( $this->get_arg( RequestArg::SERVER_TRANS_ID ) )
-			                                   ->withPayerAuthenticationResponse( $this->get_arg( RequestArg::PARES ) )
 			                                   ->execute();
 		} catch ( \Exception $e ) {
-			throw new ApiException( __( '3DS Authentication failed. Please try again.' ) );
+			throw new ApiException( __( '3DS Authentication failed. Please try again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 		}
 		if ( AbstractAuthenticationsRequest::YES !== $threeDSecureData->liabilityShift
 		     || ! in_array( $threeDSecureData->status, $this->three_d_secure_auth_status ) ) {
-			throw new ApiException( __( '3DS Authentication failed. Please try again.' ) );
+			throw new ApiException( __( '3DS Authentication failed. Please try again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 		}
 		$this->card_data->threeDSecure = $threeDSecureData;
 	}

@@ -385,12 +385,6 @@ class GpApiGateway extends AbstractGateway {
 				] );
 			}
 
-			if ( isset( $_POST['PaRes'] ) ) {
-				$response = json_encode( [
-					'MD'    => wc_clean( $_POST['MD'] ),
-					'PaRes' => wc_clean( $_POST['PaRes'] ),
-				], JSON_UNESCAPED_SLASHES );
-			}
 			wp_enqueue_script(
 				'globalpayments-threedsecure-lib',
 				Plugin::get_url( '/assets/frontend/js/globalpayments-3ds' )

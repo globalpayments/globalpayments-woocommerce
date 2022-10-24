@@ -23,7 +23,6 @@ class AuthorizationRequest extends AbstractRequest {
 			RequestArg::CURRENCY        => null !== $this->order ? $this->order->get_currency() : null,
 			RequestArg::CARD_DATA       => $token,
 			RequestArg::SERVER_TRANS_ID => $this->data[ $this->gateway_id ]['serverTransId'] ?? null,
-			RequestArg::PARES           => ! empty( $this->data[ $this->gateway_id ]['PaRes'] ) ? $this->data[ $this->gateway_id ]['PaRes'] : null,
 		);
 		if ( isset ( $this->data['entry_mode'] ) ) {
 			$response[ RequestArg::ENTRY_MODE ] = $this->data['entry_mode'];
