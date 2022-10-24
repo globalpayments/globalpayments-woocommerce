@@ -308,7 +308,7 @@
 						return false;
 					}
 					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" !== versionCheckData.liabilityShift ) {
-						self.showPaymentError( '3DS Authentication failed. Please try again.' );
+						self.showPaymentError( 'Please try again with another card.' );
 						return false;
 					}
 					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" === versionCheckData.liabilityShift ) {
