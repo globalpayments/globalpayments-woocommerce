@@ -92,7 +92,6 @@
 			$( document.body ).on( 'checkout_error', function() {
 				$('#globalpayments_gpapi-checkout_validated').remove();
 				$('#globalpayments_gpapi-serverTransId').remove();
-				$('#globalpayments_gpapi-PaRes').remove();
 			} );
 
 			// Checkout
@@ -301,11 +300,7 @@
 				tokenResponse: this.tokenResponse,
 				wcTokenId: $( 'input[name="wc-' + this.id + '-payment-token"]:checked', _form ).val(),
 				amount: this.order.amount,
-				currency: this.order.currency,
-				challengeWindow: {
-					windowSize: GlobalPayments.ThreeDSecure.ChallengeWindowSize.Windowed500x600,
-					displayMode: 'lightbox',
-				},
+				currency: this.order.currency
 			})
 				.then( function( versionCheckData ) {
 					if ( versionCheckData.error ) {
@@ -313,18 +308,12 @@
 						return false;
 					}
 					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" !== versionCheckData.liabilityShift ) {
-						self.showPaymentError( '3DS Authentication failed. Please try again.' );
+						self.showPaymentError( 'Please try again with another card.' );
 						return false;
 					}
 					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" === versionCheckData.liabilityShift ) {
 						$form.submit();
 						return true;
-					}
-					if ( "ONE" === versionCheckData.version ) {
-						helper.createInputElement( self.id, 'serverTransId', versionCheckData.challenge.response.data.MD || versionCheckData.serverTransactionId );
-						helper.createInputElement( self.id, 'PaRes', versionCheckData.challenge.response.data.PaRes || '');
-						$form.submit();
-						return false;
 					}
 
 					var addressMatch = ! self.isDifferentShippingAddress();
