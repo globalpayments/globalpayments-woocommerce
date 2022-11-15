@@ -71,6 +71,13 @@ class GpApiGateway extends AbstractGateway {
 	public $merchant_contact_url;
 
 	/**
+	 * Transaction descriptor length
+	 *
+	 * @var int
+	 */
+	public $txn_descriptor_length = 25;
+
+	/**
 	 * Integration's Developer ID
 	 *
 	 * @var string
@@ -113,20 +120,36 @@ class GpApiGateway extends AbstractGateway {
 			'app_id'               => array(
 				'title' => __( 'Live App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'  => 'text',
+				'class' => 'required live-toggle',
+				'custom_attributes' => array(
+					'required' => 'required'
+				),
 			),
 			'app_key'              => array(
 				'title' => __( 'Live App Key*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'  => 'password',
+				'class' => 'required live-toggle',
+				'custom_attributes' => array(
+					'required' => 'required'
+				),
 			),
 			'sandbox_app_id'       => array(
 				'title'   => __( 'Sandbox App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'text',
 				'default' => '',
+				'class' => 'required sandbox-toggle',
+				'custom_attributes' => array(
+					'required' => 'required'
+				),
 			),
 			'sandbox_app_key'      => array(
 				'title'   => __( 'Sandbox App Key*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'password',
 				'default' => '',
+				'class' => 'required sandbox-toggle',
+				'custom_attributes' => array(
+					'required' => 'required'
+				),
 			),
 			'allow_card_saving'    => array(
 				'title'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -157,7 +180,10 @@ class GpApiGateway extends AbstractGateway {
 				'desc_tip'          => true,
 				'description'       => __( 'A link to an About or Contact page on your website with customer care information (maxLength: 50).', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'           => '',
-				'custom_attributes' => array( 'required' => 'required' ),
+				'custom_attributes' => array(
+					'required' => 'required',
+					'maxlength' => '256'
+				),
 			),
 		);
 	}
@@ -265,20 +291,12 @@ class GpApiGateway extends AbstractGateway {
 		if ( ! wc_string_to_bool( $settings['enabled'] ) ) {
 			return $settings;
 		}
-		if ( empty( $settings['merchant_contact_url'] ) || 50 < strlen( $settings['merchant_contact_url'] ) ) {
-			add_action( 'admin_notices', function () {
-				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' .
-				     __( 'Please provide a Contact Url (maxLength: 50). Gateway not enabled.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
-			} );
-			$settings['enabled'] = 'no';
-		}
 		if ( wc_string_to_bool( $settings['is_production'] ) ) {
 			if ( empty( $settings['app_id'] ) || empty( $settings['app_key'] ) ) {
 				add_action( 'admin_notices', function () {
 					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' .
-					     __( 'Please provide Live Credentials. Gateway not enabled.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
+					     __( 'Please provide Live Credentials.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
 				} );
-				$settings['enabled'] = 'no';
 			}
 
 			return $settings;
@@ -286,9 +304,8 @@ class GpApiGateway extends AbstractGateway {
 		if ( empty( $settings['sandbox_app_id'] ) || empty( $settings['sandbox_app_key'] ) ) {
 			add_action( 'admin_notices', function () {
 				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' .
-				     __( 'Please provide Sandbox Credentials. Gateway not enabled.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
+				     __( 'Please provide Sandbox Credentials.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
 			} );
-			$settings['enabled'] = 'no';
 		}
 
 		return $settings;

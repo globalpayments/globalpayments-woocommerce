@@ -7,7 +7,9 @@
     function GlobalPaymentsAdmin( globalpayments_admin_params ) {
         this.id = globalpayments_admin_params.gateway_id;
         this.toggleCredentialsSettings();
+        this.toggleValidations();
         this.attachEventHandlers();
+        this.validate_cc_types();
     };
     GlobalPaymentsAdmin.prototype = {
         /**
@@ -17,7 +19,9 @@
          */
         attachEventHandlers: function () {
             $( document ).on( 'change', this.getLiveModeSelector(), this.toggleCredentialsSettings.bind( this ) );
-
+            $( document ).on( 'change', this.getEnabledGatewaySelector(), this.toggleValidations.bind( this ) );
+            $( document ).on( 'change', $( '.accepted_cards.required' ), this.validate_cc_types.bind( this ) );
+            
             // Admin Pay for Order
             $( '#customer_user' ).on( 'change', this.updatePaymentMethods );
             $( '.wc-globalpayments-pay-order' ).on( 'click', this.payForOrder );
@@ -82,45 +86,77 @@
         },
 
         /**
+         * Checks if gateway setting is enabled
+         *
+         * @returns {*|jQuery}
+         */
+        isEnabled: function() {
+            return $( this.getEnabledGatewaySelector() ).is( ':checked' );
+        },
+
+        /**
+         * Checks if cc_types at least one selected
+         */
+        validate_cc_types: function () {
+            if ( 'globalpayments_googlepay' != this.id) {
+                return;
+            }
+            if ( this.isEnabled() ) {
+                var checksitems = $( '.accepted_cards.required' );
+                var required = true;
+                if ( checksitems && checksitems.length > 0 ) {
+                    checksitems.each( function() {
+                        if ( $( this ).is( ':checked' ) ) {
+                            required = false;
+                            checksitems.prop( 'required', false );
+                            return;
+                        }
+                    } );
+                    if ( required ) {
+                        checksitems.prop( 'required', true );
+                    }
+                }
+            }
+        },
+
+        /**
+         * Toggle validations when enabled gateway settings
+         */
+        toggleValidations: function () {
+            this.validate_cc_types();
+
+            var button = $('.woocommerce-save-button');
+            if ( this.isEnabled() ) {
+                button.removeAttr( "formnovalidate" );
+            } else {
+                button.attr( "formnovalidate","");
+            }
+        },
+
+        /**
+         * Toggle required settings
+         */
+        toggleRequiredSettings: function () {
+            var list =  $('.required');
+            list.each(function(){
+                if ($(this).is(':visible')) {
+                    $(this).prop('required', true);
+                } else {
+                    $(this).prop('required', false);
+                }
+            });
+        },
+
+        /**
          * Toggle gateway credentials settings
          */
         toggleCredentialsSettings: function () {
-            var globalpayments_keys = {
-                globalpayments_gpapi: [
-                  'app_id',
-                  'app_key',
-                ],
-                globalpayments_heartland: [
-                    'public_key',
-                    'secret_key',
-                ],
-                globalpayments_genius: [
-                    'merchant_name',
-                    'merchant_site_id',
-                    'merchant_key',
-                    'web_api_key',
-                ],
-                globalpayments_transit: [
-                    'merchant_id',
-                    'user_id',
-                    'password',
-                    'device_id',
-                    'tsep_device_id',
-                    'transaction_key',
-                ],
-            };
-            var gateway_credentials = globalpayments_keys[ this.id ];
-            if ( this.isLiveMode() ) {
-                gateway_credentials.forEach( function( key ) {
-                    $( '#woocommerce_' + this.id + '_' + key ).parents( 'tr' ).eq( 0 ).show();
-                    $( '#woocommerce_' + this.id + '_sandbox_' + key ).parents( 'tr' ).eq( 0 ).hide();
-                }, this );
-            } else {
-                gateway_credentials.forEach(function(key) {
-                    $( '#woocommerce_' + this.id + '_' + key ).parents( 'tr' ).eq( 0 ).hide();
-                    $( '#woocommerce_' + this.id + '_sandbox_' + key ).parents( 'tr' ).eq( 0 ).show();
-                }, this );
-            }
+            var display = this.isLiveMode();
+
+            $('.live-toggle').parents('tr').toggle(display);
+            $('.sandbox-toggle').parents('tr').toggle(!display);
+
+            this.toggleRequiredSettings();
         },
 
         /**
@@ -130,6 +166,15 @@
          */
         getLiveModeSelector: function () {
             return '#woocommerce_' + this.id + '_is_production';
+        },
+
+        /**
+         * Convenience function to get CSS selector for the "Enabled" setting
+         *
+         * @returns {string}
+         */
+        getEnabledGatewaySelector: function () {
+            return '#woocommerce_' + this.id + '_enabled';
         }
     };
     new GlobalPaymentsAdmin( globalpayments_admin_params );

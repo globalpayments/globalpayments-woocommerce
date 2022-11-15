@@ -104,6 +104,13 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	public $txn_descriptor;
 
 	/**
+	 * Transaction descriptor length
+	 *
+	 * @var int
+	 */
+	public $txn_descriptor_length = 18;
+
+	/**
 	 * Control of WooCommerce's card storage (tokenization) support
 	 *
 	 * @var bool
@@ -446,7 +453,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'default'           => '',
 					'class'             => 'txn_descriptor',
 					'custom_attributes' => array(
-						'maxlength' => 18,
+						'maxlength' => $this->txn_descriptor_length,
 					),
 				),
 				'check_avs_cvv'         => array(
@@ -813,6 +820,11 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	public function process_payment( $order_id ) {
 		$order         = new WC_Order( $order_id );
 		$request       = $this->prepare_request( $this->payment_action, $order );
+
+		$request->set_request_data( array(
+			'dynamic_descriptor' => $this->txn_descriptor,
+		));
+
 		$response      = $this->submit_request( $request );
 		$is_successful = $this->handle_response( $request, $response );
 
@@ -1269,22 +1281,21 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		if ( $this->id != $section ) {
 			return;
 		}
-		if ( ! $this->is_digital_wallet ) {
-			wp_enqueue_script(
-				'globalpayments-admin',
-				Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
-				array(),
-				WC()->version,
-				true
-			);
-			wp_localize_script(
-				'globalpayments-admin',
-				'globalpayments_admin_params',
-				array(
-					'gateway_id' => $section,
-				)
-			);
-		}
+
+		wp_enqueue_script(
+			'globalpayments-admin',
+			Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
+			array(),
+			WC()->version,
+			true
+		);
+		wp_localize_script(
+			'globalpayments-admin',
+			'globalpayments_admin_params',
+			array(
+				'gateway_id' => $section,
+			)
+		);
 
 		if ( $this->is_digital_wallet ) {
 			wp_enqueue_style(
