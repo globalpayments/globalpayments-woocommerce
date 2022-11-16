@@ -129,6 +129,11 @@ class TransitGateway extends AbstractGateway {
 	 */
 	public $debug;
 
+	public function __construct( $is_provider = false ) {
+		parent::__construct( $is_provider );
+		array_push( $this->supports, 'globalpayments_hosted_fields' );
+	}
+
 	public function configure_method_settings() {
 		$this->id                 = 'globalpayments_transit';
 		$this->method_title       = __( 'TSYS TransIT', 'globalpayments-gateway-provider-for-woocommerce' );

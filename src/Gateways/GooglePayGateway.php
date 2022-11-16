@@ -4,6 +4,7 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\MulticheckboxTrait;
 
@@ -220,25 +221,7 @@ class GooglePayGateway extends AbstractGateway {
 			true
 		);
 
-		wp_enqueue_script(
-			'globalpayments-helper',
-			Plugin::get_url( '/assets/frontend/js/globalpayments-helper.js' ),
-			array( 'jquery' ),
-			WC()->version,
-			true
-		);
-
-		wp_localize_script(
-			'globalpayments-helper',
-			'globalpayments_helper_params',
-			array(
-				'orderInfoUrl' => WC()->api_request_url( 'globalpayments_order_info' ),
-				'order'        => array(
-					'amount' 	=> $this->get_session_amount(),
-					'currency'	=> get_woocommerce_currency(),
-				)
-			)
-		);
+		$this->helper_script();
 
 		wp_enqueue_script(
 			'globalpayments-wc-googlepay',
@@ -266,10 +249,10 @@ class GooglePayGateway extends AbstractGateway {
 	}
 
 	public function mapResponseCodeToFriendlyMessage( $responseCode ) {
-		if ( 'DECLINED' === $responseCode ) {
-			return __( 'Your card has been declined by the bank.', 'globalpayments-gateway-provider-for-woocommerce' );
+		if ( TransactionStatus::DECLINED === $responseCode ) {
+			return __( 'Your payment was unsuccessful. Please try again or use a different payment method.', 'globalpayments-gateway-provider-for-woocommerce' );
 		}
 
-		return __( 'An error occurred while processing the card.', 'globalpayments-gateway-provider-for-woocommerce' );
+		return __( 'An error occurred while processing the card. Please try again or use a different payment method.', 'globalpayments-gateway-provider-for-woocommerce' );
 	}
 }

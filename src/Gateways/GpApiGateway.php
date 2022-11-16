@@ -5,6 +5,7 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure\CheckEnrollmentRequest;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\PayOrderTrait;
@@ -90,6 +91,11 @@ class GpApiGateway extends AbstractGateway {
 	 * @var bool
 	 */
 	public $debug;
+
+	public function __construct( $is_provider = false ) {
+		parent::__construct( $is_provider );
+		array_push( $this->supports, 'globalpayments_hosted_fields', 'globalpayments_three_d_secure' );
+	}
 
 	public function configure_method_settings() {
 		$this->id                 = self::GATEWAY_ID;
@@ -252,7 +258,7 @@ class GpApiGateway extends AbstractGateway {
 	protected function add_hooks() {
 		parent::add_hooks();
 
-		if ( is_admin() ) {
+		if ( is_admin() && current_user_can( 'edit_shop_orders' ) ) {
 			// Admin Pay for Order hooks
 			add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'pay_order_modal' ), 99 );
 			add_filter( 'globalpayments_secure_payment_fields_styles', array( $this, 'pay_order_modal_secure_payment_fields_styles' ) );
@@ -327,11 +333,11 @@ class GpApiGateway extends AbstractGateway {
 	}
 
 	public function mapResponseCodeToFriendlyMessage( $responseCode ) {
-		if ( 'DECLINED' === $responseCode ) {
-			return __( 'Your card has been declined by the bank.', 'globalpayments-gateway-provider-for-woocommerce' );
+		if ( TransactionStatus::DECLINED === $responseCode ) {
+			return __( 'Your payment was unsuccessful. Please try again or use a different payment method.', 'globalpayments-gateway-provider-for-woocommerce' );
 		}
 
-		return __( 'An error occurred while processing the card.', 'globalpayments-gateway-provider-for-woocommerce' );
+		return __( 'An error occurred while processing the card. Please try again or use a different payment method.', 'globalpayments-gateway-provider-for-woocommerce' );
 	}
 
 	public function process_threeDSecure_checkEnrollment() {

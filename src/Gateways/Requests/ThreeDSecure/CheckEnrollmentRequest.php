@@ -27,8 +27,8 @@ class CheckEnrollmentRequest extends AbstractAuthenticationsRequest {
 			$paymentMethod->token = $this->getToken( $requestData );
 
 			$threeDSecureData = Secure3dService::checkEnrollment( $paymentMethod )
-			                                   ->withAmount( $requestData->amount )
-			                                   ->withCurrency( $requestData->currency )
+			                                   ->withAmount( $requestData->order->amount )
+			                                   ->withCurrency( $requestData->order->currency )
 			                                   ->execute();
 
 			$response['enrolled']             = $threeDSecureData->enrolled ?? Secure3dStatus::NOT_ENROLLED;

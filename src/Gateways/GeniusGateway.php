@@ -73,6 +73,11 @@ class GeniusGateway extends AbstractGateway {
 	 */
 	public $is_production;
 
+	public function __construct( $is_provider = false ) {
+		parent::__construct( $is_provider );
+		array_push( $this->supports, 'globalpayments_hosted_fields' );
+	}
+
 	public function configure_method_settings() {
 		$this->id                 = 'globalpayments_genius';
 		$this->method_title       = __( 'TSYS Genius', 'globalpayments-gateway-provider-for-woocommerce' );
