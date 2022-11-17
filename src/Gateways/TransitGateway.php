@@ -129,6 +129,11 @@ class TransitGateway extends AbstractGateway {
 	 */
 	public $debug;
 
+	public function __construct( $is_provider = false ) {
+		parent::__construct( $is_provider );
+		array_push( $this->supports, 'globalpayments_hosted_fields' );
+	}
+
 	public function configure_method_settings() {
 		$this->id                 = 'globalpayments_transit';
 		$this->method_title       = __( 'TSYS TransIT', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -151,62 +156,73 @@ class TransitGateway extends AbstractGateway {
 				'title'       => __( 'Live Merchant ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
+				'class' => 'live-toggle',
 			),
 			'user_id'         => array(
 				'title'       => __( 'Live MultiPass User ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
+				'class' => 'live-toggle',
 			),
 			'password'        => array(
 				'title'       => __( 'Live Password', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'password',
 				'default'     => '',
+				'class' => 'live-toggle',
 			),
 			'device_id'       => array(
 				'title'       => __( 'Live Device ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
+				'class' => 'live-toggle',
 			),
 			'tsep_device_id'       => array(
 				'title'       => __( 'Live TSEP Device ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
+				'class' => 'live-toggle',
 			),
 			'transaction_key' => array(
 				'title'       => __( 'Live Transaction Key', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'password',
-
 				'default'     => '',
+				'class' => 'live-toggle',
 			),
 			'sandbox_merchant_id'     => array(
 				'title'       => __( 'Sandbox Merchant ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
+				'class' => 'sandbox-toggle',
 			),
 			'sandbox_user_id'         => array(
 				'title'       => __( 'Sandbox MultiPass User ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
+				'class' => 'sandbox-toggle',
 			),
 			'sandbox_password'        => array(
 				'title'       => __( 'Sandbox Password', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'password',
 				'default'     => '',
+				'class' => 'sandbox-toggle',
 			),
 			'sandbox_device_id'       => array(
 				'title'       => __( 'Sandbox Device ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
+				'class' => 'sandbox-toggle',
 			),
 			'sandbox_tsep_device_id'       => array(
 				'title'       => __( 'Sandbox TSEP Device ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
+				'class' => 'sandbox-toggle',
 			),
 			'sandbox_transaction_key' => array(
 				'title'       => __( 'Sandbox Transaction Key', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'password',
 				'default'     => '',
+				'class' => 'sandbox-toggle',
 			),
 			'debug' => array(
 				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),

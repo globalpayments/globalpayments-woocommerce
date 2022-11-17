@@ -27,26 +27,28 @@
 		 * @returns
 		 */
 		attachEventHandlers: function () {
-			var self = this;
-
-			$( document.body ).on(
-				'applied_coupon_in_checkout removed_coupon_in_checkout',
-				function () {
-					self.blockOnSubmit();
-
-					$.get( self.helperOptions.orderInfoUrl )
-						.done( function( result ) {
-							self.order = result.message;
-						})
-						.fail( function( jqXHR, textStatus, errorThrown ) {
-							console.log(errorThrown);
-						})
-						.always( function() {
-							self.unblockOnError();
-						});
-				}
-			);
+			$( document.body ).on( 'updated_checkout', this.getOrderInfo.bind( this ) );
 		},
+
+		/**
+		 * Get order info
+		 */
+		getOrderInfo: function () {
+			var self = this;
+			self.blockOnSubmit();
+
+			$.get( self.helperOptions.orderInfoUrl )
+				.done( function( result ) {
+					self.order = result.message;
+				})
+				.fail( function( jqXHR, textStatus, errorThrown ) {
+					console.log(errorThrown);
+				})
+				.always( function() {
+					self.unblockOnError();
+				});
+		},
+
 		/**
 		 * Convenience function to get CSS selector for the built-in 'Place Order' button
 		 *

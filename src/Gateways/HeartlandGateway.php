@@ -72,6 +72,11 @@ class HeartlandGateway extends AbstractGateway {
 	 */
 	public $debug;
 
+	public function __construct( $is_provider = false ) {
+		parent::__construct( $is_provider );
+		array_push( $this->supports, 'globalpayments_hosted_fields' );
+	}
+
 	public function configure_method_settings() {
 		$this->id                 = 'globalpayments_heartland';
 		$this->method_title       = __( 'Heartland', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -94,21 +99,25 @@ class HeartlandGateway extends AbstractGateway {
 				'title'       => __( 'Live Public Key', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
+				'class' => 'live-toggle',
 			),
 			'secret_key' => array(
 				'title'       => __( 'Live Secret Key', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'password',
 				'default'     => '',
+				'class' => 'live-toggle',
 			),
 			'sandbox_public_key' => array(
 				'title'       => __( 'Sandbox Public Key', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
+				'class' => 'sandbox-toggle',
 			),
 			'sandbox_secret_key' => array(
 				'title'       => __( 'Sandbox Secret Key', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'password',
 				'default'     => '',
+				'class' => 'sandbox-toggle',
 			),
 			'debug' => array(
 				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -150,7 +159,7 @@ class HeartlandGateway extends AbstractGateway {
 
 		if ($this->allow_gift_cards === true) {
 		    $HeartlandGiftGateway = new HeartlandGiftGateway($this);
-			
+
 			add_action('wp_ajax_use_gift_card',                       array($HeartlandGiftGateway, 'applyGiftCard'));
 			add_action('wp_ajax_nopriv_use_gift_card',                array($HeartlandGiftGateway, 'applyGiftCard'));
 			add_action('woocommerce_review_order_before_order_total', array($HeartlandGiftGateway, 'addGiftCards'));
@@ -174,7 +183,7 @@ class HeartlandGateway extends AbstractGateway {
 
 	/**
 	 * returns decline message for display to customer
-	 * 
+	 *
 	 * @param string $response_code
 	 *
 	 * @return string
@@ -239,7 +248,7 @@ class HeartlandGateway extends AbstractGateway {
 
 	/**
 	 * Add gift card fields if enabled
-	 * 
+	 *
 	 */
 	public function payment_fields() {
 		parent::payment_fields();
@@ -247,7 +256,7 @@ class HeartlandGateway extends AbstractGateway {
 		if ( $this->allow_gift_cards === true ) {
 			$path = dirname(plugin_dir_path(__FILE__));
 
-			include_once  $path . '/../assets/frontend/HeartlandGiftFields.php';			
+			include_once  $path . '/../assets/frontend/HeartlandGiftFields.php';
 		}
 	}
 
@@ -256,7 +265,7 @@ class HeartlandGateway extends AbstractGateway {
 	 *
 	 * @param int $order_id
 	 *
-	 * @return array	 * 
+	 * @return array	 *
 	 */
 	public function process_payment( $order_id ) {
 		$order         = new WC_Order( $order_id );
@@ -270,7 +279,7 @@ class HeartlandGateway extends AbstractGateway {
 			$gift_payments_successful = $gift_card_order_placement->processGiftCardPayment( $order_id );
 
 			// reverse the CC transaction if GC transactions didn't didn't succeed
-			if (!$gift_payments_successful) {			
+			if (!$gift_payments_successful) {
 				if ($gift_card_order_placement !== false) {
 
 				// hook directly into GP SDK to avoid collisions with the existing request
@@ -280,7 +289,7 @@ class HeartlandGateway extends AbstractGateway {
 
 				$is_successful = false;
 				}
-			} 
+			}
 		}
 
 		return array(

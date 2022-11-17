@@ -73,6 +73,11 @@ class GeniusGateway extends AbstractGateway {
 	 */
 	public $is_production;
 
+	public function __construct( $is_provider = false ) {
+		parent::__construct( $is_provider );
+		array_push( $this->supports, 'globalpayments_hosted_fields' );
+	}
+
 	public function configure_method_settings() {
 		$this->id                 = 'globalpayments_genius';
 		$this->method_title       = __( 'TSYS Genius', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -95,41 +100,49 @@ class GeniusGateway extends AbstractGateway {
 				'title'   => __( 'Live Merchant Name', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'text',
 				'default' => '',
+				'class' => 'live-toggle',
 			),
 			'merchant_site_id' => array(
 				'title'   => __( 'Live Merchant Site ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'text',
 				'default' => '',
+				'class' => 'live-toggle',
 			),
 			'merchant_key'     => array(
 				'title'   => __( 'Live Merchant Key', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'password',
 				'default' => '',
+				'class' => 'live-toggle',
 			),
 			'web_api_key'      => array(
 				'title'       => __( 'Live Web API Key', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'password',
 				'default'     => '',
+				'class' => 'live-toggle',
 			),
 			'sandbox_merchant_name'    => array(
 				'title'   => __( 'Sandbox Merchant Name', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'text',
 				'default' => '',
+				'class' => 'sandbox-toggle',
 			),
 			'sandbox_merchant_site_id' => array(
 				'title'   => __( 'Sandbox Merchant Site ID', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'text',
 				'default' => '',
+				'class' => 'sandbox-toggle',
 			),
 			'sandbox_merchant_key'     => array(
 				'title'   => __( 'Sandbox Merchant Key', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'password',
 				'default' => '',
+				'class' => 'sandbox-toggle',
 			),
 			'sandbox_web_api_key'      => array(
 				'title'       => __( 'Sandbox Web API Key', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'password',
 				'default'     => '',
+				'class' => 'sandbox-toggle',
 			),
 		);
 	}

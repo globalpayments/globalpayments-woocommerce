@@ -103,6 +103,14 @@
 			// Order Pay
 			if ( $( document.body ).hasClass( 'woocommerce-order-pay' ) ) {
 				$( document ).ready( this.renderPaymentFields.bind( this ) );
+				$( document ).ready( function () {
+					$( helper.getPlaceOrderButtonSelector() ).on( 'click', function ( $e ) {
+						$e.preventDefault();
+						$e.stopImmediatePropagation();
+						self.threeDSecure();
+						return;
+					} );
+				} );
 				return;
 			}
 
@@ -139,7 +147,6 @@
 				.done( function( result ) {
 					if ( -1 !== result.messages.indexOf( self.id + '_checkout_validated' ) ) {
 						helper.createInputElement( self.id, 'checkout_validated', 1 );
-						self.order = helper.order;
 						self.threeDSecure();
 					} else {
 						self.showPaymentError( result.messages );
@@ -229,7 +236,6 @@
 			this.cardForm.on( 'error', this.handleErrors.bind( this ) );
 			GlobalPayments.on( 'error', this.handleErrors.bind( this ) );
 
-			var self = this;
 			// match the visibility of our payment form
 			this.cardForm.ready( function () {
 				helper.toggleSubmitButtons();
@@ -291,7 +297,7 @@
 		 */
 		threeDSecure: function () {
 			helper.blockOnSubmit();
-
+			this.order = helper.order;
 			var self = this;
 			var _form = helper.getForm();
 			var $form = $( _form );
@@ -299,8 +305,11 @@
 			GlobalPayments.ThreeDSecure.checkVersion( this.threedsecure.checkEnrollmentUrl, {
 				tokenResponse: this.tokenResponse,
 				wcTokenId: $( 'input[name="wc-' + this.id + '-payment-token"]:checked', _form ).val(),
-				amount: this.order.amount,
-				currency: this.order.currency
+				order: {
+					id: this.order.id,
+					amount: this.order.amount,
+					currency: this.order.currency,
+				}
 			})
 				.then( function( versionCheckData ) {
 					if ( versionCheckData.error ) {
@@ -329,6 +338,7 @@
 							displayMode: 'lightbox',
 						},
 						order: {
+							id: self.order.id,
 							amount: self.order.amount,
 							currency: self.order.currency,
 							billingAddress: billingAddress,
@@ -348,12 +358,14 @@
 						})
 						.catch( function( error ) {
 							console.error( error );
+							console.error( error.reasons );
 							self.showPaymentError( 'Something went wrong while doing 3DS processing.' );
 							return false;
 						});
 				})
 				.catch( function( error ) {
 					console.error( error );
+					console.error( error.reasons );
 					self.showPaymentError( 'Something went wrong while doing 3DS processing.' );
 					return false;
 				});

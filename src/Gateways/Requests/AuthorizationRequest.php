@@ -19,11 +19,13 @@ class AuthorizationRequest extends AbstractRequest {
 	public function get_args() {
 		$token    = ( new PaymentTokenData( $this ) )->get_token();
 		$response = array(
-			RequestArg::AMOUNT          => null !== $this->order ? $this->order->get_total() : null,
-			RequestArg::CURRENCY        => null !== $this->order ? $this->order->get_currency() : null,
-			RequestArg::CARD_DATA       => $token,
-			RequestArg::SERVER_TRANS_ID => $this->data[ $this->gateway_id ]['serverTransId'] ?? null,
+			RequestArg::AMOUNT             => null !== $this->order ? $this->order->get_total() : null,
+			RequestArg::CURRENCY           => null !== $this->order ? $this->order->get_currency() : null,
+			RequestArg::CARD_DATA          => $token,
+			RequestArg::SERVER_TRANS_ID    => $this->data[ $this->gateway_id ]['serverTransId'] ?? null,
+			RequestArg::DYNAMIC_DESCRIPTOR => $this->data[ 'dynamic_descriptor' ],
 		);
+
 		if ( isset ( $this->data['entry_mode'] ) ) {
 			$response[ RequestArg::ENTRY_MODE ] = $this->data['entry_mode'];
 		}

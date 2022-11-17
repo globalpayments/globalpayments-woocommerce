@@ -4,6 +4,7 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\MulticheckboxTrait;
 
@@ -107,6 +108,31 @@ class GooglePayGateway extends AbstractGateway {
 		return $this->gateway->get_backend_gateway_options();
 	}
 
+
+	protected function add_hooks() {
+		parent::add_hooks();
+
+		add_filter( 'pre_update_option_woocommerce_globalpayments_googlepay_settings', array(
+			$this,
+			'woocommerce_globalpayments_googlepay_settings'
+		) );
+	}
+
+	public function woocommerce_globalpayments_googlepay_settings( $settings ) {
+		if ( ! wc_string_to_bool( $settings['enabled'] ) ) {
+			return $settings;
+		}
+
+		if ( empty( $settings['cc_types']  ) ) {
+			add_action( 'admin_notices', function () {
+				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' .
+				     __( 'Please provide at least one credit card types.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
+			} );
+		}
+
+		return $settings;
+	}
+
 	public function get_gateway_form_fields() {
 		return array(
 			'global_payments_merchant_id' => array(
@@ -128,7 +154,7 @@ class GooglePayGateway extends AbstractGateway {
 			'cc_types'                    => array(
 				'title'   => __( 'Accepted Cards*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'multiselectcheckbox',
-				'class'   => 'accepted_cards',
+				'class'   => 'accepted_cards required',
 				'css'     => 'width: 450px; height: 110px',
 				'options' => array(
 					'VISA'       => 'Visa',
@@ -137,7 +163,7 @@ class GooglePayGateway extends AbstractGateway {
 					'DISCOVER'   => 'Discover',
 					'JCB'        => 'JCB',
 				),
-				'default'	=> array( 'VISA' , 'MASTERCARD' , 'AMEX' , 'DISCOVER' , 'JCB' )
+				'default'	=> array( 'VISA' , 'MASTERCARD' , 'AMEX' , 'DISCOVER' , 'JCB' ),
 			),
 			'button_color'                => array(
 				'title'   => __( 'Button Color', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -195,25 +221,7 @@ class GooglePayGateway extends AbstractGateway {
 			true
 		);
 
-		wp_enqueue_script(
-			'globalpayments-helper',
-			Plugin::get_url( '/assets/frontend/js/globalpayments-helper.js' ),
-			array( 'jquery' ),
-			WC()->version,
-			true
-		);
-
-		wp_localize_script(
-			'globalpayments-helper',
-			'globalpayments_helper_params',
-			array(
-				'orderInfoUrl' => WC()->api_request_url( 'globalpayments_order_info' ),
-				'order'        => array(
-					'amount' 	=> $this->get_session_amount(),
-					'currency'	=> get_woocommerce_currency(),
-				)
-			)
-		);
+		$this->helper_script();
 
 		wp_enqueue_script(
 			'globalpayments-wc-googlepay',
@@ -241,10 +249,10 @@ class GooglePayGateway extends AbstractGateway {
 	}
 
 	public function mapResponseCodeToFriendlyMessage( $responseCode ) {
-		if ( 'DECLINED' === $responseCode ) {
-			return __( 'Your card has been declined by the bank.', 'globalpayments-gateway-provider-for-woocommerce' );
+		if ( TransactionStatus::DECLINED === $responseCode ) {
+			return __( 'Your payment was unsuccessful. Please try again or use a different payment method.', 'globalpayments-gateway-provider-for-woocommerce' );
 		}
 
-		return __( 'An error occurred while processing the card.', 'globalpayments-gateway-provider-for-woocommerce' );
+		return __( 'An error occurred while processing the card. Please try again or use a different payment method.', 'globalpayments-gateway-provider-for-woocommerce' );
 	}
 }

@@ -104,6 +104,13 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	public $txn_descriptor;
 
 	/**
+	 * Transaction descriptor length
+	 *
+	 * @var int
+	 */
+	public $txn_descriptor_length = 18;
+
+	/**
 	 * Control of WooCommerce's card storage (tokenization) support
 	 *
 	 * @var bool
@@ -304,32 +311,16 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		// WooCommerce's scripts for handling stored cards
 		parent::tokenization_script();
 
+		if ( ! $this->supports( 'globalpayments_hosted_fields' ) ) {
+			return;
+		}
+
 		// Global Payments styles for client-side tokenization
 		wp_enqueue_style(
 			'globalpayments-secure-payment-fields',
 			Plugin::get_url( '/assets/frontend/css/globalpayments-secure-payment-fields.css' ),
 			array(),
 			WC()->version
-		);
-
-		wp_enqueue_script(
-			'globalpayments-helper',
-			Plugin::get_url( '/assets/frontend/js/globalpayments-helper.js' ),
-			array( 'jquery' ),
-			WC()->version,
-			true
-		);
-
-		wp_localize_script(
-			'globalpayments-helper',
-			'globalpayments_helper_params',
-			array(
-				'orderInfoUrl' => WC()->api_request_url( 'globalpayments_order_info' ),
-				'order'        => array(
-					'amount' 	=> $this->get_session_amount(),
-					'currency'	=> get_woocommerce_currency(),
-				)
-			)
 		);
 
 		// Global Payments scripts for handling client-side tokenization
@@ -341,13 +332,35 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			WC()->version,
 			true
 		);
+
+		$secure_payment_fields_deps = array( 'globalpayments-secure-payment-fields-lib' );
+		if ( $this->supports( 'globalpayments_three_d_secure' ) && is_checkout() ) {
+			wp_enqueue_script(
+				'globalpayments-threedsecure-lib',
+				Plugin::get_url( '/assets/frontend/js/globalpayments-3ds' )
+				. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js',
+				array( 'globalpayments-secure-payment-fields-lib' ),
+				WC()->version,
+				true
+			);
+			array_push( $secure_payment_fields_deps, 'globalpayments-threedsecure-lib' );
+		}
+
+		$this->helper_script();
+		array_push( $secure_payment_fields_deps, 'globalpayments-helper' );
+
+		if ( is_checkout() ) {
+			array_push( $secure_payment_fields_deps, 'wc-checkout' );
+		}
+
 		wp_enqueue_script(
 			'globalpayments-secure-payment-fields',
 			Plugin::get_url( '/assets/frontend/js/globalpayments-secure-payment-fields.js' ),
-			is_admin() ? array( 'globalpayments-secure-payment-fields-lib' ) : array( 'globalpayments-secure-payment-fields-lib', 'wc-checkout' ),
+			$secure_payment_fields_deps,
 			WC()->version,
 			true
 		);
+
 		wp_localize_script(
 			'globalpayments-secure-payment-fields',
 			'globalpayments_secure_payment_fields_params',
@@ -358,31 +371,38 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'field_styles'    => $this->secure_payment_fields_styles(),
 			)
 		);
-
-		// Global Payments scripts for handling 3DS
-		if ( GpApiGateway::GATEWAY_ID !== $this->id || ! is_checkout() ) {
-			return;
+		if ( $this->supports( 'globalpayments_three_d_secure' ) && is_checkout() ) {
+			wp_localize_script(
+				'globalpayments-secure-payment-fields',
+				'globalpayments_secure_payment_threedsecure_params',
+				array(
+					'threedsecure' => array(
+						'methodNotificationUrl'     => WC()->api_request_url( 'globalpayments_threedsecure_methodnotification' ),
+						'challengeNotificationUrl'  => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
+						'checkEnrollmentUrl'        => WC()->api_request_url( 'globalpayments_threedsecure_checkenrollment' ),
+						'initiateAuthenticationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_initiateauthentication' ),
+						'ajaxCheckoutUrl'           => \WC_AJAX::get_endpoint( 'checkout' ),
+					)
+				)
+			);
 		}
+	}
 
+	public function helper_script() {
 		wp_enqueue_script(
-			'globalpayments-threedsecure-lib',
-			Plugin::get_url( '/assets/frontend/js/globalpayments-3ds' )
-			. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js',
-			array( 'globalpayments-secure-payment-fields-lib' ),
+			'globalpayments-helper',
+			Plugin::get_url( '/assets/frontend/js/globalpayments-helper.js' ),
+			array( 'jquery', 'jquery-blockui' ),
 			WC()->version,
 			true
 		);
+
 		wp_localize_script(
-			'globalpayments-secure-payment-fields',
-			'globalpayments_secure_payment_threedsecure_params',
+			'globalpayments-helper',
+			'globalpayments_helper_params',
 			array(
-				'threedsecure' => array(
-					'methodNotificationUrl'     => WC()->api_request_url( 'globalpayments_threedsecure_methodnotification' ),
-					'challengeNotificationUrl'  => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
-					'checkEnrollmentUrl'        => WC()->api_request_url( 'globalpayments_threedsecure_checkenrollment' ),
-					'initiateAuthenticationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_initiateauthentication' ),
-					'ajaxCheckoutUrl'           => \WC_AJAX::get_endpoint( 'checkout' ),
-				)
+				'orderInfoUrl' => WC()->api_request_url( 'globalpayments_order_info' ),
+				'order'        => $this->get_order_data(),
 			)
 		);
 	}
@@ -446,7 +466,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'default'           => '',
 					'class'             => 'txn_descriptor',
 					'custom_attributes' => array(
-						'maxlength' => 18,
+						'maxlength' => $this->txn_descriptor_length,
 					),
 				),
 				'check_avs_cvv'         => array(
@@ -811,8 +831,13 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @throws ApiException
 	 */
 	public function process_payment( $order_id ) {
-		$order         = new WC_Order( $order_id );
+		$order         = wc_get_order( $order_id );
 		$request       = $this->prepare_request( $this->payment_action, $order );
+
+		$request->set_request_data( array(
+			'dynamic_descriptor' => $this->txn_descriptor,
+		));
+
 		$response      = $this->submit_request( $request );
 		$is_successful = $this->handle_response( $request, $response );
 
@@ -877,7 +902,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		$is_order_txn_id_active = $this->is_transaction_active( $details );
 		$txn_type               = $is_order_txn_id_active ? self::TXN_TYPE_REVERSAL : self::TXN_TYPE_REFUND;
 
-		$order        = new WC_Order( $order_id );
+		$order        = wc_get_order( $order_id );
 		$request      = $this->prepare_request( $txn_type, $order );
 
 		if ( null != $amount ) {
@@ -970,7 +995,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @throws Exception
 	 */
 	public function get_transaction_details( $order_id ) {
-		$order    = new WC_Order( $order_id );
+		$order    = wc_get_order( $order_id );
 		$request  = $this->prepare_request( self::TXN_TYPE_REPORT_TXN_DETAILS, $order );
 		$response = $this->submit_request( $request );
 
@@ -1141,23 +1166,18 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			return;
 		}
 
-		$response = new \stdClass();
-		$response->amount = $this->get_session_amount();
-		$response->currency = get_woocommerce_currency();
-
 		wp_send_json( [
 			'error'   => false,
-			'message' => $response,
+			'message' => $this->get_order_data(),
 		] );
 	}
 
-	public function get_session_amount() {
-		if ( is_admin() ) {
-			return null;
-		}
-		$cart_totals = WC()->session->get( 'cart_totals' );
-
-		return round( $cart_totals['total'], 2 );
+	protected function get_order_data() {
+		return array(
+			'id'       => absint( get_query_var( 'order-pay' ) ),
+			'amount'   => wc_format_decimal( $this->get_order_total(), 2 ),
+			'currency' => get_woocommerce_currency(),
+		);
 	}
 
 	/**
@@ -1269,22 +1289,21 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		if ( $this->id != $section ) {
 			return;
 		}
-		if ( ! $this->is_digital_wallet ) {
-			wp_enqueue_script(
-				'globalpayments-admin',
-				Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
-				array(),
-				WC()->version,
-				true
-			);
-			wp_localize_script(
-				'globalpayments-admin',
-				'globalpayments_admin_params',
-				array(
-					'gateway_id' => $section,
-				)
-			);
-		}
+
+		wp_enqueue_script(
+			'globalpayments-admin',
+			Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
+			array(),
+			WC()->version,
+			true
+		);
+		wp_localize_script(
+			'globalpayments-admin',
+			'globalpayments_admin_params',
+			array(
+				'gateway_id' => $section,
+			)
+		);
 
 		if ( $this->is_digital_wallet ) {
 			wp_enqueue_style(

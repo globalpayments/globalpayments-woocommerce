@@ -42,7 +42,8 @@ trait MulticheckboxTrait {
 						<?php foreach ( (array) $data['options'] as $option_key => $option_value ) : ?>
 							<li>
 								<input type="checkbox" id="<?php echo esc_attr( $field_key );echo esc_attr( $option_key ); ?>" name="<?php echo esc_attr( $field_key ); ?>[]" value="<?php echo esc_attr( $option_key ); ?>"
-									<?php checked( in_array( (string) $option_key, $value, true ), true  ); ?> />
+									class="<?php echo $data['class'] ?>"
+                                    <?php checked( in_array( (string) $option_key, $value, true ), true  ); ?> />
 								<label for="<?php echo esc_attr( $field_key );echo esc_attr( $option_key ); ?>"><?php echo esc_html( $option_value ); ?></label>
 							</li>
 						<?php endforeach; ?>
