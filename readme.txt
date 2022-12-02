@@ -21,7 +21,6 @@ This extension allows WooCommerce to use the available Global Payments payment g
 - Refund transactions from a previous Sale
 - Stored payment methods
 - 3D Secure 2 & SCA
-- 3D Secure 1
 - Digital Wallets - Google Pay
 - Digital Wallets - Apple Pay
 - Payments over the phone
