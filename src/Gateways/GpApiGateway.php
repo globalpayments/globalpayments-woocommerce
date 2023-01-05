@@ -383,8 +383,19 @@ class GpApiGateway extends AbstractGateway {
 			Plugin::get_url( '/assets/frontend/js/globalpayments-3ds' )
 			. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js'
 		);
-		wp_add_inline_script( 'globalpayments-threedsecure-lib', 'GlobalPayments.ThreeDSecure.handleMethodNotification(' . $response . ');' );
-		wp_print_scripts();
+		wp_add_inline_script(
+			'globalpayments-threedsecure-lib',
+			'window.addEventListener(\'load\', function(){ GlobalPayments.ThreeDSecure.handleMethodNotification(' . $response . '); } )' );
+		?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
+<head>
+    <?php wp_print_scripts( 'globalpayments-threedsecure-lib' ); ?>
+</head>
+<body>
+</body>
+</html>
+		<?php
 		exit();
 	}
 
@@ -413,10 +424,20 @@ class GpApiGateway extends AbstractGateway {
 				Plugin::get_url( '/assets/frontend/js/globalpayments-3ds' )
 				. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js'
 			);
-			wp_add_inline_script( 'globalpayments-threedsecure-lib', 'GlobalPayments.ThreeDSecure.handleChallengeNotification(' . $response . ');' );
-			wp_print_scripts();
+			wp_add_inline_script(
+				'globalpayments-threedsecure-lib',
+				'window.addEventListener(\'load\', function(){ GlobalPayments.ThreeDSecure.handleChallengeNotification(' . $response . '); } )' );
+			?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
+<head>
+    <?php wp_print_scripts( 'globalpayments-threedsecure-lib' ); ?>
+</head>
+<body>
+</body>
+</html>
+			<?php
 			exit();
-
 		} catch ( Exception $e ) {
 			wp_send_json( [
 				'error'   => true,
