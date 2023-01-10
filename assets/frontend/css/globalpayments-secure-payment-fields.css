@@ -22,6 +22,6 @@ div[id^="GlobalPayments-overlay-"] {
 	font-size:14px;
 }
 
-.woocommerce-globalpayments-hidden {
+.woocommerce-page #payment button.woocommerce-globalpayments-hidden {
 	display: none !important;
 }
