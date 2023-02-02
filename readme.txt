@@ -48,8 +48,7 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 == Changelog ==
 
 = 1.5.3 =
-* Added GPI Transactions : Transaction API
-* Added GPay/APay Support
+* Added GPI Transactions : Transaction API - added support for credit, ach & reporting transactions
 
 = 1.5.2 =
 * Unified Payments improvement - 3ds notification endpoints work with defer mode
