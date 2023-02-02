@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Returns information about the package and handles init.
  */
@@ -7,50 +8,52 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider;
 
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGateway;
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
 /**
  * Main plugin class.
  */
-class Plugin {
+class Plugin
+{
 	/**
 	 * Version.
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.5.2';
+	const VERSION = '1.5.3';
 
 	/**
 	 * Init the package.
 	 */
-	public static function init() {
-		load_plugin_textdomain( 'globalpayments-gateway-provider-for-woocommerce', false, self::get_path() . '/languages' );
+	public static function init()
+	{
+		load_plugin_textdomain('globalpayments-gateway-provider-for-woocommerce', false, self::get_path() . '/languages');
 
-		if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
+		if (!class_exists('WC_Payment_Gateway')) {
 			return;
 		}
 
 		//initialize gift related hooks for Heartland ajax requests
-		if ( true === wp_doing_ajax() || ! empty( $_GET['wc-ajax'] ) ) {
-			$heartlandSettings = get_option( 'woocommerce_globalpayments_heartland_settings' );
+		if (true === wp_doing_ajax() || !empty($_GET['wc-ajax'])) {
+			$heartlandSettings = get_option('woocommerce_globalpayments_heartland_settings');
 			// prevent checkout blocker when Heartland settings not set loop
 			if (
-				! empty( $heartlandSettings ) &&
-				isset( $heartlandSettings['enabled'] ) &&
+				!empty($heartlandSettings) &&
+				isset($heartlandSettings['enabled']) &&
 				'yes' === $heartlandSettings['enabled'] &&
-				isset( $heartlandSettings['allow_gift_cards'] ) &&
+				isset($heartlandSettings['allow_gift_cards']) &&
 				'yes' === $heartlandSettings['allow_gift_cards']
 			) {
 				new HeartlandGateway();
 			}
 		}
 
-		add_filter( 'woocommerce_payment_gateways', array( self::class, 'add_gateways' ) );
-		add_action( 'woocommerce_order_actions', array( Gateways\AbstractGateway::class, 'add_capture_order_action' ) );
-		add_action( 'woocommerce_order_action_capture_credit_card_authorization', array(
+		add_filter('woocommerce_payment_gateways', array(self::class, 'add_gateways'));
+		add_action('woocommerce_order_actions', array(Gateways\AbstractGateway::class, 'add_capture_order_action'));
+		add_action('woocommerce_order_action_capture_credit_card_authorization', array(
 			Gateways\AbstractGateway::class,
 			'capture_credit_card_authorization'
-		) );
+		));
 	}
 
 	/**
@@ -60,7 +63,8 @@ class Plugin {
 	 *
 	 * @return string[]
 	 */
-	public static function add_gateways( $methods ) {
+	public static function add_gateways($methods)
+	{
 		$gateways = array(
 			Gateways\HeartlandGateway::class,
 			Gateways\GeniusGateway::class,
@@ -70,7 +74,7 @@ class Plugin {
 			Gateways\ApplePayGateway::class,
 		);
 
-		foreach ( $gateways as $gateway ) {
+		foreach ($gateways as $gateway) {
 			$methods[] = $gateway;
 		}
 
@@ -82,7 +86,8 @@ class Plugin {
 	 *
 	 * @return string
 	 */
-	public static function get_version() {
+	public static function get_version()
+	{
 		return self::VERSION;
 	}
 
@@ -91,11 +96,13 @@ class Plugin {
 	 *
 	 * @return string
 	 */
-	public static function get_path() {
-		return dirname( __DIR__ );
+	public static function get_path()
+	{
+		return dirname(__DIR__);
 	}
 
-	public static function get_url( $path ) {
-		return plugins_url( $path, dirname( __FILE__ ) );
+	public static function get_url($path)
+	{
+		return plugins_url($path, dirname(__FILE__));
 	}
 }
