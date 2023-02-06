@@ -389,6 +389,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	}
 
 	public function helper_script() {
+		if ( wp_script_is( 'globalpayments-helper', 'enqueued' ) ) {
+			return;
+		}
 		wp_enqueue_script(
 			'globalpayments-helper',
 			Plugin::get_url( '/assets/frontend/js/globalpayments-helper.js' ),

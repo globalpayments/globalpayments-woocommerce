@@ -3,7 +3,6 @@
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure;
 
 use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Utils\CountryUtils;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\AbstractRequest;
 use WC_Order;
 
@@ -58,14 +57,13 @@ abstract class AbstractAuthenticationsRequest extends AbstractRequest {
 	 * @return Address
 	 */
 	protected function get_wc_billing_address() {
-		$billingAddress = new Address();
+		$billingAddress = new \stdClass();
 		$billingAddress->streetAddress1 = $this->order->get_billing_address_1();
 		$billingAddress->streetAddress2 = $this->order->get_billing_address_2();
 		$billingAddress->city           = $this->order->get_billing_city();
 		$billingAddress->state          = $this->order->get_billing_state();
 		$billingAddress->postalCode     = $this->order->get_billing_postcode();
 		$billingAddress->country        = $this->order->get_billing_country();
-		$billingAddress->countryCode    = CountryUtils::getNumericCodeByCountry( $billingAddress->country );
 
 		return $billingAddress;
 	}
@@ -76,14 +74,13 @@ abstract class AbstractAuthenticationsRequest extends AbstractRequest {
 	 * @return Address
 	 */
 	protected function get_wc_shipping_address() {
-		$shippingAddress = new Address();
+		$shippingAddress = new \stdClass();
 		$shippingAddress->streetAddress1 = $this->order->get_shipping_address_1();
 		$shippingAddress->streetAddress2 = $this->order->get_shipping_address_2();
 		$shippingAddress->city           = $this->order->get_shipping_city();
 		$shippingAddress->state          = $this->order->get_shipping_state();
 		$shippingAddress->postalCode     = $this->order->get_shipping_postcode();
 		$shippingAddress->country        = $this->order->get_shipping_country();
-		$shippingAddress->countryCode    = CountryUtils::getNumericCodeByCountry( $shippingAddress->country );
 
 		return $shippingAddress;
 	}
