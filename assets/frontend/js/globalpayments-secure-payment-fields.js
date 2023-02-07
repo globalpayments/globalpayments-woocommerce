@@ -105,9 +105,12 @@
 				$( document ).ready( this.renderPaymentFields.bind( this ) );
 				$( document ).ready( function () {
 					$( helper.getPlaceOrderButtonSelector() ).on( 'click', function ( $e ) {
-						$e.preventDefault();
-						$e.stopImmediatePropagation();
-						self.threeDSecure();
+						var selectedPaymentGatewayId = $( '.payment_methods input.input-radio:checked' ).val();
+						if ( 'globalpayments_gpapi' === selectedPaymentGatewayId ) {
+							$e.preventDefault();
+							$e.stopImmediatePropagation();
+							self.threeDSecure();
+						}
 						return;
 					} );
 				} );

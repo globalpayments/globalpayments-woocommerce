@@ -100,10 +100,6 @@ class InitiateAuthenticationRequest extends AbstractAuthenticationsRequest {
 	}
 
 	private function map_address( $addressData ) {
-		if ( $addressData instanceof Address ) {
-			return $addressData;
-		}
-
 		$address              = new Address();
 		$address->countryCode = CountryUtils::getNumericCodeByCountry( $addressData->country );
 
