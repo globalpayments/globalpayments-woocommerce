@@ -150,6 +150,7 @@
 				.done( function( result ) {
 					if ( -1 !== result.messages.indexOf( self.id + '_checkout_validated' ) ) {
 						helper.createInputElement( self.id, 'checkout_validated', 1 );
+						self.order = helper.order;
 						self.threeDSecure();
 					} else {
 						self.showPaymentError( result.messages );
@@ -239,11 +240,32 @@
 			this.cardForm.on( 'error', this.handleErrors.bind( this ) );
 			GlobalPayments.on( 'error', this.handleErrors.bind( this ) );
 
+			var self = this;
 			// match the visibility of our payment form
 			this.cardForm.ready( function () {
 				helper.toggleSubmitButtons();
 			} );
 
+		},
+
+		useTokenToPlaceOrder: function (self, response) {
+			var tokenResponseElement =
+				/**
+				 * Get hidden
+				 *
+				 * @type {HTMLInputElement}
+				 */
+				(document.getElementById(self.id + '-token_response'));
+			if (!tokenResponseElement) {
+				tokenResponseElement = document.createElement('input');
+				tokenResponseElement.id = self.id + '-token_response';
+				tokenResponseElement.name = self.id + '[token_response]';
+				tokenResponseElement.type = 'hidden';
+				helper.getForm().appendChild(tokenResponseElement);
+			}
+
+			tokenResponseElement.value = JSON.stringify(response);
+			helper.placeOrder();
 		},
 
 		/**
@@ -478,6 +500,10 @@
 		handleErrors: function ( error ) {
 			this.resetValidationErrors();
 			console.error(error);
+			if (this.isTransactionApiError(error)){
+				this.handleErrorForTransactionApi(error);
+				return;
+			}
 			if ( ! error.reasons ) {
 				this.showPaymentError( 'Something went wrong. Please contact us to get assistance.' );
 				return;
@@ -560,6 +586,48 @@
 						break;
 					default:
 						this.showPaymentError( reason.message );
+				}
+			}
+		},
+
+		isTransactionApiError: function(errorObject){
+			if (!errorObject.hasOwnProperty('error')){
+				return false;
+			}
+			var error = errorObject.error;
+			return !error.hasOwnProperty('reasons') && error.hasOwnProperty('code') && error.hasOwnProperty('message');
+		},
+
+		handleErrorForTransactionApi: function (errorObject){
+			var error = errorObject.error;
+			if (error.code === 'invalid_card'){
+				this.showValidationError('card-number');
+				return;
+			}
+			if (error.code !== 'invalid_input'){
+				this.showPaymentError(error.message);
+				return;
+			}
+			for ( var i = 0; i < error.detail.length; i++ ) {
+				var data_path = error.detail[i].data_path;
+				switch (data_path) {
+					case '/card/card_number':
+						this.showValidationError('card-number');
+						break;
+					case '/card/card_security_code':
+						this.showValidationError( 'card-cvv' );
+						break;
+					case '/card':
+						if (error.detail[i].description.includes('expiry')){
+							this.showValidationError( 'card-expiration' );
+						}
+						break;
+					case '/card/expiry_year':
+					case '/card/expiry_month':
+						this.showValidationError( 'card-expiration' );
+						break;
+					default:
+						this.showPaymentError(error.message);
 				}
 			}
 		},
