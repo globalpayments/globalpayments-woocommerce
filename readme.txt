@@ -46,6 +46,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.5.5 =
+* Update to v6.1.5 of GP PHP SDK
+* Genius MerchantWare bug fix - fixes service URL problem
 
 = 1.5.4 =
 * Unified Payments bug fix - `Pay for Order` 3DS
