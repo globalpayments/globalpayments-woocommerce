@@ -5,6 +5,7 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider;
 
+use GlobalPayments\Api\Gateways\Gateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGateway;
 
 defined( 'ABSPATH' ) || exit;
@@ -68,6 +69,7 @@ class Plugin {
 			Gateways\GpApiGateway::class,
 			Gateways\GooglePayGateway::class,
 			Gateways\ApplePayGateway::class,
+            		Gateways\TransactionApiGateway::class,
 		);
 
 		foreach ( $gateways as $gateway ) {
