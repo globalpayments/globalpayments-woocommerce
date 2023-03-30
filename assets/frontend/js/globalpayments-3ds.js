@@ -1594,7 +1594,11 @@ this.GlobalPayments.ThreeDSecure = (function (exports) {
     function getWindowMessageEventHandler(resolve, data) {
         return function (e) {
             var origin = data.origin || window.location.origin;
-            if (origin !== e.origin) {
+            var notificationEvent = false;
+            if (e.data && e.data.event) {
+                notificationEvent = (e.data.event === "methodNotification" || e.data.event === "challengeNotification");
+            }
+            if (origin !== e.origin || !notificationEvent) {
                 return;
             }
             ensureIframeClosed(data.timeout || 0);
@@ -1762,7 +1766,7 @@ this.GlobalPayments.ThreeDSecure = (function (exports) {
      */
     function handleInitiateAuthentication(data, options) {
         return __awaiter(this, void 0, void 0, function () {
-            var response;
+            var messageTypeKey, response;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1772,7 +1776,7 @@ this.GlobalPayments.ThreeDSecure = (function (exports) {
                         if (!data.challenge.requestUrl) {
                             throw new Error("Invalid challenge state. Missing challenge URL");
                         }
-                        var messageTypeKey = data.challenge.messageType || "creq";
+                        messageTypeKey = data.challenge.messageType || "creq";
                         return [4 /*yield*/, postToIframe(data.challenge.requestUrl, [
                                 { name: messageTypeKey, value: data.challenge.encodedChallengeRequest },
                             ], options)];
