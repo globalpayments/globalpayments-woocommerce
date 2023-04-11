@@ -5,6 +5,7 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider;
 
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\GpApiGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGateway;
 
 defined( 'ABSPATH' ) || exit;
@@ -18,7 +19,7 @@ class Plugin {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.5.6';
+	const VERSION = '1.6.0';
 
 	/**
 	 * Init the package.
@@ -32,7 +33,7 @@ class Plugin {
 
 		//initialize gift related hooks for Heartland ajax requests
 		if ( true === wp_doing_ajax() || ! empty( $_GET['wc-ajax'] ) ) {
-			$heartlandSettings = get_option( 'woocommerce_globalpayments_heartland_settings' );
+			$heartlandSettings = get_option( 'woocommerce_' . HeartlandGateway::GATEWAY_ID . '_settings' );
 			// prevent checkout blocker when Heartland settings not set loop
 			if (
 				! empty( $heartlandSettings ) &&
@@ -54,7 +55,7 @@ class Plugin {
 	}
 
 	/**
-	 * Appends our payment gateways to WooCommerce's known list
+	 * Appends our payment gateways to WooCommerce's known list.
 	 *
 	 * @param string[] $methods
 	 *
@@ -69,6 +70,7 @@ class Plugin {
 			Gateways\GooglePayGateway::class,
 			Gateways\ApplePayGateway::class,
 		);
+		$gateways = array_merge( $gateways, GpApiGateway::get_payment_methods() );
 
 		foreach ( $gateways as $gateway ) {
 			$methods[] = $gateway;

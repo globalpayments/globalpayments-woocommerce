@@ -8,6 +8,11 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 defined( 'ABSPATH' ) || exit;
 
 class GeniusGateway extends AbstractGateway {
+	/**
+	 * Gateway ID
+	 */
+	const GATEWAY_ID = 'globalpayments_genius';
+
 	public $gateway_provider = GatewayProvider::GENIUS;
 
 	/**
@@ -79,7 +84,7 @@ class GeniusGateway extends AbstractGateway {
 	}
 
 	public function configure_method_settings() {
-		$this->id                 = 'globalpayments_genius';
+		$this->id                 = self::GATEWAY_ID;
 		$this->method_title       = __( 'TSYS Genius', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->method_description = __( 'Connect to the TSYS Genius gateway', 'globalpayments-gateway-provider-for-woocommerce' );
 	}

@@ -2,10 +2,10 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Handlers;
 
-use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Affirm;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Clearpay;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Klarna;
 
 class PaymentActionHandler extends AbstractHandler {
 	protected $accepted_transaction_types = array(
@@ -27,8 +27,18 @@ class PaymentActionHandler extends AbstractHandler {
 
 		$this->save_meta_to_order( $this->request->order, array( 'payment_action' => $txn_type ) );
 
-		if ( AbstractGateway::TXN_TYPE_VERIFY !== $txn_type ) {
+		if (
+			AbstractGateway::TXN_TYPE_VERIFY !== $txn_type
+			&& ! in_array(
+				$this->request->order->get_payment_method(),
+				array(
+					Affirm::PAYMENT_METHOD_ID,
+					Clearpay::PAYMENT_METHOD_ID,
+					Klarna::PAYMENT_METHOD_ID
+				) )
+		) {
 			$this->request->order->payment_complete( $this->response->transactionId );
+
 			return;
 		}
 

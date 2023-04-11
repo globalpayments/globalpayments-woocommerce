@@ -5,10 +5,12 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Gateways\GpApiConnector;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Affirm;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure\CheckEnrollmentRequest;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\PayOrderTrait;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Clearpay;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Klarna;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 defined( 'ABSPATH' ) || exit;
@@ -332,14 +334,6 @@ class GpApiGateway extends AbstractGateway {
 		wc_add_notice( $this->id . '_checkout_validated', 'error', array( 'id' => $this->id ) );
 	}
 
-	public function mapResponseCodeToFriendlyMessage( $responseCode ) {
-		if ( TransactionStatus::DECLINED === $responseCode ) {
-			return __( 'Your payment was unsuccessful. Please try again or use a different payment method.', 'globalpayments-gateway-provider-for-woocommerce' );
-		}
-
-		return __( 'An error occurred while processing the card. Please try again or use a different payment method.', 'globalpayments-gateway-provider-for-woocommerce' );
-	}
-
 	public function process_threeDSecure_checkEnrollment() {
 		try {
 			$request = $this->prepare_request( parent::TXN_TYPE_CHECK_ENROLLMENT );
@@ -444,5 +438,18 @@ class GpApiGateway extends AbstractGateway {
 				'message' => $e->getMessage(),
 			] );
 		}
+	}
+
+	/**
+	 * Returns gateway supported payment methods.
+	 *
+	 * @return string[]
+	 */
+	public static function get_payment_methods() {
+		return array(
+			Affirm::class,
+			Clearpay::class,
+			Klarna::class
+		);
 	}
 }

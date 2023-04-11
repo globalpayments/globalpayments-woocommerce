@@ -3,7 +3,6 @@
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
-use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\MulticheckboxTrait;
 
@@ -289,14 +288,6 @@ class ApplePayGateway extends AbstractGateway {
 			'error'   => false,
 			'message' => $validationResponse,
 		] );
-	}
-
-	public function mapResponseCodeToFriendlyMessage( $responseCode ) {
-		if ( TransactionStatus::DECLINED === $responseCode ) {
-			return __( 'Your payment was unsuccessful. Please try again or use a different payment method.', 'globalpayments-gateway-provider-for-woocommerce' );
-		}
-
-		return __( 'An error occurred while processing the card. Please try again or use a different payment method.', 'globalpayments-gateway-provider-for-woocommerce' );
 	}
 
 	/**

@@ -13,6 +13,11 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 defined( 'ABSPATH' ) || exit;
 
 class HeartlandGateway extends AbstractGateway {
+	/**
+	 * Gateway ID
+	 */
+	const GATEWAY_ID = 'globalpayments_heartland';
+
 	public $gateway_provider = GatewayProvider::PORTICO;
 
 	/**
@@ -78,7 +83,7 @@ class HeartlandGateway extends AbstractGateway {
 	}
 
 	public function configure_method_settings() {
-		$this->id                 = 'globalpayments_heartland';
+		$this->id                 = self::GATEWAY_ID;
 		$this->method_title       = __( 'Heartland', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->method_description = __( 'Connect to the Heartland Portico gateway', 'globalpayments-gateway-provider-for-woocommerce' );
 	}

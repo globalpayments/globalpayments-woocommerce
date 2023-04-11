@@ -95,12 +95,14 @@
 		toggleSubmitButtons: function () {
 			var selectedPaymentGatewayId = $( '.payment_methods input.input-radio:checked' ).val();
 			var isGPGateway = selectedPaymentGatewayId.search( 'globalpayments' ) >= 0;
+			var submitButtonTarget = $( this.getSubmitButtonTargetSelector( selectedPaymentGatewayId ) );
+			var placeOrderButton = $( this.getPlaceOrderButtonSelector() );
 
 			$( '.globalpayments.card-submit' ).hide();
 
-			// another payment method was selected
-			if ( ! isGPGateway ) {
-				$( this.getPlaceOrderButtonSelector() ).removeClass( 'woocommerce-globalpayments-hidden' ).show();
+			// another payment method was selected or target button doesn't exists
+			if ( ! isGPGateway || ! submitButtonTarget.length ) {
+				placeOrderButton.removeClass( 'woocommerce-globalpayments-hidden' ).show();
 				return;
 			}
 
@@ -112,13 +114,13 @@
 			var newSavedCardSelected   = 'new' === $( this.getStoredPaymentMethodsRadioSelector( selectedPaymentGatewayId ) + ':checked' ).val();
 			// selected payment method is card or digital wallet
 			if ( ! savedCardsAvailable  || savedCardsAvailable && newSavedCardSelected ) {
-				$( this.getSubmitButtonTargetSelector( selectedPaymentGatewayId ) ).show();
-				$( this.getPlaceOrderButtonSelector() ).addClass( 'woocommerce-globalpayments-hidden' ).hide();
+				submitButtonTarget.show();
+				placeOrderButton.addClass( 'woocommerce-globalpayments-hidden' ).hide();
 			} else {
 				// selected payment method is stored card
-				$( this.getSubmitButtonTargetSelector( selectedPaymentGatewayId ) ).hide();
+				submitButtonTarget.hide();
 				// show platform `Place Order` button
-				$( this.getPlaceOrderButtonSelector() ).removeClass( 'woocommerce-globalpayments-hidden' ).show();
+				placeOrderButton.removeClass( 'woocommerce-globalpayments-hidden' ).show();
 			}
 		},
 

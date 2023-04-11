@@ -10,6 +10,11 @@ defined( 'ABSPATH' ) || exit;
 
 class TransitGateway extends AbstractGateway {
 	/**
+	 * Gateway ID
+	 */
+	const GATEWAY_ID = 'globalpayments_transit';
+
+	/**
 	 * Live Merchant location's Merchant ID
 	 *
 	 * @var string
@@ -135,7 +140,7 @@ class TransitGateway extends AbstractGateway {
 	}
 
 	public function configure_method_settings() {
-		$this->id                 = 'globalpayments_transit';
+		$this->id                 = self::GATEWAY_ID;
 		$this->method_title       = __( 'TSYS TransIT', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->method_description = __( 'Connect to the TSYS TransIT gateway with TSEP', 'globalpayments-gateway-provider-for-woocommerce' );
 	}

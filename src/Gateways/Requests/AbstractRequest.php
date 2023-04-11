@@ -116,7 +116,7 @@ abstract class AbstractRequest implements RequestInterface {
 	 */
 	public function set_request_data ( array $data ) {
 		if ( ! empty( $this->data ) ) {
-			$this->data = array_merge( $this->data, $data );
+			$this->data = array_merge( (array) $this->data, $data );
 		} else {
 			$this->data = $data;
 		}

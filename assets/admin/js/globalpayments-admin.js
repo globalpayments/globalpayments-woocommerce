@@ -1,10 +1,11 @@
 /* global globalpayments_admin_params */
 
-( function(
+(function (
     $,
-    globalpayments_admin_params
+    globalpayments_admin_params,
+    globalpayments_admin_txn_params
 ) {
-    function GlobalPaymentsAdmin( globalpayments_admin_params ) {
+    function GlobalPaymentsAdmin( globalpayments_admin_params, globalpayments_admin_txn_params ) {
         this.id = globalpayments_admin_params.gateway_id;
         this.toggleCredentialsSettings();
         this.toggleValidations();
@@ -21,10 +22,12 @@
             $( document ).on( 'change', this.getLiveModeSelector(), this.toggleCredentialsSettings.bind( this ) );
             $( document ).on( 'change', this.getEnabledGatewaySelector(), this.toggleValidations.bind( this ) );
             $( document ).on( 'change', $( '.accepted_cards.required' ), this.validate_cc_types.bind( this ) );
-            
+
             // Admin Pay for Order
             $( '#customer_user' ).on( 'change', this.updatePaymentMethods );
             $( '.wc-globalpayments-pay-order' ).on( 'click', this.payForOrder );
+            // Admin View Transaction Details
+            $( '.wc-globalpayments-transaction-info' ).on( 'click', this.viewTransactionStatus );
             $( document.body ).on('wc_backbone_modal_loaded', this.modalLoaded.bind( this ) );
         },
 
@@ -62,6 +65,57 @@
         },
 
         /**
+         * Enable modal template.
+         *
+         * @param e
+         */
+        viewTransactionStatus: function ( e ) {
+            e.preventDefault();
+            const transactionInfo = GlobalPaymentsAdmin.transactionInfo = $(this);
+            if ( transactionInfo.data( 'transaction-info' ) ) {
+                $( this ).WCBackboneModal({
+                    template: 'wc-globalpayments-transaction-info-modal',
+                    variable: {
+                        transaction_info: $( this ).data( 'transaction-info' )
+                    }
+                });
+            } else {
+                $( '.wc-globalpayments-transaction-info' ).prop( 'disabled', true );
+
+                $.ajax({
+                    url: globalpayments_admin_txn_params.transaction_info_url,
+                    method: 'POST',
+                    data: {
+                        _wpnonce: globalpayments_admin_txn_params._wpnonce,
+                        transactionId: globalpayments_admin_txn_params.transaction_id
+                    }
+                }).done( function ( response ) {
+                    if ( response.error ) {
+                        $( this ).WCBackboneModal({
+                            template: 'wc-globalpayments-transaction-info-modal',
+                            variable: {
+                                error_message: response.message
+                            }
+                        });
+                    } else {
+                        transactionInfo.data( 'transaction-info', response );
+
+                        $( this ).WCBackboneModal({
+                            template: 'wc-globalpayments-transaction-info-modal',
+                            variable: {
+                                transaction_info: response
+                            }
+                        });
+                    }
+                }).fail( function (xhr, textStatus, errorThrown) {
+                    window.alert(errorThrown);
+                }).always( function () {
+                    $( '.wc-globalpayments-transaction-info' ).prop( 'disabled', false );
+                })
+            }
+        },
+
+        /**
          * Render modal content.
          *
          * @param e
@@ -72,6 +126,9 @@
                 case 'wc-globalpayments-pay-order-modal':
                     $( document.body ).trigger( 'globalpayments_pay_order_modal_loaded' );
                     $( document.body ).trigger( 'wc-credit-card-form-init' );
+                    break;
+                case 'wc-globalpayments-transaction-info-modal':
+                    $( document.body ).trigger( 'globalpayments_transaction_info_modal_loaded' );
                     break;
             }
         },
@@ -177,7 +234,7 @@
             return '#woocommerce_' + this.id + '_enabled';
         }
     };
-    new GlobalPaymentsAdmin( globalpayments_admin_params );
+    new GlobalPaymentsAdmin( globalpayments_admin_params, globalpayments_admin_txn_params );
 }(
     /**
      * Global `jQuery` reference
@@ -191,4 +248,5 @@
      * @type {any}
      */
     (window).globalpayments_admin_params || {},
+    (window).globalpayments_admin_txn_params || {}
 ));

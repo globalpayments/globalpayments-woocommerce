@@ -55,7 +55,7 @@ trait PayOrderTrait {
 				'_wpnonce'            => wp_create_nonce( 'woocommerce-globalpayments-pay' ),
 				'gateway_id'          => $this->id,
 				'payorder_url'        => WC()->api_request_url( 'globalpayments_pay_order' ),
-				'payment_methods'     => $this->get_payment_methods( $order->get_customer_id() ),
+				'payment_methods'     => $this->get_stored_payment_methods( $order->get_customer_id() ),
 				'payment_methods_url' => WC()->api_request_url( 'globalpayments_get_payment_methods' ),
 			)
 		);
@@ -77,7 +77,7 @@ trait PayOrderTrait {
 			wp_send_json( $payment_methods );
 		}
 		$customer_id = absint( $_GET['customer_id'] );
-		wp_send_json( $this->get_payment_methods( $customer_id ) );
+		wp_send_json( $this->get_stored_payment_methods( $customer_id ) );
 	}
 
 	/**
@@ -87,7 +87,7 @@ trait PayOrderTrait {
 	 *
 	 * @return array
 	 */
-	private function get_payment_methods( int $customer_id ) {
+	private function get_stored_payment_methods( int $customer_id ) {
 		$payment_methods = array();
 		if ( empty( $customer_id ) ) {
 			return $payment_methods;
