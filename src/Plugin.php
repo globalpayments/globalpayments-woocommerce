@@ -5,6 +5,7 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider;
 
+use GlobalPayments\Api\Gateways\Gateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\GpApiGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGateway;
 
@@ -19,7 +20,7 @@ class Plugin {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.6.0';
+	const VERSION = '1.7.0';
 
 	/**
 	 * Init the package.
@@ -69,6 +70,7 @@ class Plugin {
 			Gateways\GpApiGateway::class,
 			Gateways\GooglePayGateway::class,
 			Gateways\ApplePayGateway::class,
+			Gateways\GpiTransactionApiGateway::class,
 		);
 		$gateways = array_merge( $gateways, GpApiGateway::get_payment_methods() );
 

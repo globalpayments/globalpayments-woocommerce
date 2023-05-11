@@ -20,6 +20,7 @@ use GlobalPayments\Api\ServiceConfigs\AcceptorConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GeniusConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\TransactionApiConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\TransitConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\Services\Secure3dService;
@@ -230,6 +231,10 @@ class SdkClient implements ClientInterface {
 			$this->card_data->mobileType = $this->get_arg( RequestArg::MOBILE_TYPE );
 		}
 
+		if ( $this->has_arg( RequestArg::PAYMENT_METHOD_USAGE ) ) {
+		    $this->builder_args['paymentMethodUsageMode'] = array( $this->get_arg( RequestArg::PAYMENT_METHOD_USAGE ) );
+		}
+
 		if ( $this->has_arg( RequestArg::TRANSACTION_MODIFIER ) ) {
 			$this->builder_args['modifier'] = array( $this->get_arg( RequestArg::TRANSACTION_MODIFIER ) );
 		}
@@ -379,6 +384,9 @@ class SdkClient implements ClientInterface {
 				if ( $this->has_arg( RequestArg::PERMISSIONS ) ) {
 					$gatewayConfig->permissions = $this->get_arg( RequestArg::PERMISSIONS );
 				}
+				break;
+		    	case GatewayProvider::TRANSACTION_API:
+				$gatewayConfig = new TransactionApiConfig();
 				break;
 		}
 		$config = $this->set_object_data(

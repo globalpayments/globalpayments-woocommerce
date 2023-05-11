@@ -162,22 +162,22 @@ class HeartlandGateway extends AbstractGateway {
 	protected function add_hooks() {
 		parent::add_hooks();
 
-		if ($this->allow_gift_cards === true) {
-		    $HeartlandGiftGateway = new HeartlandGiftGateway($this);
+		if ( $this->allow_gift_cards === true ) {
+		    $HeartlandGiftGateway = new HeartlandGiftGateway( $this );
 
-			add_action('wp_ajax_use_gift_card',                       array($HeartlandGiftGateway, 'applyGiftCard'));
-			add_action('wp_ajax_nopriv_use_gift_card',                array($HeartlandGiftGateway, 'applyGiftCard'));
-			add_action('woocommerce_review_order_before_order_total', array($HeartlandGiftGateway, 'addGiftCards'));
-			add_action('woocommerce_cart_totals_before_order_total',  array($HeartlandGiftGateway, 'addGiftCards'));
-			add_filter('woocommerce_calculated_total',                array($HeartlandGiftGateway, 'updateOrderTotal'), 10, 2);
-			add_action('wp_ajax_nopriv_remove_gift_card',             array($HeartlandGiftGateway, 'removeGiftCard'));
-			add_action('wp_ajax_remove_gift_card',                    array($HeartlandGiftGateway, 'removeGiftCard'));
-			wp_enqueue_style('heartland-gift-cards', Plugin::get_url('/assets/frontend/css/heartland-gift-cards.css'));
+			add_action( 'wp_ajax_use_gift_card',                       array( $HeartlandGiftGateway, 'applyGiftCard' ) );
+			add_action( 'wp_ajax_nopriv_use_gift_card',                array( $HeartlandGiftGateway, 'applyGiftCard' ) );
+			add_action( 'woocommerce_review_order_before_order_total', array( $HeartlandGiftGateway, 'addGiftCards' ) );
+			add_action( 'woocommerce_cart_totals_before_order_total',  array( $HeartlandGiftGateway, 'addGiftCards' ) );
+			add_filter( 'woocommerce_calculated_total',                array( $HeartlandGiftGateway, 'updateOrderTotal' ), 10, 2 );
+			add_action( 'wp_ajax_nopriv_remove_gift_card',             array( $HeartlandGiftGateway, 'removeGiftCard' ) );
+			add_action( 'wp_ajax_remove_gift_card',                    array( $HeartlandGiftGateway, 'removeGiftCard' ) );
+			wp_enqueue_style( 'heartland-gift-cards', Plugin::get_url( '/assets/frontend/css/heartland-gift-cards.css' ) );
 
 			$gcthing = new HeartlandGiftCardOrder();
 
-			add_filter('woocommerce_get_order_item_totals', array( $gcthing, 'addItemsToPostOrderDisplay'), PHP_INT_MAX - 1, 2);
-			add_action('woocommerce_checkout_order_processed', array( $gcthing, 'processGiftCardsZeroTotal'), PHP_INT_MAX, 2);
+			add_filter('woocommerce_get_order_item_totals', array( $gcthing, 'addItemsToPostOrderDisplay'), PHP_INT_MAX - 1, 2 );
+			add_action('woocommerce_checkout_order_processed', array( $gcthing, 'processGiftCardsZeroTotal'), PHP_INT_MAX, 2 );
 		}
 	}
 
@@ -194,7 +194,7 @@ class HeartlandGateway extends AbstractGateway {
 	 * @return string
 	 */
 	public function get_decline_message( string $response_code ) {
-		switch ($response_code) {
+		switch ( $response_code ) {
 			case '02':
 			case '03':
 			case '04':
@@ -259,7 +259,7 @@ class HeartlandGateway extends AbstractGateway {
 		parent::payment_fields();
 
 		if ( $this->allow_gift_cards === true ) {
-			$path = dirname(plugin_dir_path(__FILE__));
+			$path = dirname( plugin_dir_path( __FILE__ ) );
 
 			include_once  $path . '/../assets/frontend/HeartlandGiftFields.php';
 		}
@@ -284,8 +284,8 @@ class HeartlandGateway extends AbstractGateway {
 			$gift_payments_successful = $gift_card_order_placement->processGiftCardPayment( $order_id );
 
 			// reverse the CC transaction if GC transactions didn't didn't succeed
-			if (!$gift_payments_successful) {
-				if ($gift_card_order_placement !== false) {
+			if ( !$gift_payments_successful ) {
+				if ( $gift_card_order_placement !== false ) {
 
 				// hook directly into GP SDK to avoid collisions with the existing request
 				Transaction::fromId( $response->transactionReference->transactionId )

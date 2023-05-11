@@ -337,7 +337,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		// Global Payments scripts for handling client-side tokenization
 		wp_enqueue_script(
 			'globalpayments-secure-payment-fields-lib',
-			'https://js.globalpay.com/v1/globalpayments'
+			$this->secure_payment_fields_asset_base_url() .'/globalpayments'
 			. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js',
 			array(),
 			WC()->version,
@@ -949,6 +949,15 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	}
 
 	/**
+	 * @param Transaction $response
+	 * @return bool
+	 */
+	public static function is_successful_capture_response( Transaction $response ): bool {
+		return "00" === $response->responseCode && "Success" === $response->responseMessage
+			|| 'SUCCESS' === $response->responseCode && "CAPTURED" === $response->responseMessage;
+	}
+
+	/**
 	 * Handle capture auth requests via WP Admin > WooCommerce > Edit Order
 	 *
 	 * @param $order
@@ -975,6 +984,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			case Clearpay::PAYMENT_METHOD_ID:
 				$gateway = new GpApiGateway();
 				break;
+			case GpiTransactionApiGateway::GATEWAY_ID:
+				$gateway = new GpiTransactionApiGateway();
+				break;
 		};
 
 		$request = $gateway->prepare_request( self::TXN_TYPE_CAPTURE, $order );
@@ -982,8 +994,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		try {
 			$response = $gateway->submit_request( $request );
 
-			if ( "00" === $response->responseCode && "Success" === $response->responseMessage
-			     || 'SUCCESS' === $response->responseCode && "CAPTURED" === $response->responseMessage ) {
+			if ( self::is_successful_capture_response( $response ) ) {
 				delete_post_meta( $order->get_id(), '_globalpayments_payment_action' );
 				$order->add_order_note(
 					"Transaction captured. Transaction ID for the capture: " . $response->transactionReference->transactionId
@@ -1070,6 +1081,28 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	}
 
 	/**
+	 * @param Transaction $response
+	 * @return bool
+	 */
+	public static function is_partially_approved( Transaction $response ): bool {
+		return $response->responseCode === '10' || $response->responseMessage === 'Partially Approved'
+			|| str_starts_with( $response->responseCode, 'partially_approved' );
+	}
+
+	/**
+	 * @param Transaction $response
+	 * @return bool
+	 */
+	public static function is_transaction_declined( Transaction $response ): bool {
+		return $response->responseCode !== '00' && 'SUCCESS' !== $response->responseCode
+			&& ! str_starts_with( $response->responseCode, 'approved' );
+	}
+
+	protected function map_response_code_to_friendly_message( $responseCode ) {
+		return $responseCode;
+	}
+
+	/**
 	 * Reacts to the transaction response
 	 *
 	 * @param Requests\RequestInterface $request
@@ -1078,9 +1111,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @return bool
 	 * @throws ApiException
 	 */
-	public function handle_response( Requests\RequestInterface $request, Transaction $response ) {
-		if ( $response->responseCode !== '00' && 'SUCCESS' !== $response->responseCode || $response->responseMessage === 'Partially Approved' ) {
-			if ( $response->responseCode === '10' || $response->responseMessage === 'Partially Approved' ) {
+	protected function handle_response( Requests\RequestInterface $request, Transaction $response ) {
+		if ( self::is_transaction_declined( $response ) || $response->responseMessage === 'Partially Approved' ) {
+			if ( self::is_partially_approved( $response ) ) {
 				try {
 					$response->void()->withDescription( 'POST_AUTH_USER_DECLINE' )->execute();
 
@@ -1094,7 +1127,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		}
 
 		// phpcs:ignore WordPress.NamingConventions.ValidVariableName
-		if ( '00' !== $response->responseCode && 'SUCCESS' !== $response->responseCode ) {
+		if ( self::is_transaction_declined( $response ) ) {
 			$woocommerce     = WC();
 			$decline_message = $this->get_decline_message( $response->responseCode );
 
@@ -1112,7 +1145,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			if ( ! empty( $response->avsResponseCode ) || ! empty( $response->cvnResponseCode ) ) {
 				//check admin selected decline condtions
 				if ( in_array( $response->avsResponseCode, $this->get_option( 'avs_reject_conditions' ) ) ||
-				     in_array( $response->cvnResponseCode, $this->get_option( 'cvn_reject_conditions' ) ) ) {
+					 in_array( $response->cvnResponseCode, $this->get_option( 'cvn_reject_conditions' ) ) ) {
 					$data = $request->order->get_data();
 
 					if ( ! is_array( $data ) ) {
@@ -1188,6 +1221,15 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			'error'   => false,
 			'message' => $this->get_order_data(),
 		] );
+	}
+
+	public function get_session_amount() {
+		if ( is_admin() ) {
+			return null;
+		}
+		$cart_totals = WC()->session->get( 'cart_totals' );
+
+		return round( $cart_totals['total'], 2 );
 	}
 
 	protected function get_order_data() {
@@ -1349,7 +1391,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			GpApiGateway::GATEWAY_ID,
 			HeartlandGateway::GATEWAY_ID,
 			TransitGateway::GATEWAY_ID,
-			GeniusGateway::GATEWAY_ID
+			GeniusGateway::GATEWAY_ID,
+			GpiTransactionApiGateway::GATEWAY_ID
 		);
 	}
 }

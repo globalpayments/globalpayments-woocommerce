@@ -19,6 +19,15 @@ class PaymentTokenData {
 		'jcb'        => 'jcb',
 	);
 
+	protected $card_type_map_transaction_api = array(
+		'MasterCard'       => 'mastercard',
+		'Visa'             => 'visa',
+		'Discover'         => 'discover',
+		'American Express' => 'american express',
+		'Diners Club'      => 'diners',
+		'JCB'              => 'jcb',
+	);
+
 	/**
 	 * Current request
 	 *
@@ -89,7 +98,7 @@ class PaymentTokenData {
 		$gateway      = $this->request->get_request_data( 'payment_method' );
 		$request_data = $this->request->get_request_data( $gateway );
 		if ( ! isset( $request_data['token_response'] ) ) {
-		    return null;
+			return null;
 		}
 
 		$data = json_decode( stripslashes( $request_data['token_response'] ) );
@@ -98,10 +107,33 @@ class PaymentTokenData {
 			return null;
 		}
 
+		return $this->build_single_use_token( $data );
+	}
+
+	/**
+	 * @param $data
+	 * @return WC_Payment_Token_CC
+	 */
+	private function build_single_use_token( $data ): WC_Payment_Token_CC {
 		$token = new WC_Payment_Token_CC();
 
 		// phpcs:disable WordPress.NamingConventions.ValidVariableName
 		$token->add_meta_data( self::KEY_SHOULD_SAVE_TOKEN, $this->get_should_save_for_later(), true );
+		if ( isset( $data->paymentReference ) ) {
+			$this->fill_token_fields( $token, $data );
+		} else {
+			$this->fill_token_fields_for_transaction_api( $token, $data );
+		}
+		return $token;
+		// phpcs:enable WordPress.NamingConventions.ValidVariableName
+	}
+
+	/**
+	 * @param WC_Payment_Token_CC $token
+	 * @param $data
+	 * @return void
+	 */
+	public function fill_token_fields( WC_Payment_Token_CC $token, $data ): void {
 		$token->set_token( $data->paymentReference );
 
 		if ( isset( $data->details->cardLast4 ) ) {
@@ -121,9 +153,32 @@ class PaymentTokenData {
 		if ( isset( $data->details->cardType ) && isset( $this->card_type_map[ $data->details->cardType ] ) ) {
 			$token->set_card_type( $this->card_type_map[ $data->details->cardType ] );
 		}
-		// phpcs:enable WordPress.NamingConventions.ValidVariableName
+	}
 
-		return $token;
+	/**
+	 * @param WC_Payment_Token_CC $token
+	 * @param $data
+	 * @return void
+	 */
+	public function fill_token_fields_for_transaction_api( WC_Payment_Token_CC $token, $data ): void {
+		$token->set_token( $data->temporary_token );
+
+		$card = $data->card;
+		if ( isset( $card->masked_card_number ) ) {
+			$token->set_last4( substr( $card->masked_card_number, -4 ) );
+		}
+
+		if ( isset( $card->expiry_year ) ) {
+			$token->set_expiry_year( $card->expiry_year + 2000 );
+		}
+
+		if ( isset( $card->expiry_month ) ) {
+			$token->set_expiry_month( $card->expiry_month );
+		}
+
+		if ( isset( $card->type ) && isset( $this->card_type_map_transaction_api[ $card->type ] ) ) {
+			$token->set_card_type( $this->card_type_map_transaction_api[ $card->type ] );
+		}
 	}
 
 	public function get_multi_use_token() {
