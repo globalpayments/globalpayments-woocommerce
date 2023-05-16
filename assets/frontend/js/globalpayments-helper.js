@@ -94,20 +94,17 @@
 		 */
 		toggleSubmitButtons: function () {
 			var selectedPaymentGatewayId = $( '.payment_methods input.input-radio:checked' ).val();
-			var isGPGateway = selectedPaymentGatewayId.search( 'globalpayments' ) >= 0;
-			var submitButtonTarget = $( this.getSubmitButtonTargetSelector( selectedPaymentGatewayId ) );
-			var placeOrderButton = $( this.getPlaceOrderButtonSelector() );
-
 			$( '.globalpayments.card-submit' ).hide();
-
-			// another payment method was selected or target button doesn't exists
-			if ( ! isGPGateway || ! submitButtonTarget.length ) {
-				placeOrderButton.removeClass( 'woocommerce-globalpayments-hidden' ).show();
+			if ( this.helperOptions.hide.includes( selectedPaymentGatewayId ) ) {
+				this.hidePlaceOrderButton();
+				return;
+			}
+			if ( ! this.helperOptions.toggle.includes( selectedPaymentGatewayId ) ) {
+				this.showPlaceOrderButton();
 				return;
 			}
 
-			// our gateway was selected
-
+			var submitButtonTarget = $( this.getSubmitButtonTargetSelector( selectedPaymentGatewayId ) );
 			// stored Cards available (registered user selects stored card as payment method)
 			var savedCardsAvailable    = $( this.getStoredPaymentMethodsRadioSelector( selectedPaymentGatewayId ) + '[value!="new"]' ).length > 0;
 			// user selects (new) card as payment method
@@ -115,13 +112,26 @@
 			// selected payment method is card or digital wallet
 			if ( ! savedCardsAvailable  || savedCardsAvailable && newSavedCardSelected ) {
 				submitButtonTarget.show();
-				placeOrderButton.addClass( 'woocommerce-globalpayments-hidden' ).hide();
+				this.hidePlaceOrderButton();
 			} else {
 				// selected payment method is stored card
 				submitButtonTarget.hide();
-				// show platform `Place Order` button
-				placeOrderButton.removeClass( 'woocommerce-globalpayments-hidden' ).show();
+				this.showPlaceOrderButton();
 			}
+		},
+
+		/**
+		 * Hide the default WooCommerce 'Place Order' button.
+		 */
+		hidePlaceOrderButton: function() {
+			$( this.getPlaceOrderButtonSelector() ).addClass( 'woocommerce-globalpayments-hidden' ).hide();
+		},
+
+		/**
+		 * Show the default WooCommerce 'Place Order' button.
+		 */
+		showPlaceOrderButton: function() {
+			$( this.getPlaceOrderButtonSelector() ).removeClass( 'woocommerce-globalpayments-hidden' ).show();
 		},
 
 		/**
@@ -197,6 +207,33 @@
 		},
 
 		/**
+		 * Shows payment error and scrolls to it
+		 *
+		 * @param {string} message Error message
+		 *
+		 * @returns
+		 */
+		showPaymentError: function ( message ) {
+			var $form = $( this.getForm() );
+
+			// Remove notices from all sources
+			$( '.woocommerce-NoticeGroup, .woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-globalpayments-checkout-error' ).remove();
+
+			if ( -1 === message.indexOf( 'woocommerce-error' ) ) {
+				message = '<ul class="woocommerce-error"><li>' + message + '</li></ul>';
+			}
+			$form.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout woocommerce-globalpayments-checkout-error">' + message + '</div>' );
+
+			$( 'html, body' ).animate( {
+				scrollTop: ( $form.offset().top - 100 )
+			}, 1000 );
+
+			this.unblockOnError();
+
+			$( document.body ).trigger( 'checkout_error' );
+		},
+
+		/**
 		 * Blocks checkout UI
 		 *
 		 * Implementation pulled from `woocommerce/assets/js/frontend/checkout.js`
@@ -227,6 +264,10 @@
 		unblockOnError: function () {
 			var $form = $( this.getForm() );
 			$form.unblock();
+		},
+
+		hidePaymentMethod: function ( id ) {
+			$( '.payment_method_' + id ).hide();
 		}
 	};
 

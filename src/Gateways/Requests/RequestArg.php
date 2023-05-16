@@ -10,6 +10,7 @@ abstract class RequestArg {
 	const CURRENCY             = 'CURRENCY';
 	const ENTRY_MODE           = 'ENTRY_MODE';
 	const PERMISSIONS          = 'PERMISSIONS';
+	const SECONDS_TO_EXPIRE    = 'SECONDS_TO_EXPIRE';
 	const SERVER_TRANS_ID      = 'SERVER_TRANS_ID';
 	const SERVICES_CONFIG      = 'SERVICES_CONFIG';
 	const SHIPPING_ADDRESS     = 'SHIPPING_ADDRESS';

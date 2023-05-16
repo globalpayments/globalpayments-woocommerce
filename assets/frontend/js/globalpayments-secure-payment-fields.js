@@ -126,7 +126,7 @@
 			// Admin Pay for Order
 			$( document.body ).on( 'globalpayments_pay_order_modal_loaded', this.renderPaymentFields.bind( this ) );
 			$( document.body ).on( 'globalpayments_pay_order_modal_error', function( event, message ) {
-				self.showPaymentError( message );
+				helper.showPaymentError( message );
 			} );
 		},
 
@@ -153,11 +153,11 @@
 						self.order = helper.order;
 						self.threeDSecure();
 					} else {
-						self.showPaymentError( result.messages );
+						helper.showPaymentError( result.messages );
 					}
 				})
 				.fail(	function( jqXHR, textStatus, errorThrown ) {
-					self.showPaymentError( errorThrown );
+					helper.showPaymentError( errorThrown );
 				});
 
 			return false;
@@ -218,7 +218,12 @@
 			}
 			var gatewayConfig = this.gatewayOptions;
 			if ( gatewayConfig.error ) {
-				this.showPaymentError( gatewayConfig.message );
+				if ( gatewayConfig.hide ) {
+					console.error( gatewayConfig.message );
+					helper.hidePaymentMethod( this.id );
+					return;
+				}
+				helper.showPaymentError( gatewayConfig.message );
 			}
 
 			// ensure the submit button's parent is on the page as this is added
@@ -325,11 +330,11 @@
 			})
 				.then( function( versionCheckData ) {
 					if ( versionCheckData.error ) {
-						self.showPaymentError( versionCheckData.message );
+						helper.showPaymentError( versionCheckData.message );
 						return false;
 					}
 					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" !== versionCheckData.liabilityShift ) {
-						self.showPaymentError( 'Please try again with another card.' );
+						helper.showPaymentError( 'Please try again with another card.' );
 						return false;
 					}
 					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" === versionCheckData.liabilityShift ) {
@@ -361,7 +366,7 @@
 					})
 						.then( function ( authenticationData ) {
 							if ( authenticationData.error ) {
-								self.showPaymentError( authenticationData.message );
+								helper.showPaymentError( authenticationData.message );
 								return false;
 							}
 							helper.createInputElement( self.id, 'serverTransId', authenticationData.serverTransactionId || authenticationData.challenge.response.data.threeDSServerTransID || versionCheckData.serverTransactionId );
@@ -371,14 +376,14 @@
 						.catch( function( error ) {
 							console.error( error );
 							console.error( error.reasons );
-							self.showPaymentError( 'Something went wrong while doing 3DS processing.' );
+							helper.showPaymentError( 'Something went wrong while doing 3DS processing.' );
 							return false;
 						});
 				})
 				.catch( function( error ) {
 					console.error( error );
 					console.error( error.reasons );
-					self.showPaymentError( 'Something went wrong while doing 3DS processing.' );
+					helper.showPaymentError( 'Something went wrong while doing 3DS processing.' );
 					return false;
 				});
 
@@ -449,35 +454,6 @@
 		},
 
 		/**
-		 * Shows payment error and scrolls to it
-		 *
-		 * @param {string} message Error message
-		 *
-		 * @returns
-		 */
-		showPaymentError: function ( message ) {
-			var $form = $( helper.getForm() );
-
-			// Remove notices from all sources
-			$( '.woocommerce-NoticeGroup, .woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-globalpayments-checkout-error' ).remove();
-
-			if ( -1 === message.indexOf( 'woocommerce-error' ) ) {
-				message = '<ul class="woocommerce-error"><li>' + message + '</li></ul>';
-			}
-			$form.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout woocommerce-globalpayments-checkout-error">' + message + '</div>' );
-
-			$( 'html, body' ).animate( {
-				scrollTop: ( $form.offset().top - 100 )
-			}, 1000 );
-
-			helper.unblockOnError();
-
-			if ( 1 == wc_checkout_params.is_checkout ) {
-				$( document.body ).trigger( 'checkout_error' );
-			}
-		},
-
-		/**
 		 * Handles errors from the payment field iframes
 		 *
 		 * @param {object} error Details about the error
@@ -492,7 +468,7 @@
 				return;
 			}
 			if ( ! error.reasons ) {
-				this.showPaymentError( 'Something went wrong. Please contact us to get assistance.' );
+				helper.showPaymentError( 'Something went wrong. Please contact us to get assistance.' );
 				return;
 			}
 
@@ -500,6 +476,9 @@
 			for ( var i = 0; i < numberOfReasons; i++ ) {
 				var reason = error.reasons[i];
 				switch ( reason.code ) {
+					case 'NOT_AUTHENTICATED':
+						helper.showPaymentError( 'We\'re not able to process this payment. Please refresh the page and try again.' );
+						break;
 					case 'INVALID_CARD_NUMBER':
 						this.showValidationError( 'card-number' );
 						break;
@@ -569,10 +548,10 @@
 					case 'ERROR':
 						if(reason.message == "IframeField: target cannot be found with given selector")
 							break;
-						this.showPaymentError( reason.message );
+						helper.showPaymentError( reason.message );
 						break;
 					default:
-						this.showPaymentError( reason.message );
+						helper.showPaymentError( reason.message );
 				}
 			}
 		},

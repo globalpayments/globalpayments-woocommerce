@@ -12,6 +12,7 @@ class PaymentActionHandler extends AbstractHandler {
 		AbstractGateway::TXN_TYPE_AUTHORIZE,
 		AbstractGateway::TXN_TYPE_SALE,
 		AbstractGateway::TXN_TYPE_VERIFY,
+		AbstractGateway::TXN_TYPE_DW_AUTHORIZATION,
 	);
 
 	public function handle() {

@@ -5,7 +5,7 @@
 ) {
 	function ApplePayWoocommerce ( options ) {
 		/**
-		 * Payment gateway id
+		 * Payment method id
 		 *
 		 * @type {string}
 		 */
@@ -19,11 +19,11 @@
 		this.order = {};
 
 		/**
-		 * Payment gateway options
+		 * Payment method options
 		 *
 		 * @type {object}
 		 */
-		this.gatewayOptions = options.gateway_options;
+		this.paymentMethodOptions = options.payment_method_options;
 
 		this.attachEventHandlers();
 	};
@@ -52,7 +52,7 @@
 
 		initialize: function () {
 			if ( false === this.deviceSupported() ) {
-				$( '.payment_method_' + this.id ).hide();
+				helper.hidePaymentMethod( this.id );
 				return;
 			}
 
@@ -68,7 +68,7 @@
 			var self = this
 			var paymentButton = document.createElement( 'div' );
 
-			paymentButton.className = 'apple-pay-button apple-pay-button-' + this.gatewayOptions.button_color;
+			paymentButton.className = 'apple-pay-button apple-pay-button-' + this.paymentMethodOptions.button_color;
 			paymentButton.title = 'Pay with Apple Pay';
 			paymentButton.alt = 'Pay with Apple Pay';
 			paymentButton.id = self.id;
@@ -114,7 +114,7 @@
 		onApplePayValidateMerchant: function ( event, session ) {
 			$.ajax({
 				cache: false,
-				url: this.gatewayOptions.validate_merchant_url,
+				url: this.paymentMethodOptions.validate_merchant_url,
 				data: JSON.stringify( { 'validationUrl': event.validationURL } ),
 				dataType: 'json',
 				type: 'POST'
@@ -136,7 +136,7 @@
 		onApplePayPaymentAuthorize: function ( event, session ) {
 			var paymentToken = JSON.stringify( event.payment.token.paymentData );
 			try {
-				helper.createInputElement( this.id, 'digital_wallet_token_response', paymentToken );
+				helper.createInputElement( this.id, 'dw_token', paymentToken );
 				var originalSubmit = $( helper.getPlaceOrderButtonSelector() );
 				if ( originalSubmit ) {
 					originalSubmit.click();
@@ -166,15 +166,15 @@
 		},
 
 		getCountryId: function () {
-			return this.gatewayOptions.country_code;
+			return this.paymentMethodOptions.country_code;
 		},
 
 		getDisplayName: function () {
-			return this.gatewayOptions.apple_merchant_display_name;
+			return this.paymentMethodOptions.apple_merchant_display_name;
 		},
 
 		getAllowedCardNetworks: function () {
-			return this.gatewayOptions.cc_types;
+			return this.paymentMethodOptions.cc_types;
 		},
 
 		deviceSupported: function () {

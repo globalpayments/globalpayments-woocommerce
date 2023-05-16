@@ -15,7 +15,7 @@ class GetAccessTokenRequest extends AbstractRequest {
 		return array(
 			RequestArg::PERMISSIONS => array(
 				'PMT_POST_Create_Single',
-			)
+			),
 		);
 	}
 }

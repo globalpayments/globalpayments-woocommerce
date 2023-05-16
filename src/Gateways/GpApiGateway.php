@@ -9,6 +9,9 @@ use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Affirm;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure\CheckEnrollmentRequest;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\PayOrderTrait;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ApplePay;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ClickToPay;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\GooglePay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Clearpay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Klarna;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
@@ -237,11 +240,27 @@ class GpApiGateway extends AbstractGateway {
 		);
 	}
 
-	protected function get_access_token() {
+	public function get_access_token() {
 		$request  = $this->prepare_request( self::TXN_TYPE_GET_ACCESS_TOKEN );
 		$response = $this->submit_request( $request );
 
 		return $response->token;
+	}
+
+	/**
+	 * Get the session ID used until now for the current browsing session.
+	 *
+	 * @return string|NULL Session ID, or NULL if unknown.
+	 */
+	private function get_transient_name() {
+		if ( ! isset( WC()->session ) ) {
+			return null;
+		}
+		if ( ! WC()->session->has_session() ) {
+			return null;
+		}
+
+		return $this->id . '_' . WC()->session->get_session_cookie()[0];
 	}
 
 	protected function secure_payment_fields() {
@@ -447,9 +466,12 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public static function get_payment_methods() {
 		return array(
+			ClickToPay::class,
+			GooglePay::class,
+			ApplePay::class,
 			Affirm::class,
 			Clearpay::class,
-			Klarna::class
+			Klarna::class,
 		);
 	}
 }

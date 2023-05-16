@@ -384,6 +384,9 @@ class SdkClient implements ClientInterface {
 				if ( $this->has_arg( RequestArg::PERMISSIONS ) ) {
 					$gatewayConfig->permissions = $this->get_arg( RequestArg::PERMISSIONS );
 				}
+				if ( $this->has_arg( RequestArg::SECONDS_TO_EXPIRE ) ) {
+					$gatewayConfig->secondsToExpire = $this->get_arg( RequestArg::SECONDS_TO_EXPIRE );
+				}
 				break;
 		    	case GatewayProvider::TRANSACTION_API:
 				$gatewayConfig = new TransactionApiConfig();

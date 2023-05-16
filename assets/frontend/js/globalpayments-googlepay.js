@@ -5,7 +5,7 @@
 ) {
 	function GooglePayWoocommerce ( options ) {
 		/**
-		 * Payment gateway id
+		 * Payment method id
 		 *
 		 * @type {string}
 		 */
@@ -19,11 +19,11 @@
 		this.order = {};
 
 		/**
-		 * Payment gateway options
+		 * Payment method options
 		 *
 		 * @type {object}
 		 */
-		this.gatewayOptions = options.gateway_options;
+		this.paymentMethodOptions = options.payment_method_options;
 
 		/**
 		 *
@@ -82,32 +82,32 @@
 		 * Google Merchant Id
 		 */
 		getGoogleMerchantId: function () {
-			return this.gatewayOptions.google_merchant_id;
+			return this.paymentMethodOptions.google_merchant_id;
 		},
 
 		/**
 		 * Google Merchant Display Name
 		 */
 		getGoogleMerchantName: function () {
-			return this.gatewayOptions.google_merchant_name;
+			return this.paymentMethodOptions.google_merchant_name;
 		},
 
 		/**
 		 * Environment
 		 */
 		getEnvironment: function () {
-			return this.gatewayOptions.env;
+			return this.paymentMethodOptions.env;
 		},
 
 		/**
 		 * BTN Color
 		 */
 		getBtnColor: function () {
-			return this.gatewayOptions.button_color;
+			return this.paymentMethodOptions.button_color;
 		},
 
 		getAllowedCardNetworks: function () {
-			return this.gatewayOptions.cc_types;
+			return this.paymentMethodOptions.cc_types;
 		},
 
 		getAllowedCardAuthMethods: function () {
@@ -119,7 +119,7 @@
 				type: 'PAYMENT_GATEWAY',
 				parameters: {
 					'gateway': 'globalpayments',
-					'gatewayMerchantId': this.gatewayOptions.global_payments_merchant_id
+					'gatewayMerchantId': this.paymentMethodOptions.global_payments_merchant_id
 				}
 			}
 		},
@@ -213,7 +213,7 @@
 				.then( function ( paymentData ) {
 					helper.createInputElement(
 						self.id,
-						'digital_wallet_token_response',
+						'dw_token',
 						JSON.stringify( JSON.parse( paymentData.paymentMethodData.tokenizationData.token ) )
 					)
 

@@ -8,6 +8,9 @@ use Exception;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ApplePay;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ClickToPay;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\GooglePay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Affirm;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Clearpay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Klarna;
@@ -36,6 +39,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	const TXN_TYPE_BNPL_AUTHORIZE = 'bnpl_authorize';
 	const TXN_TYPE_SALE           = 'charge';
 	const TXN_TYPE_VERIFY         = 'verify';
+
+	// dw requests
+	const TXN_TYPE_DW_AUTHORIZATION = 'dw_authorization';
 
 	// mgmt requests
 	const TXN_TYPE_REFUND   = 'refund';
@@ -73,13 +79,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @var string
 	 */
 	public $enabled;
-
-	/**
-	 * Indicates if the gateway is digital wallet
-	 *
-	 * @var boolean
-	 */
-	public $is_digital_wallet = false;
 
 	/**
 	 * Payment method title shown to consumer
@@ -335,16 +334,11 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		);
 
 		// Global Payments scripts for handling client-side tokenization
-		wp_enqueue_script(
-			'globalpayments-secure-payment-fields-lib',
-			$this->secure_payment_fields_asset_base_url() .'/globalpayments'
-			. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js',
-			array(),
-			WC()->version,
-			true
-		);
+
+		self::hosted_fields_script();
 
 		$secure_payment_fields_deps = array( 'globalpayments-secure-payment-fields-lib' );
+
 		if ( $this->supports( 'globalpayments_three_d_secure' ) && is_checkout() ) {
 			wp_enqueue_script(
 				'globalpayments-threedsecure-lib',
@@ -399,6 +393,24 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		}
 	}
 
+	/**
+	 * Enqueues Global Payments JS library (Hosted Fields).
+	 */
+	public static function hosted_fields_script() {
+		if ( wp_script_is( 'globalpayments-secure-payment-fields-lib', 'enqueued' ) ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'globalpayments-secure-payment-fields-lib',
+			'https://js.globalpay.com/v1/globalpayments'
+			. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js',
+			array(),
+			WC()->version,
+			true
+		);
+	}
+
 	public function helper_script() {
 		if ( wp_script_is( 'globalpayments-helper', 'enqueued' ) ) {
 			return;
@@ -417,6 +429,14 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			array(
 				'orderInfoUrl' => WC()->api_request_url( 'globalpayments_order_info' ),
 				'order'        => $this->get_order_data(),
+				'toggle'       => array(
+					$this->id,
+					GooglePay::PAYMENT_METHOD_ID,
+					ApplePay::PAYMENT_METHOD_ID,
+				),
+				'hide'         => array(
+					ClickToPay::PAYMENT_METHOD_ID,
+				),
 			)
 		);
 	}
@@ -537,6 +557,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			return array(
 				'error'   => true,
 				'message' => $e->getMessage(),
+				'hide'    => ( GpApiGateway::GATEWAY_ID === $this->id ) ? true : false,
 			);
 		}
 	}
@@ -784,24 +805,19 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			add_filter( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 			add_action( 'woocommerce_new_order', array( $this, 'admin_add_order_note_after_order_created' ) );
 		}
-
-		if ( 'no' === $this->enabled ) {
-			return;
-		}
-		// hooks only active when the gateway is enabled
-		if ( ! $this->is_digital_wallet ) {
-			add_filter( 'woocommerce_credit_card_form_fields', array( $this, 'woocommerce_credit_card_form_fields' ), 10, 2 );
-		}
-
 		add_action( 'woocommerce_api_globalpayments_order_info', array(
 			$this,
 			'get_order_info'
 		) );
 
+		if ( 'no' === $this->enabled ) {
+			return;
+		}
+		// hooks only active when the gateway is enabled
+		add_filter( 'woocommerce_credit_card_form_fields', array( $this, 'woocommerce_credit_card_form_fields' ), 10, 2 );
+
 		if ( is_add_payment_method_page() ) {
-			if ( ! $this->is_digital_wallet ) {
-				add_action( 'wp_enqueue_scripts', array( $this, 'tokenization_script' ) );
-			}
+			add_action( 'wp_enqueue_scripts', array( $this, 'tokenization_script' ) );
 			add_filter( 'woocommerce_available_payment_gateways', array(
 				$this,
 				'woocommerce_available_payment_gateways'
@@ -977,8 +993,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				$gateway = new GeniusGateway();
 				break;
 			case GpApiGateway::GATEWAY_ID:
-			case GooglePayGateway::GATEWAY_ID:
-			case ApplePayGateway::GATEWAY_ID:
+			case GooglePay::PAYMENT_METHOD_ID:
+			case ApplePay::PAYMENT_METHOD_ID:
 			case Affirm::PAYMENT_METHOD_ID:
 			case Klarna::PAYMENT_METHOD_ID:
 			case Clearpay::PAYMENT_METHOD_ID:
@@ -1053,6 +1069,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			self::TXN_TYPE_GET_ACCESS_TOKEN        => Requests\GetAccessTokenRequest::class,
 			self::TXN_TYPE_CHECK_ENROLLMENT        => Requests\ThreeDSecure\CheckEnrollmentRequest::class,
 			self::TXN_TYPE_INITIATE_AUTHENTICATION => Requests\ThreeDSecure\InitiateAuthenticationRequest::class,
+			self::TXN_TYPE_DW_AUTHORIZATION        => Requests\DigitalWallets\AuthorizationRequest::class,
 			self::TXN_TYPE_BNPL_AUTHORIZE          => Requests\BuyNowPayLater\InitiatePaymentRequest::class,
 		);
 
@@ -1111,7 +1128,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @return bool
 	 * @throws ApiException
 	 */
-	protected function handle_response( Requests\RequestInterface $request, Transaction $response ) {
+	public function handle_response( Requests\RequestInterface $request, Transaction $response ) {
 		if ( self::is_transaction_declined( $response ) || $response->responseMessage === 'Partially Approved' ) {
 			if ( self::is_partially_approved( $response ) ) {
 				try {
@@ -1204,7 +1221,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	public static function add_capture_order_action( $actions ) {
 		global $theorder;
 
-		if ( AbstractGateway::TXN_TYPE_AUTHORIZE !== $theorder->get_meta( '_globalpayments_payment_action' ) ) {
+		$payment_action = $theorder->get_meta( '_globalpayments_payment_action' );
+		if ( AbstractGateway::TXN_TYPE_AUTHORIZE !== $payment_action &&
+				AbstractGateway::TXN_TYPE_DW_AUTHORIZATION !== $payment_action ) {
 			return $actions;
 		}
 		$actions['capture_credit_card_authorization'] = 'Capture credit card authorization';
@@ -1241,18 +1260,14 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	}
 
 	/**
-	 * Disable adding new cards via 'My Account', if a Digital Wallet or "Allow Card Saving" option not checked in admin.
+	 * Disable adding new cards via 'My Account', if `Allow Card Saving` option not checked in admin.
 	 *
 	 * @param array $available_gateways
 	 *
 	 * @return array
 	 */
 	public function woocommerce_available_payment_gateways( $available_gateways ) {
-		if ( $this->is_digital_wallet ) {
-			unset( $available_gateways[ $this->id ] );
-		}
-
-		if ( 'no' === $this->get_option( 'allow_card_saving' ) ) {
+		if ( ! $this->allow_card_saving ) {
 			unset( $available_gateways[ $this->id ] );
 		}
 
@@ -1298,9 +1313,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @return mixed
 	 */
 	public function admin_enforce_single_gateway( $settings ) {
-		if ( $this->is_digital_wallet ) {
-			return $settings;
-		}
 		if ( ! wc_string_to_bool( $settings['enabled'] ) ) {
 			return $settings;
 		}
@@ -1310,7 +1322,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			return $settings;
 		}
 		foreach ( $available_gateways as $gateway ) {
-			if ( $gateway instanceof AbstractGateway && ! $gateway->is_digital_wallet ) {
+			if ( $gateway instanceof AbstractGateway ) {
 				$settings['enabled'] = 'no';
 				add_action( 'woocommerce_sections_checkout', function () use ( $gateway ) {
 					echo '<div id="message" class="error inline"><p><strong>' .
@@ -1337,6 +1349,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			return;
 		}
 		if ( empty( $_GET['section'] ) ) {
+			if ( wp_script_is( 'globalpayments-enforce-single-gateway', 'enqueued' ) ) {
+				return;
+			}
 			wp_enqueue_script(
 				'globalpayments-enforce-single-gateway',
 				Plugin::get_url( '/assets/admin/js/globalpayments-enforce-single-gateway.js' )
@@ -1370,15 +1385,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'gateway_id' => $section,
 			)
 		);
-
-		if ( $this->is_digital_wallet ) {
-			wp_enqueue_style(
-				'globalpayments-admin',
-				Plugin::get_url( '/assets/admin/css/globalpayments-admin.css' ),
-				array(),
-				WC()->version
-			);
-		}
 	}
 
 	/**
