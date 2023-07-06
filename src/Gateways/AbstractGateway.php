@@ -8,6 +8,7 @@ use Exception;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\CheckApiCredentialsTrait;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ApplePay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ClickToPay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\GooglePay;
@@ -24,6 +25,7 @@ use GlobalPayments\Api\Entities\Transaction;
  * Shared gateway method implementations
  */
 abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
+	use CheckApiCredentialsTrait;
 	/**
 	 * Defines production environment
 	 */
@@ -672,64 +674,85 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'background'      => 'transparent url(' . $image_base . '/cvv-amex.png) no-repeat right',
 				'background-size' => '63px 40px'
 			),
-			'.card-number'                              => array(
-				'background'      => 'transparent url(' . $image_base . '/logo-unknown@2x.png) no-repeat right',
-				'background-size' => '55px 35px'
-			),
-			'.card-number.invalid.card-type-amex'       => array(
-				'background'            => 'transparent url(' . $image_base . '/logo-amex@2x.png) no-repeat right',
-				'background-position-y' => '-41px',
-				'background-size'       => '50px 90px'
-			),
-			'.card-number.invalid.card-type-discover'   => array(
-				'background'            => 'transparent url(' . $image_base . '/logo-discover@2x.png) no-repeat right',
-				'background-position-y' => '-44px',
-				'background-size'       => '85px 90px'
-			),
-			'.card-number.invalid.card-type-jcb'        => array(
-				'background'            => 'transparent url(' . $image_base . '/logo-jcb@2x.png) no-repeat right',
-				'background-position-y' => '-44px',
-				'background-size'       => '55px 94px'
-			),
-			'.card-number.invalid.card-type-mastercard' => array(
-				'background'            => 'transparent url(' . $image_base . '/logo-mastercard@2x.png) no-repeat right',
-				'background-position-y' => '-41px',
-				'background-size'       => '82px 86px'
-			),
-			'.card-number.invalid.card-type-visa'       => array(
-				'background'            => 'transparent url(' . $image_base . '/logo-visa@2x.png) no-repeat right',
-				'background-position-y' => '-44px',
-				'background-size'       => '83px 88px',
-			),
-			'.card-number.valid.card-type-amex'         => array(
-				'background'            => 'transparent url(' . $image_base . '/logo-amex@2x.png) no-repeat right',
-				'background-position-y' => '3px',
-				'background-size'       => '50px 90px',
-			),
-			'.card-number.valid.card-type-discover'     => array(
-				'background'            => 'transparent url(' . $image_base . '/logo-discover@2x.png) no-repeat right',
-				'background-position-y' => '1px',
-				'background-size'       => '85px 90px'
-			),
-			'.card-number.valid.card-type-jcb'          => array(
-				'background'            => 'transparent url(' . $image_base . '/logo-jcb@2x.png) no-repeat right top',
-				'background-position-y' => '2px',
-				'background-size'       => '55px 94px'
-			),
-			'.card-number.valid.card-type-mastercard'   => array(
-				'background'            => 'transparent url(' . $image_base . '/logo-mastercard@2x.png) no-repeat right',
-				'background-position-y' => '2px',
-				'background-size'       => '82px 86px'
-			),
-			'.card-number.valid.card-type-visa'         => array(
-				'background'      => 'transparent url(' . $image_base . '/logo-visa@2x.png) no-repeat right top',
-				'background-size' => '82px 86px'
-			),
-			'.card-number::-ms-clear'                   => array(
+			'.card-number::-ms-clear' 		    => array(
 				'display' => 'none',
 			),
-			'input[placeholder]'                        => array(
+			'input[placeholder]' 			    => array(
 				'letter-spacing' => '.5px',
+			),
+			'img.card-number-icon' 			    => array(
+				'background' => 'transparent url(' . $image_base . '/logo-unknown@2x.png) no-repeat',
+				'background-size' => '100%',
+				'width' => '65px',
+				'height' => '40px',
+				'position' => 'absolute',
+				'right' => '0',
+				'top' => '50%',
+				'margin-top' => '-20px',
+				'background-position' => '50% 50%',
+			),
+			'img.card-number-icon[src$=\'/gp-cc-generic.svg\']' => array(
+				'background' => 'transparent url(' . $image_base . '/logo-mastercard@2x.png) no-repeat',
+				'background-size' => '100%',
+				'background-position-y' => 'bottom',
+			),
+			'img.card-number-icon.card-type-diners'	    	    => array(
+				'background' => 'transparent url(' . $image_base . '/gp-cc-diners.svg) no-repeat',
+				'background-size' => '80%',
+				'background-position-x' => '10px',
+				'background-position-y' => '3px',
+			),
+			'img.card-number-icon.invalid.card-type-amex'	    => array(
+				'background' => 'transparent url(' . $image_base . '/logo-amex@2x.png) no-repeat 140%',
+				'background-size' => '85%',
+				'background-position-y' => '87%',
+			),
+			'img.card-number-icon.invalid.card-type-discover'   => array(
+				'background' => 'transparent url(' . $image_base . '/logo-discover@2x.png) no-repeat',
+				'background-size' => '110%',
+				'background-position-y' => '94%',
+				'width' => '85px',
+			),
+			'img.card-number-icon.invalid.card-type-jcb'	    => array(
+				'background' => 'transparent url(' . $image_base . '/logo-jcb@2x.png) no-repeat 175%',
+				'background-size' => '95%',
+				'background-position-y' => '85%',
+			),
+			'img.card-number-icon.invalid.card-type-mastercard' => array(
+				'background' => 'transparent url(' . $image_base . '/logo-mastercard@2x.png) no-repeat',
+				'background-size' => '113%',
+				'background-position-y' => 'bottom',
+			),
+			'img.card-number-icon.invalid.card-type-visa'	    => array(
+				'background' => 'transparent url(' . $image_base . '/logo-visa@2x.png) no-repeat',
+				'background-size' => '120%',
+				'background-position-y' => 'bottom',
+			),
+			'img.card-number-icon.valid.card-type-amex'	    => array(
+				'background' => 'transparent url(' . $image_base . '/logo-amex@2x.png) no-repeat 140%',
+				'background-size' => '85%',
+				'background-position-y' => '-9px',
+			),
+			'img.card-number-icon.valid.card-type-discover'	    => array(
+				'background' => 'transparent url(' . $image_base . '/logo-discover@2x.png) no-repeat',
+				'background-size' => '110%',
+				'background-position-y' => '-5px',
+				'width' => '85px',
+			),
+			'img.card-number-icon.valid.card-type-jcb'	    => array(
+				'background' => 'transparent url(' . $image_base . '/logo-jcb@2x.png) no-repeat 175%',
+				'background-size' => '95%',
+				'background-position-y' => '-7px',
+			),
+			'img.card-number-icon.valid.card-type-mastercard'   => array(
+				'background' => 'transparent url(' . $image_base . '/logo-mastercard@2x.png) no-repeat',
+				'background-size' => '113%',
+				'background-position-y' => '2px',
+			),
+			'img.card-number-icon.valid.card-type-visa'	    => array(
+				'background' => 'transparent url(' . $image_base . '/logo-visa@2x.png) no-repeat',
+				'background-size' => '120%',
+				'background-position-y' => '0px',
 			),
 		);
 
@@ -808,6 +831,14 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		add_action( 'woocommerce_api_globalpayments_order_info', array(
 			$this,
 			'get_order_info'
+		) );
+		add_action( 'admin_enqueue_scripts', array(
+			$this,
+			'check_api_credentials'
+		) );
+		add_action( 'woocommerce_api_globalpayments_check_api_credentials_handler', array(
+			$this,
+			'check_api_credentials_handler'
 		) );
 
 		if ( 'no' === $this->enabled ) {
@@ -1051,11 +1082,12 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 *
 	 * @param               $txn_type
 	 * @param WC_Order|null $order
+	 * @param array|null    $configData
 	 *
 	 * @return Requests\RequestInterface
 	 * @throws Exception
 	 */
-	public function prepare_request( $txn_type, WC_Order $order = null ) {
+	public function prepare_request( $txn_type, WC_Order $order = null, $configData = null ) {
 		$map = array(
 			self::TXN_TYPE_AUTHORIZE               => Requests\AuthorizationRequest::class,
 			self::TXN_TYPE_SALE                    => Requests\SaleRequest::class,
@@ -1077,12 +1109,17 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			throw new \Exception( 'Cannot perform transaction' );
 		}
 
+		$backendGatewayOptions = $this->get_backend_gateway_options();
+		if ( ! empty($configData) ) {
+			$backendGatewayOptions = array_merge( $backendGatewayOptions, $configData );
+		}
+
 		$request = $map[ $txn_type ];
 
 		return new $request(
 			$this->id,
 			$order,
-			array_merge( array( 'gatewayProvider' => $this->get_gateway_provider() ), $this->get_backend_gateway_options() )
+			array_merge( array( 'gatewayProvider' => $this->get_gateway_provider() ), $backendGatewayOptions )
 		);
 	}
 

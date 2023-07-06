@@ -162,6 +162,15 @@ class GpApiGateway extends AbstractGateway {
 					'required' => 'required'
 				),
 			),
+			'credentials_api_check'	=> array(
+				'title'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'button',
+				'class'       => 'button-credentials-check button-primary',
+				'default'     => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Please note that Payment Methods will not appear on checkout if the credentials are not correct.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'css'         => 'width: 200px',
+			),
 			'allow_card_saving'    => array(
 				'title'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),

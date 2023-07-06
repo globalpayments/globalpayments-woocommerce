@@ -46,6 +46,10 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.9.0 =
+* Unified Payments - Added Credential Check button
+* Fixed a bug where the Card Number iframe would not be 100% expanded on Mozilla Firefox
+
 = 1.8.0 =
 * Unified Payments - Added Click To Pay
 

@@ -3,10 +3,12 @@
 ( function (
 	$,
 	globalpayments_admin_params,
-	globalpayments_admin_txn_params
+	globalpayments_admin_txn_params,
+	globalpayments_admin_credentials_params
 ) {
-	function GlobalPaymentsAdmin( globalpayments_admin_params, globalpayments_admin_txn_params ) {
+	function GlobalPaymentsAdmin( globalpayments_admin_params, globalpayments_admin_txn_params, globalpayments_admin_credentials_params ) {
 		this.id = globalpayments_admin_params.gateway_id;
+		this.addValueToCredentialsCheckButton();
 		this.toggleCredentialsSettings();
 		this.toggleValidations();
 		this.attachEventHandlers();
@@ -22,6 +24,7 @@
 			$( document ).on( 'change', this.getLiveModeSelector(), this.toggleCredentialsSettings.bind( this ) );
 			$( document ).on( 'change', this.getEnabledGatewaySelector(), this.toggleValidations.bind( this ) );
 			$( document ).on( 'change', $( '.accepted_cards.required' ), this.validate_cc_types.bind( this ) );
+			$( document ).on( 'click', this.getCheckCredentialsButtonSelector(), this.checkApiCredentials.bind( this ));
 
 			// Admin Pay for Order
 			$( '#customer_user' ).on( 'change', this.updatePaymentMethods );
@@ -31,6 +34,62 @@
 			$( document.body ).on( 'wc_backbone_modal_loaded', this.modalLoaded.bind( this ) );
 
 			$( '#woocommerce_globalpayments_clicktopay_payment_action' ).prop( 'disabled', true );
+		},
+
+		checkApiCredentials: function ( e ) {
+			e.preventDefault();
+			$(' .notice ').remove();
+
+			var gateway_app_id = this.getGatewaySetting( 'app_id' );
+			var gateway_app_key = this.getGatewaySetting( 'app_key' );
+			var environment = 0;
+
+			if ( ! gateway_app_id || ! gateway_app_key ) {
+				alert( 'Please be sure that you have filled AppId and AppKey fields!' );
+				return;
+			}
+			if ( this.isLiveMode() ) {
+				environment = 1;
+			}
+			var self = this;
+
+			$.ajax({
+				url: globalpayments_admin_credentials_params.check_api_credentials_url,
+				method: 'POST',
+				data: {
+					_wpnonce: globalpayments_admin_credentials_params._wpnonce,
+					app_id: gateway_app_id,
+					app_key: gateway_app_key,
+					environment: environment,
+				}
+			}).done( function ( response ) {
+				if ( response.error ) {
+					self.displayNotice( 'error', response.message );
+				} else {
+					self.displayNotice( 'success', response.message );
+				}
+			}).fail( function ( xhr, textStatus, errorThrown ) {
+				window.alert( errorThrown );
+			})
+		},
+
+		addValueToCredentialsCheckButton: function() {
+			$( '#woocommerce_globalpayments_gpapi_credentials_api_check' ).attr( 'value', 'Credentials check' );
+		},
+
+		getGatewaySetting: function ( setting ) {
+			if ( this.isLiveMode() ) {
+				return $( '#woocommerce_globalpayments_gpapi_' + setting ).val().trim();
+			} else {
+				return $( '#woocommerce_globalpayments_gpapi_sandbox_' + setting ).val().trim();
+			}
+		},
+
+		displayNotice: function ( type, message ) {
+			var notice = $( '<div class="notice notice-' + type + ' inline' + '"><p>' + message + '</p></div>' );
+			$( 'html, body' ).animate( { scrollTop: $( '#wpwrap').offset().top }, 'slow', function() {
+				notice.insertAfter( $( '#mainform' ).find( 'h1' ) );
+			});
 		},
 
 		updatePaymentMethods: function ( e ) {
@@ -231,9 +290,18 @@
 		 */
 		getEnabledGatewaySelector: function () {
 			return '#woocommerce_' + this.id + '_enabled';
-		}
+		},
+
+		/**
+		 * Convenience function to get Check Credentials button selector
+		 *
+		 * @returns {string}
+		 */
+		getCheckCredentialsButtonSelector: function () {
+			return '#woocommerce_globalpayments_gpapi_credentials_api_check';
+		},
 	};
-	new GlobalPaymentsAdmin( globalpayments_admin_params, globalpayments_admin_txn_params );
+	new GlobalPaymentsAdmin( globalpayments_admin_params, globalpayments_admin_txn_params, globalpayments_admin_credentials_params );
 }(
 	/**
 	 * Global `jQuery` reference
@@ -252,5 +320,11 @@
 	 *
 	 * @type {any}
 	 */
-	(window).globalpayments_admin_txn_params || {}
+	(window).globalpayments_admin_txn_params || {},
+	/**
+	 * Global `globalpayments_admin_credentials_params` reference
+	 *
+	 * @type {any}
+	 */
+	(window).globalpayments_admin_credentials_params || {}
 ));
