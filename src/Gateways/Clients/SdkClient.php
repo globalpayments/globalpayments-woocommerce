@@ -206,6 +206,10 @@ class SdkClient implements ClientInterface {
 			$this->builder_args['currency'] = array( $this->get_arg( RequestArg::CURRENCY ) );
 		}
 
+		if ( $this->has_arg( RequestArg::ORDER_ID ) ) {
+			$this->builder_args['orderId'] = array( $this->get_arg( RequestArg::ORDER_ID ) );
+		}
+
 		$token = null;
 		if ( $this->has_arg( RequestArg::CARD_DATA ) ) {
 			/**

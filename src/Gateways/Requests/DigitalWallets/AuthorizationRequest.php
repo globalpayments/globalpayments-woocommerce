@@ -20,10 +20,15 @@ class AuthorizationRequest extends AbstractRequest {
 		if ( isset ( $this->data[ $this->data['payment_method'] ]['dw_token'] ) ) {
 			$payment_method->token = AbstractDigitalWallet::remove_slashes_from_token( $this->data[ $this->data['payment_method'] ]['dw_token'] );
 		}
+		if ( isset ( $this->data[ $this->data['payment_method'] ]['cardHolderName'] ) ) {
+			$payment_method->cardHolderName = $this->data[ $this->data['payment_method'] ]['cardHolderName'];
+		}
+
 		$payment_method->mobileType = $this->data['mobile_type'];
 
 		return $payment_method->{$this->data['payment_action']}( $this->order->get_total() )
 		                      ->withCurrency( $this->order->get_currency() )
+		                      ->withOrderId( ! empty( $this->order->get_id() ) ? (string) $this->order->get_id() : null )
 		                      ->withModifier( TransactionModifier::ENCRYPTED_MOBILE )
 		                      ->withDynamicDescriptor( $this->data['dynamic_descriptor'] )
 		                      ->execute();

@@ -2,8 +2,8 @@
 Contributors: globalpayments
 Tags: woocommerce, woo, unified, commerce, platform, global, payments, heartland, payment, systems, tsys, genius, 3DS, gateway, token, tokenize, save cards
 Requires at least: 5.4
-Tested up to: 6.2.0
-Stable tag: 1.8.0
+Tested up to: 6.2.2
+Stable tag: 1.9.1
 License: MIT
 License URI: https://github.com/globalpayments/globalpayments-woocommerce/blob/main/LICENSE
 
@@ -46,6 +46,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.9.1 =
+* Added the Card Holder Name in the Google Pay and Apple Pay requests
+
 = 1.9.0 =
 * Unified Payments - Added Credential Check button
 * Fixed a bug where the Card Number iframe would not be 100% expanded on Mozilla Firefox

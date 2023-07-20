@@ -12,6 +12,7 @@ abstract class RequestArg {
 	const PERMISSIONS          = 'PERMISSIONS';
 	const SECONDS_TO_EXPIRE    = 'SECONDS_TO_EXPIRE';
 	const SERVER_TRANS_ID      = 'SERVER_TRANS_ID';
+	const ORDER_ID             = 'ORDER_ID';
 	const SERVICES_CONFIG      = 'SERVICES_CONFIG';
 	const SHIPPING_ADDRESS     = 'SHIPPING_ADDRESS';
 	const TXN_TYPE             = 'TXN_TYPE';

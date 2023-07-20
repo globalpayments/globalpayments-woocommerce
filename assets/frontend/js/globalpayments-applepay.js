@@ -135,8 +135,13 @@
 
 		onApplePayPaymentAuthorize: function ( event, session ) {
 			var paymentToken = JSON.stringify( event.payment.token.paymentData );
+			var billingContact = event.payment.billingContact;
 			try {
 				helper.createInputElement( this.id, 'dw_token', paymentToken );
+				if ( billingContact ) {
+					helper.createInputElement( this.id, 'cardHolderName', event.payment.billingContact.givenName + ' ' +  event.payment.billingContact.familyName );
+				}
+
 				var originalSubmit = $( helper.getPlaceOrderButtonSelector() );
 				if ( originalSubmit ) {
 					originalSubmit.click();
@@ -162,6 +167,7 @@
 					label: this.getDisplayName(),
 					amount: this.order.amount.toString()
 				},
+				requiredBillingContactFields: [ 'postalAddress', 'name' ],
 			};
 		},
 

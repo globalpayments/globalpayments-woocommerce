@@ -86,6 +86,7 @@ abstract class AbstractRequest implements RequestInterface {
 				$this->get_card_holder_name(
 					null !== $this->order ? $this->order->get_formatted_billing_full_name() : null
 				),
+			RequestArg::ORDER_ID => null !== $this->order ? (string) $this->order->get_id() : null
 		);
 	}
 

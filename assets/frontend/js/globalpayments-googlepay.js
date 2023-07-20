@@ -129,7 +129,8 @@
 				type: 'CARD',
 				parameters: {
 					allowedAuthMethods: this.getAllowedCardAuthMethods(),
-					allowedCardNetworks: this.getAllowedCardNetworks()
+					allowedCardNetworks: this.getAllowedCardNetworks(),
+					billingAddressRequired: true
 				}
 			}
 		},
@@ -215,7 +216,13 @@
 						self.id,
 						'dw_token',
 						JSON.stringify( JSON.parse( paymentData.paymentMethodData.tokenizationData.token ) )
-					)
+					);
+
+					helper.createInputElement(
+						self.id,
+						'cardHolderName',
+						paymentData.paymentMethodData.info.billingAddress.name
+					);
 
 					return helper.placeOrder();
 				} )
