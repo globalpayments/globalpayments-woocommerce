@@ -28,7 +28,7 @@ class AuthorizationRequest extends AbstractRequest {
 
 		return $payment_method->{$this->data['payment_action']}( $this->order->get_total() )
 		                      ->withCurrency( $this->order->get_currency() )
-		                      ->withOrderId( ! empty( $this->order->get_id() ) ? (string) $this->order->get_id() : null )
+		                      ->withOrderId( ! empty( $this->order->get_order_number() ) ? (string) $this->order->get_order_number() : null )
 		                      ->withModifier( TransactionModifier::ENCRYPTED_MOBILE )
 		                      ->withDynamicDescriptor( $this->data['dynamic_descriptor'] )
 		                      ->execute();
