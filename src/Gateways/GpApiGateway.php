@@ -97,6 +97,13 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $debug;
 
+	/**
+	 * Enable/Disable threeDSecure
+	 *
+	 * @var bool
+	 */
+	public $enable_three_d_secure;
+
 	public function __construct( $is_provider = false ) {
 		parent::__construct( $is_provider );
 		array_push( $this->supports, 'globalpayments_hosted_fields', 'globalpayments_three_d_secure' );
@@ -205,6 +212,12 @@ class GpApiGateway extends AbstractGateway {
 					'maxlength' => '256'
 				),
 			),
+			'enable_three_d_secure' => array(
+				'title'   => __( 'Enable 3D Secure', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'   => __( 'Enable 3D Secure', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'    => 'checkbox',
+				'default' => 'yes'
+			),
 		);
 	}
 
@@ -225,6 +238,7 @@ class GpApiGateway extends AbstractGateway {
 			'apiVersion'            => GpApiConnector::GP_API_VERSION,
 			'env'                   => $this->is_production ? parent::ENVIRONMENT_PRODUCTION : parent::ENVIRONMENT_SANDBOX,
 			'requireCardHolderName' => true,
+			'enableThreeDSecure'    => $this->enable_three_d_secure,
 		);
 	}
 
@@ -348,9 +362,10 @@ class GpApiGateway extends AbstractGateway {
 	}
 
 	public function after_checkout_validation( $data, $errors ) {
-		if ( ! empty( $errors->errors ) ) {
+		if ( ! empty( $errors->errors ) || !$this->enable_three_d_secure ) {
 			return;
 		}
+
 		if ( $this->id !== $data['payment_method'] ) {
 			return;
 		}

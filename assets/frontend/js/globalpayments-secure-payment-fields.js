@@ -88,7 +88,10 @@
 				}
 			);
 
-			$( helper.getForm() ).on( 'checkout_place_order_globalpayments_gpapi', this.initThreeDSecure.bind( this ) );
+			if ( this.gatewayOptions.enableThreeDSecure ) {
+				$( helper.getForm() ).on( 'checkout_place_order_globalpayments_gpapi', this.initThreeDSecure.bind( this ) );
+			}
+
 			$( document.body ).on( 'checkout_error', function() {
 				$('#globalpayments_gpapi-checkout_validated').remove();
 				$('#globalpayments_gpapi-serverTransId').remove();
@@ -109,6 +112,9 @@
 						if ( 'globalpayments_gpapi' === selectedPaymentGatewayId ) {
 							$e.preventDefault();
 							$e.stopImmediatePropagation();
+							if ( ! self.gatewayOptions.enableThreeDSecure ) {
+								helper.placeOrder();
+							}
 							self.threeDSecure();
 						}
 						return;
@@ -159,7 +165,6 @@
 				.fail(	function( jqXHR, textStatus, errorThrown ) {
 					helper.showPaymentError( errorThrown );
 				});
-
 			return false;
 		},
 
