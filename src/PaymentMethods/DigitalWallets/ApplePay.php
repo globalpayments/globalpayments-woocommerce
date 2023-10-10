@@ -124,7 +124,7 @@ class ApplePay extends AbstractDigitalWallet {
 			'cc_types'                      => array(
 				'title'   => __( 'Accepted Cards', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'multiselectcheckbox',
-				'class'   => 'accepted_cards',
+				'class'   => 'accepted_cards required',
 				'css'     => 'width: 450px; height: 110px',
 				'options' => array(
 					CardType::VISA       => 'Visa',

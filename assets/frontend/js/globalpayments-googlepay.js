@@ -65,6 +65,8 @@
 			).then( function ( response ) {
 				if ( response.result ) {
 					self.addGooglePayButton( self.id );
+				} else {
+					helper.hidePaymentMethod( self.id );
 				}
 			} ).catch( function ( err ) {
 				console.error( err );
@@ -111,7 +113,7 @@
 		},
 
 		getAllowedCardAuthMethods: function () {
-			return ['PAN_ONLY', 'CRYPTOGRAM_3DS'];
+			return this.paymentMethodOptions.aca_methods;
 		},
 
 		getTokenizationSpecification: function () {

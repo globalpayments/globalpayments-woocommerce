@@ -12,7 +12,8 @@
 		this.toggleCredentialsSettings();
 		this.toggleValidations();
 		this.attachEventHandlers();
-		this.validate_cc_types();
+		this.validate_checkbox_fields('.accepted_cards.required');
+		this.validate_checkbox_fields('.aca_methods.required');
 	};
 	GlobalPaymentsAdmin.prototype = {
 		/**
@@ -23,7 +24,8 @@
 		attachEventHandlers: function () {
 			$( document ).on( 'change', this.getLiveModeSelector(), this.toggleCredentialsSettings.bind( this ) );
 			$( document ).on( 'change', this.getEnabledGatewaySelector(), this.toggleValidations.bind( this ) );
-			$( document ).on( 'change', $( '.accepted_cards.required' ), this.validate_cc_types.bind( this ) );
+			$( document ).on( 'change', $( '.accepted_cards.required' ), this.validate_checkbox_fields.bind( this, '.accepted_cards.required' ) );
+			$( document ).on( 'change', $( '.aca_methods.required' ), this.validate_checkbox_fields.bind( this, '.aca_methods.required' ) );
 			$( document ).on( 'click', this.getCheckCredentialsButtonSelector(), this.checkApiCredentials.bind( this ));
 
 			// Admin Pay for Order
@@ -213,11 +215,12 @@
 		},
 
 		/**
-		 * Checks if cc_types at least one selected
+		 * Checks if checkbox has at least one selected
+		 * @param fieldClass
 		 */
-		validate_cc_types: function () {
+		validate_checkbox_fields: function( fieldClass ) {
 			if ( this.isEnabled() ) {
-				var checksitems = $( '.accepted_cards.required' );
+				var checksitems = $( fieldClass );
 				var required = true;
 				if ( checksitems && checksitems.length > 0 ) {
 					checksitems.each( function() {
@@ -238,7 +241,8 @@
 		 * Toggle validations when enabled gateway settings
 		 */
 		toggleValidations: function () {
-			this.validate_cc_types();
+			this.validate_checkbox_fields( '.accepted_cards.required' );
+			this.validate_checkbox_fields( '.aca_methods.required' );
 
 			var button = $('.woocommerce-save-button');
 			if ( this.isEnabled() ) {
