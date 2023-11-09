@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Utils\GenerationUtils;
@@ -288,9 +289,14 @@ abstract class AbstractBuyNowPayLater extends WC_Payment_Gateway {
 			);
 			$order->add_order_note( $note_text );
 			$order->set_transaction_id( $gateway_response->transactionId );
-			$order->save();
 
-			update_post_meta( $order_id, '_globalpayments_payment_action', $this->payment_action );
+			if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+				$order->update_meta_data( '_globalpayments_payment_action', $this->payment_action );
+			} else {
+				update_post_meta( $order_id, '_globalpayments_payment_action', $this->payment_action );
+			}
+
+			$order->save();
 
 			// 2. Redirect the customer
 			return array(

@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\Entities\Transaction;
@@ -211,7 +212,11 @@ class ClickToPay extends AbstractDigitalWallet {
 		);
 
 		foreach ( $meta as $key => $value ) {
-			update_post_meta( $order->get_id(), sprintf( '_%s_%s', $this->id, $key ), $value );
+			if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+				$order->update_meta_data( sprintf( '_%s_%s', $this->id, $key ), $value );
+			} else {
+				update_post_meta( $order->get_id(), sprintf( '_%s_%s', $this->id, $key ), $value );
+			}
 		}
 	}
 

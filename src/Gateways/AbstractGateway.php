@@ -867,7 +867,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		if ( ! $order_id ) {
 			return;
 		}
-
 		$order = wc_get_order( $order_id );
 		if ( empty( $order ) ) {
 			return;
