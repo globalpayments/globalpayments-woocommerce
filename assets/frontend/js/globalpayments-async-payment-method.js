@@ -1,9 +1,9 @@
 ( function ( $ ) {
-	function GlobalPaymentsBNPLWooCommerce() {
+	function GlobalPaymentsAsyncPaymentMethodWooCommerce() {
 		this.attachEventHandlers();
 	};
 
-	GlobalPaymentsBNPLWooCommerce.prototype = {
+	GlobalPaymentsAsyncPaymentMethodWooCommerce.prototype = {
 		/**
 		 * Add important event handlers for controlling the payment experience during checkout
 		 *
@@ -48,8 +48,8 @@
 		},
 	};
 
-	if ( ! window.GlobalPaymentsBNPLWooCommerce ) {
-		window.GlobalPaymentsBNPLWooCommerce = new GlobalPaymentsBNPLWooCommerce();
+	if ( ! window.GlobalPaymentsAsyncPaymentMethodWooCommerce ) {
+		window.GlobalPaymentsAsyncPaymentMethodWooCommerce = new GlobalPaymentsAsyncPaymentMethodWooCommerce();
 	}
 } (
 	( window ).jQuery

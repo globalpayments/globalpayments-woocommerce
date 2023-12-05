@@ -39,7 +39,7 @@ class Affirm extends AbstractBuyNowPayLater {
 	 *
 	 * @var string
 	 */
-	public function get_gateway_form_fields() {
+	public function get_payment_method_form_fields() {
 		return array();
 	}
 

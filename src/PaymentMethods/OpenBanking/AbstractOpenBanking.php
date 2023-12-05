@@ -1,43 +1,71 @@
 <?php
 
-namespace GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater;
+namespace GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking;
 
 use Automattic\WooCommerce\Utilities\OrderUtil;
-use GlobalPayments\Api\Entities\Enums\TransactionStatus;
-use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
-use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\TransactionInfoTrait;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\AbstractAsyncPaymentMethod;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\Utils;
 use WC_Order;
-use WC_Payment_Gateway;
 
 defined( 'ABSPATH' ) || exit;
 
-abstract class AbstractBuyNowPayLater extends AbstractAsyncPaymentMethod {
+abstract class AbstractOpenBanking extends AbstractAsyncPaymentMethod {
+	use TransactionInfoTrait;
+
 	/**
-	 * Payment method BNPL provider. Should be overridden by individual BNPL payment methods implementations.
+	 * Payment method OB provider. Should be overridden by individual OB payment methods implementations.
 	 *
 	 * @var string
 	 */
-	public $payment_method_BNPL_provider;
-
-	public function get_request_type() {
-		return AbstractGateway::TXN_TYPE_BNPL_AUTHORIZE;
-	}
+	public $payment_method_openbanking_provider;
 
 	public function add_hooks() {
 		parent::add_hooks();
 
-		add_action( 'woocommerce_after_checkout_validation', array(
-			$this,
-			'after_checkout_validation'
-		), 10, 2);
+		add_action( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'woocommerce_settings_set_payment_action' ) );
+	}
+
+	/**
+	 * Enqueues OB scripts from Global Payments.
+	 *
+	 * @return
+	 */
+	public function enqueue_scripts() {
+		return;
+	}
+
+
+	/**
+	 * @inheritdoc
+	 */
+	public function get_payment_action_options() {
+		return array(
+			AbstractGateway::TXN_TYPE_SALE => __( 'Authorize + Capture', 'globalpayments-gateway-provider-for-woocommerce' ),
+		);
+	}
+
+	/**
+	 * Force payment action to `charge`.
+	 *
+	 * @param $settings
+	 *
+	 * @return mixed
+	 */
+	public function woocommerce_settings_set_payment_action( $settings ) {
+		$settings['payment_action'] = AbstractGateway::TXN_TYPE_SALE;
+
+		return $settings;
 	}
 
 	/**
 	 * @inheritdoc
 	 */
+	public function get_request_type() {
+		return AbstractGateway::TXN_TYPE_OB_AUTHORIZATION;
+	}
+
 	public function is_available() {
 		if ( false === parent::is_available() ) {
 			return false;
@@ -47,34 +75,18 @@ abstract class AbstractBuyNowPayLater extends AbstractAsyncPaymentMethod {
 		if ( ! isset( $method_availability[ $currency ] ) ) {
 			return false;
 		}
+		// Currency is available and no countries added in the admin panel
+		if ( empty( $method_availability[ $currency ] ) ) {
+			return true;
+		}
 		if ( WC()->cart ) {
 			$customer = WC()->cart->get_customer();
-			if ( $this->is_shipping_required() ) {
-				if ( ! in_array( $customer->get_billing_country(), $method_availability[ $currency ] )
-				     || ! in_array( $customer->get_shipping_country(), $method_availability[ $currency ] ) ) {
-					return false;
-				}
-			} elseif ( ! in_array( $customer->get_billing_country(), $method_availability[ $currency ] ) ) {
+			if ( ! in_array( $customer->get_billing_country(), $method_availability[ $currency ] ) ) {
 				return false;
 			}
 		}
 
 		return true;
-	}
-
-	public function after_checkout_validation( $data, $wp_error ) {
-		if ( $this->id != $data['payment_method'] ) {
-			return;
-		}
-		if ( empty( $data['billing_postcode'] ) && ( empty( $wp_error->errors['billing_postcode_required'] ) || empty( $wp_error->errors['billing_postcode_validation'] ) ) ) {
-			$wp_error->add ( 'billing_postcode', __( '<strong>Billing ZIP Code</strong> is a required field for this payment method.', 'globalpayments-gateway-provider-for-woocommerce' ) );
-		}
-		if ( WC()->cart->needs_shipping() && empty( $data['shipping_postcode'] ) && ( empty( $wp_error->errors['shipping_postcode_required'] ) || empty( $wp_error->errors['shipping_postcode_validation'] ) ) ) {
-			$wp_error->add ( 'shipping_postcode', __( '<strong>Shipping ZIP Code</strong> is a required field for this payment method.', 'globalpayments-gateway-provider-for-woocommerce' ) );
-		}
-		if ( empty( $data['billing_phone'] ) && ( empty( $wp_error->errors['billing_phone_required'] ) || empty( $wp_error->errors['billing_phone_validation'] ) ) ) {
-			$wp_error->add ( 'billing_phone', __( '<strong>Phone</strong> is a required field for this payment method.', 'globalpayments-gateway-provider-for-woocommerce' ) );
-		}
 	}
 
 	/**
@@ -84,10 +96,9 @@ abstract class AbstractBuyNowPayLater extends AbstractAsyncPaymentMethod {
 	 */
 	public function get_provider_endpoints() {
 		return array(
-			'provider'  => $this->payment_method_BNPL_provider,
+			'provider'  => $this->payment_method_openbanking_provider,
 			'returnUrl' => WC()->api_request_url( $this->id . '_return', true ),
 			'statusUrl' => WC()->api_request_url( $this->id . '_status', true ),
-			'cancelUrl' => WC()->api_request_url( $this->id . '_cancel', true ),
 		);
 	}
 
@@ -108,10 +119,11 @@ abstract class AbstractBuyNowPayLater extends AbstractAsyncPaymentMethod {
 				wc_price( $order->get_total() ),
 				__( 'payment initiated with', 'globalpayments-gateway-provider-for-woocommerce' ),
 				$gateway_response->transactionId,
-				$this->payment_method_BNPL_provider
+				$this->payment_method_openbanking_provider
 			);
 			$order->add_order_note( $note_text );
 			$order->set_transaction_id( $gateway_response->transactionId );
+			$order->save();
 
 			if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
 				$order->update_meta_data( '_globalpayments_payment_action', $this->payment_action );
@@ -119,19 +131,16 @@ abstract class AbstractBuyNowPayLater extends AbstractAsyncPaymentMethod {
 				update_post_meta( $order_id, '_globalpayments_payment_action', $this->payment_action );
 			}
 
-			$order->save();
-
 			// 2. Redirect the customer
 			return array(
 				'result'   => 'success',
-				'redirect' => $gateway_response->transactionReference->bnplResponse->redirectUrl,
+				'redirect' => $gateway_response->bankPaymentResponse->redirectUrl
 			);
 		} catch ( \Exception $e ) {
 			wc_get_logger()->error( $e->getMessage() );
 			throw new \Exception( Utils::map_response_code_to_friendly_message() );
 		}
 	}
-
 
 	/**
 	 * Initiate the payment.
@@ -141,9 +150,18 @@ abstract class AbstractBuyNowPayLater extends AbstractAsyncPaymentMethod {
 	 * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
 	 */
 	private function initiate_payment( WC_Order $order ) {
-		$request = $this->gateway->prepare_request( AbstractGateway::TXN_TYPE_BNPL_AUTHORIZE, $order );
+		$request = $this->gateway->prepare_request( AbstractGateway::TXN_TYPE_OB_AUTHORIZATION, $order );
+		$settings = [
+			'bank_payment_type' => $this->bank_payment_type,
+			'iban'              => $this->iban,
+			'account_number'    => $this->account_number,
+			'account_name'      => $this->account_name,
+			'sort_code'         => $this->sort_code,
+			'countries'         => $this->countries,
+		];
 		$request->set_request_data( array(
-			'globalpayments_bnpl' => $this->get_provider_endpoints(),
+			'globalpayments_openbanking' => $this->get_provider_endpoints(),
+			'settings' => $settings,
 		) );
 
 		$gateway_response = $this->gateway->client->submit_request( $request );

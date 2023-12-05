@@ -36,6 +36,8 @@
 			$( document.body ).on( 'wc_backbone_modal_loaded', this.modalLoaded.bind( this ) );
 
 			$( '#woocommerce_globalpayments_clicktopay_payment_action' ).prop( 'disabled', true );
+			$( '#woocommerce_globalpayments_fasterpayments_payment_action' ).prop( 'disabled', true );
+			$( '#woocommerce_globalpayments_sepa_payment_action' ).prop( 'disabled', true );
 		},
 
 		checkApiCredentials: function ( e ) {

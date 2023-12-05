@@ -2,7 +2,7 @@
     <button class="button button-secondary wc-globalpayments-transaction-info">
         <?php esc_html_e( 'View Transaction Info', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
     </button>
-	<?php echo wc_help_tip( __( 'Admins can view transaction details using this functionality.', 'globalpayments-gateway-provider-for-woocommerce' ) ); ?>
+    <?php echo wc_help_tip( __( 'Admins can view transaction details using this functionality.', 'globalpayments-gateway-provider-for-woocommerce' ) ); ?>
 </p>
 <script type="text/template" id="tmpl-wc-globalpayments-transaction-info-modal">
     <div class="wc-backbone-modal">
@@ -17,7 +17,7 @@
                     </button>
                 </header>
                 <article>
-	                <?php wp_nonce_field( 'woocommerce-globalpayments-view-transaction-info', 'woocommerce-globalpayments-view-transaction-info-nonce' ); ?>
+                   <?php wp_nonce_field( 'woocommerce-globalpayments-view-transaction-info', 'woocommerce-globalpayments-view-transaction-info-nonce' ); ?>
                     <#if( data.error_message ){#>
                         <div class="wc-globalpayments-transaction-info-error">
                             {{ data.error_message }}
@@ -69,14 +69,26 @@
                                         {{ data.transaction_info.currency }}
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>
-                                        <?php esc_html_e( 'BNPL Provider', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
-                                    </td>
-                                    <td>
-                                        {{ data.transaction_info.bnpl_provider }}
-                                    </td>
-                                </tr>
+                                <#if( data.transaction_info.provider_type ){#>
+                                    <tr>
+                                        <td>
+                                            {{ data.transaction_info.provider }} <?php esc_html_e( 'Provider', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
+                                        </td>
+                                        <td>
+                                            {{ data.transaction_info.provider_type }}
+                                        </td>
+                                    </tr>
+                                <#}#>
+                                <#if( data.transaction_info.payment_type ){#>
+                                    <tr>
+                                        <td>
+                                            <?php esc_html_e( 'Payment Type', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
+                                        </td>
+                                        <td>
+                                            {{ data.transaction_info.payment_type }}
+                                        </td>
+                                    </tr>
+                                <#}#>
                             </table>
                         <#}#>
                     </div>

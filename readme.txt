@@ -2,8 +2,8 @@
 Contributors: globalpayments
 Tags: woocommerce, woo, unified, commerce, platform, global, payments, heartland, payment, systems, tsys, genius, 3DS, gateway, token, tokenize, save cards
 Requires at least: 5.4
-Tested up to: 6.3.1
-Stable tag: 1.9.4
+Tested up to: 6.4.1
+Stable tag: 1.10.0
 License: MIT
 License URI: https://github.com/globalpayments/globalpayments-woocommerce/blob/main/LICENSE
 
@@ -28,6 +28,8 @@ This extension allows WooCommerce to use the available Global Payments payment g
 - Buy Now Pay Later - Affirm
 - Buy Now Pay Later - Clearpay
 - Buy Now Pay Later - Klarna
+- Open Banking - Faster Payments
+- Open Banking - Sepa
 
 = Support =
 For more information or questions, please email <a href="mailto:developers@globalpay.com">developers@globalpay.com </a>.
@@ -50,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.10.0 (12/05/23) =
+* Open banking
+
 = 1.9.5 (11/09/23) =
 * Unified payments - High-Performance Order Storage (HPOS) compatibility
 

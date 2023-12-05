@@ -5,6 +5,7 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits;
 
+use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 defined( 'ABSPATH' ) || exit;
@@ -81,14 +82,24 @@ trait TransactionInfoTrait {
 
 			$response = $this->gateway->get_transaction_details_by_txn_id( $transactionId );
 
-			wp_send_json( array(
+			$modalData = array (
 				'transaction_id'     => $response->transactionId,
 				'transaction_status' => $response->transactionStatus,
 				'transaction_type'   => $response->transactionType,
 				'amount'             => wc_format_decimal( $response->amount, 2 ),
 				'currency'           => $response->currency,
-				'bnpl_provider'      => $response->bnplResponse->providerName
-			) );
+				'payment_type'       => $response->paymentType ?? null,
+			);
+
+			if ( ! empty( $response->bnplResponse ) ) {
+				$modalData['provider'] = PaymentMethodName::BNPL;
+				$modalData['provider_type'] = $response->bnplResponse->providerName;
+			} elseif ( ! empty( $response->bankPaymentResponse ) ) {
+				$modalData['provider'] = PaymentMethodName::BANK_PAYMENT;
+				$modalData['provider_type'] = $response->bankPaymentResponse->type;
+			}
+
+			wp_send_json( $modalData );
 		} catch ( \Exception $e ) {
 			wp_send_json( [
 				'error'   => true,

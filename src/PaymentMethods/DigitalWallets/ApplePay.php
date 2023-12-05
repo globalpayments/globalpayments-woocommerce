@@ -122,7 +122,7 @@ class ApplePay extends AbstractDigitalWallet {
 				'custom_attributes' => array( 'required' => 'required' ),
 			),
 			'cc_types'                      => array(
-				'title'   => __( 'Accepted Cards', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'   => __( 'Accepted Cards*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'multiselectcheckbox',
 				'class'   => 'accepted_cards required',
 				'css'     => 'width: 450px; height: 110px',

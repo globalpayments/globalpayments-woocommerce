@@ -15,6 +15,8 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWalle
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Affirm;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Clearpay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Klarna;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\FasterPayments;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\Sepa;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\Utils;
 use WC_Payment_Gateway_CC;
@@ -44,6 +46,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 	// dw requests
 	const TXN_TYPE_DW_AUTHORIZATION = 'dw_authorization';
+
+	const TXN_TYPE_OB_AUTHORIZATION = 'ob_authorization';
 
 	// mgmt requests
 	const TXN_TYPE_REFUND   = 'refund';
@@ -1028,6 +1032,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			case Affirm::PAYMENT_METHOD_ID:
 			case Klarna::PAYMENT_METHOD_ID:
 			case Clearpay::PAYMENT_METHOD_ID:
+			case Sepa::PAYMENT_METHOD_ID:
+			case FasterPayments::PAYMENT_METHOD_ID:
 				$gateway = new GpApiGateway();
 				break;
 			case GpiTransactionApiGateway::GATEWAY_ID:
@@ -1102,6 +1108,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			self::TXN_TYPE_INITIATE_AUTHENTICATION => Requests\ThreeDSecure\InitiateAuthenticationRequest::class,
 			self::TXN_TYPE_DW_AUTHORIZATION        => Requests\DigitalWallets\AuthorizationRequest::class,
 			self::TXN_TYPE_BNPL_AUTHORIZE          => Requests\BuyNowPayLater\InitiatePaymentRequest::class,
+			self::TXN_TYPE_OB_AUTHORIZATION        => Requests\OpenBanking\InitiatePaymentRequest::class,
 		);
 
 		if ( ! isset( $map[ $txn_type ] ) ) {
