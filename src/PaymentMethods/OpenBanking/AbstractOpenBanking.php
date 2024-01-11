@@ -152,7 +152,7 @@ abstract class AbstractOpenBanking extends AbstractAsyncPaymentMethod {
 	private function initiate_payment( WC_Order $order ) {
 		$request = $this->gateway->prepare_request( AbstractGateway::TXN_TYPE_OB_AUTHORIZATION, $order );
 		$settings = [
-			'bank_payment_type' => $this->bank_payment_type,
+			'bank_payment_type' => $this->payment_method_openbanking_provider,
 			'iban'              => $this->iban,
 			'account_number'    => $this->account_number,
 			'account_name'      => $this->account_name,

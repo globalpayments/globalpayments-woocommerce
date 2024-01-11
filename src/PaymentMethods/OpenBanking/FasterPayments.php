@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 class FasterPayments extends AbstractOpenBanking {
 	public const PAYMENT_METHOD_ID = 'globalpayments_fasterpayments';
 
-	public $bank_payment_type = BankPaymentType::FASTERPAYMENTS;
+	public $payment_method_openbanking_provider = BankPaymentType::FASTERPAYMENTS;
 	public $default_title = 'Pay with Faster Payments';
 	public $account_number;
 	public $account_name;

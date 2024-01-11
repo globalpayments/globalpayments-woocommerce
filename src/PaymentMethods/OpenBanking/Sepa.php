@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 class Sepa extends AbstractOpenBanking {
 	public const PAYMENT_METHOD_ID = 'globalpayments_sepa';
 
-	public $bank_payment_type = BankPaymentType::SEPA;
+	public $payment_method_openbanking_provider = BankPaymentType::SEPA;
 	public $default_title = 'Pay with Sepa';
 	public $account_name;
 	public $iban;
