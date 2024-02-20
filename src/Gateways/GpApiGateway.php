@@ -14,8 +14,7 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWalle
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\GooglePay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Clearpay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Klarna;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\FasterPayments;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\Sepa;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\OpenBanking;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 defined( 'ABSPATH' ) || exit;
@@ -498,8 +497,7 @@ class GpApiGateway extends AbstractGateway {
 			Affirm::class,
 			Clearpay::class,
 			Klarna::class,
-			FasterPayments::class,
-			Sepa::class,
+			OpenBanking::class,
 		);
 	}
 }

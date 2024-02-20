@@ -37,7 +37,6 @@ class InitiatePaymentRequest extends AbstractRequest {
 		}
 
 		$paymentMethod->accountName     = $requestData['settings']['account_name'];
-		$paymentMethod->bankPaymentType = $requestData['settings']['bank_payment_type'];
 		$paymentMethod->returnUrl       = $requestData['globalpayments_openbanking']['returnUrl'];
 		$paymentMethod->statusUpdateUrl = $requestData['globalpayments_openbanking']['statusUrl'];
 

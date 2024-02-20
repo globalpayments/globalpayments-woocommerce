@@ -14,6 +14,7 @@
 		this.attachEventHandlers();
 		this.validate_checkbox_fields('.accepted_cards.required');
 		this.validate_checkbox_fields('.aca_methods.required');
+		this.validate_checkbox_fields('.ob_currencies.required');
 	};
 	GlobalPaymentsAdmin.prototype = {
 		/**
@@ -26,6 +27,7 @@
 			$( document ).on( 'change', this.getEnabledGatewaySelector(), this.toggleValidations.bind( this ) );
 			$( document ).on( 'change', $( '.accepted_cards.required' ), this.validate_checkbox_fields.bind( this, '.accepted_cards.required' ) );
 			$( document ).on( 'change', $( '.aca_methods.required' ), this.validate_checkbox_fields.bind( this, '.aca_methods.required' ) );
+			$( document ).on( 'change', $( '.ob_currencies.required' ), this.validate_checkbox_fields.bind( this, '.ob_currencies.required' ) );
 			$( document ).on( 'click', this.getCheckCredentialsButtonSelector(), this.checkApiCredentials.bind( this ));
 
 			// Admin Pay for Order
@@ -37,7 +39,7 @@
 
 			$( '#woocommerce_globalpayments_clicktopay_payment_action' ).prop( 'disabled', true );
 			$( '#woocommerce_globalpayments_fasterpayments_payment_action' ).prop( 'disabled', true );
-			$( '#woocommerce_globalpayments_sepa_payment_action' ).prop( 'disabled', true );
+			$( '#woocommerce_globalpayments_bankpayment_payment_action' ).prop( 'disabled', true );
 		},
 
 		checkApiCredentials: function ( e ) {
@@ -245,6 +247,7 @@
 		toggleValidations: function () {
 			this.validate_checkbox_fields( '.accepted_cards.required' );
 			this.validate_checkbox_fields( '.aca_methods.required' );
+			this.validate_checkbox_fields( '.ob_currencies.required' );
 
 			var button = $('.woocommerce-save-button');
 			if ( this.isEnabled() ) {

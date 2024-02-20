@@ -15,8 +15,7 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWalle
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Affirm;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Clearpay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Klarna;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\FasterPayments;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\Sepa;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\OpenBanking;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\Utils;
 use WC_Payment_Gateway_CC;
@@ -1032,8 +1031,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			case Affirm::PAYMENT_METHOD_ID:
 			case Klarna::PAYMENT_METHOD_ID:
 			case Clearpay::PAYMENT_METHOD_ID:
-			case Sepa::PAYMENT_METHOD_ID:
-			case FasterPayments::PAYMENT_METHOD_ID:
+			case OpenBanking::PAYMENT_METHOD_ID:
 				$gateway = new GpApiGateway();
 				break;
 			case GpiTransactionApiGateway::GATEWAY_ID:

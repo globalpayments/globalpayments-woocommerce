@@ -2,3 +2,4 @@
 **/.DS_Store
 **/*.pem
 .well-known
+appsec.properties
