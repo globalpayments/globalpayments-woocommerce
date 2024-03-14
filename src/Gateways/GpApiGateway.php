@@ -6,6 +6,7 @@ use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Gateways\GpApiConnector;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\Apm\Paypal;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Affirm;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure\CheckEnrollmentRequest;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\PayOrderTrait;
@@ -498,6 +499,7 @@ class GpApiGateway extends AbstractGateway {
 			Clearpay::class,
 			Klarna::class,
 			OpenBanking::class,
+			Paypal::class,
 		);
 	}
 }

@@ -75,7 +75,7 @@
                                             {{ data.transaction_info.provider }} <?php esc_html_e( 'Provider', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
                                         </td>
                                         <td>
-                                            {{ data.transaction_info.provider_type }}
+                                            {{ data.transaction_info.provider_type?.toUpperCase() }}
                                         </td>
                                     </tr>
                                 <#}#>

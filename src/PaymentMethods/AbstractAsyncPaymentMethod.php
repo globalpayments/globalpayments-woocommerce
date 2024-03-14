@@ -126,9 +126,7 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 		switch ( $request_method ) {
 			case 'GET':
 				$xgp_signature = $request->get_param( 'X-GP-Signature' );
-				$params = $request->get_query_params();
-				unset( $params['X-GP-Signature'] );
-				$to_hash = http_build_query( $params );
+				$to_hash = http_build_query( $this->get_query_params($request) );
 				break;
 			case 'POST':
 				$xgp_signature = $request->get_header( 'x_gp_signature' );
@@ -144,6 +142,20 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns query parameters
+	 *
+	 * @param \WP_REST_Request $request
+	 *
+	 * @return array
+	 */
+	protected function get_query_params( \WP_REST_Request $request ): array {
+		$params = $request->get_query_params();
+		unset( $params['X-GP-Signature'] );
+
+		return $params;
 	}
 
 	/**
@@ -252,7 +264,7 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 	 * @param $order
 	 * @return void
 	 */
-	private function cancel_order( $order ) {
+	protected function cancel_order( $order ) {
 		$note_text = sprintf(
 			'%1$s %2$s. Transaction ID: %3$s.',
 			wc_price( $order->get_total() ),

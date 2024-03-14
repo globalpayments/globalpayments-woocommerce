@@ -94,6 +94,9 @@ trait TransactionInfoTrait {
 			if ( ! empty( $response->bnplResponse ) ) {
 				$modalData['provider'] = PaymentMethodName::BNPL;
 				$modalData['provider_type'] = $response->bnplResponse->providerName;
+			} elseif ( ! empty( $response->alternativePaymentResponse ) ) {
+				$modalData['provider'] = PaymentMethodName::APM;
+				$modalData['provider_type'] = $response->alternativePaymentResponse->providerName;
 			} elseif ( ! empty( $response->bankPaymentResponse ) ) {
 				$modalData['provider'] = PaymentMethodName::BANK_PAYMENT;
 				$modalData['provider_type'] = $response->bankPaymentResponse->type;

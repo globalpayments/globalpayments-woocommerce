@@ -4,11 +4,13 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 
 defined( 'ABSPATH' ) || exit;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use Exception;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\CheckApiCredentialsTrait;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\Apm\Paypal;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ApplePay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ClickToPay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\GooglePay;
@@ -67,6 +69,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	//3DS requests
 	const TXN_TYPE_CHECK_ENROLLMENT        = 'checkEnrollment';
 	const TXN_TYPE_INITIATE_AUTHENTICATION = 'initiateAuthentication';
+
+	const TXN_TYPE_PAYPAL_INITIATE = 'initiatePayment';
 
 	/**
 	 * Gateway provider. Should be overriden by individual gateway implementations
@@ -1032,6 +1036,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			case Klarna::PAYMENT_METHOD_ID:
 			case Clearpay::PAYMENT_METHOD_ID:
 			case OpenBanking::PAYMENT_METHOD_ID:
+			case Paypal::PAYMENT_METHOD_ID:
 				$gateway = new GpApiGateway();
 				break;
 			case GpiTransactionApiGateway::GATEWAY_ID:
@@ -1045,10 +1050,19 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			$response = $gateway->submit_request( $request );
 
 			if ( self::is_successful_capture_response( $response ) ) {
-				delete_post_meta( $order->get_id(), '_globalpayments_payment_action' );
+
+				if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+					$order->add_meta_data( '_globalpayments_payment_captured', 'is_captured', true );
+					$order->delete_meta_data( '_globalpayments_payment_action' );
+				} else {
+					add_post_meta( $order->get_id(), '_globalpayments_payment_captured', 'is_captured', true );
+					delete_post_meta( $order->get_id(), '_globalpayments_payment_action' );
+				}
+
 				$order->add_order_note(
 					"Transaction captured. Transaction ID for the capture: " . $response->transactionReference->transactionId
 				);
+				$order->save();
 			}
 
 			return $response;
@@ -1074,8 +1088,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	public function get_transaction_details_by_txn_id( $txn_id ) {
 		$request = $this->prepare_request( self::TXN_TYPE_REPORT_TXN_DETAILS );
 		$request->set_request_data( array(
-			'txn_id' => $txn_id,
-		) );
+				'txn_id' => $txn_id,
+			)
+		);
 
 		return $this->submit_request( $request );
 	}
@@ -1107,6 +1122,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			self::TXN_TYPE_DW_AUTHORIZATION        => Requests\DigitalWallets\AuthorizationRequest::class,
 			self::TXN_TYPE_BNPL_AUTHORIZE          => Requests\BuyNowPayLater\InitiatePaymentRequest::class,
 			self::TXN_TYPE_OB_AUTHORIZATION        => Requests\OpenBanking\InitiatePaymentRequest::class,
+			self::TXN_TYPE_PAYPAL_INITIATE         => Requests\Apm\InitiatePaymentRequest::class,
 		);
 
 		if ( ! isset( $map[ $txn_type ] ) ) {
@@ -1114,7 +1130,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		}
 
 		$backendGatewayOptions = $this->get_backend_gateway_options();
-		if ( ! empty($configData) ) {
+		if ( ! empty( $configData ) ) {
 			$backendGatewayOptions = array_merge( $backendGatewayOptions, $configData );
 		}
 
@@ -1210,8 +1226,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 						$data = [];
 					}
 
-					Transaction::fromId($response->transactionReference->transactionId)
-						->reverse($data['total'])
+					Transaction::fromId( $response->transactionReference->transactionId )
+						->reverse( $data['total'] )
 						->execute();
 
 					return false;
@@ -1278,9 +1294,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		}
 
 		wp_send_json( [
-			'error'   => false,
-			'message' => $this->get_order_data(),
-		] );
+				'error'   => false,
+				'message' => $this->get_order_data(),
+			]
+		);
 	}
 
 	public function get_session_amount() {
@@ -1366,12 +1383,12 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			if ( $gateway instanceof AbstractGateway ) {
 				$settings['enabled'] = 'no';
 				add_action( 'woocommerce_sections_checkout', function () use ( $gateway ) {
-					echo '<div id="message" class="error inline"><p><strong>' .
-					     __( 'You can enable only one GlobalPayments gateway at a time. Please disable ' . $gateway->method_title . ' first!',
-						     'globalpayments-gateway-provider-for-woocommerce'
-					     ) .
-					     '</strong></p></div>';
-				} );
+						echo '<div id="message" class="error inline"><p><strong>' .
+						__( 'You can enable only one GlobalPayments gateway at a time. Please disable ' . $gateway->method_title . ' first!',
+							'globalpayments-gateway-provider-for-woocommerce'
+						) . '</strong></p></div>';
+					}
+				);
 
 				return $settings;
 			}

@@ -7,7 +7,7 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLat
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Clearpay;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Klarna;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\OpenBanking;
-
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\Apm\Paypal;
 
 class PaymentActionHandler extends AbstractHandler {
 	protected $accepted_transaction_types = array(
@@ -16,6 +16,7 @@ class PaymentActionHandler extends AbstractHandler {
 		AbstractGateway::TXN_TYPE_VERIFY,
 		AbstractGateway::TXN_TYPE_DW_AUTHORIZATION,
 		AbstractGateway::TXN_TYPE_OB_AUTHORIZATION,
+		AbstractGateway::TXN_TYPE_PAYPAL_INITIATE,
 	);
 
 	public function handle() {
@@ -39,8 +40,10 @@ class PaymentActionHandler extends AbstractHandler {
 					Affirm::PAYMENT_METHOD_ID,
 					Clearpay::PAYMENT_METHOD_ID,
 					Klarna::PAYMENT_METHOD_ID,
-					OpenBanking::PAYMENT_METHOD_ID
-				) )
+					OpenBanking::PAYMENT_METHOD_ID,
+					Paypal::PAYMENT_METHOD_ID,
+				)
+			)
 		) {
 			$this->request->order->payment_complete( $this->response->transactionId );
 
