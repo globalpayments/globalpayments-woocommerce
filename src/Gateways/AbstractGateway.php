@@ -1225,12 +1225,18 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					if ( ! is_array( $data ) ) {
 						$data = [];
 					}
+					if ( $this->id !== TransitGateway::GATEWAY_ID ) {
+						Transaction::fromId( $response->transactionReference->transactionId )
+							->reverse( $data['total'] )
+							->execute();
+					} else {
+						Transaction::fromId( $response->transactionReference->transactionId )
+							->refund( $data['total'] )
+							->withCurrency( $data['currency'] )
+							->execute();
+					}
 
-					Transaction::fromId( $response->transactionReference->transactionId )
-						->reverse( $data['total'] )
-						->execute();
-
-					return false;
+					throw new \Exception( Utils::map_response_code_to_friendly_message() );
 				}
 			}
 		}
