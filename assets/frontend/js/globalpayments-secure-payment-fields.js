@@ -250,6 +250,11 @@
 			this.cardForm.on( 'token-success', this.handleResponse.bind( this ) );
 			this.cardForm.on( 'token-error', this.handleErrors.bind( this ) );
 			this.cardForm.on( 'error', this.handleErrors.bind( this ) );
+			this.cardForm.on( 'card-form-validity', function ( isValid ) {
+				if ( !isValid ) {
+					helper.unblockOnError();
+				}
+			});
 
 			var self = this;
 			// match the visibility of our payment form

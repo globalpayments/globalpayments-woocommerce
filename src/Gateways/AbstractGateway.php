@@ -158,6 +158,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 */
 	public $cvn_reject_conditions;
 
+	protected static string $js_lib_version = 'v1';
+
 	public function __construct( $is_provider = false ) {
 		$this->client     = new Clients\SdkClient();
 
@@ -412,7 +414,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		wp_enqueue_script(
 			'globalpayments-secure-payment-fields-lib',
-			'https://js.globalpay.com/v1/globalpayments'
+			'https://js.globalpay.com/' . static::$js_lib_version . '/globalpayments'
 			. ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ) . '.js',
 			array(),
 			WC()->version,
@@ -694,7 +696,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'height' => '40px',
 				'position' => 'absolute',
 				'right' => '0',
-				'top' => '50%',
+				'top' => '25px',
 				'margin-top' => '-20px',
 				'background-position' => '50% 50%',
 			),
@@ -761,6 +763,15 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'background-size' => '120%',
 				'background-position-y' => '0px',
 			),
+			'#field-validation-wrapper' => array(
+				'background' => '#e2401c',
+				'font-family' => '"Source Sans Pro","HelveticaNeue-Light","Helvetica Neue Light","Helvetica Neue",Helvetica,Arial,"Lucida Grande",sans-serif !important',
+				'font-size' => '13px !important',
+				'padding' => '6px 12px',
+				'border-radius' => '4px',
+				'border-left' => '.6180469716em solid rgba(0,0,0,.15)',
+				'color' => '#fff !important',
+			),
 		);
 
 		/**
@@ -778,10 +789,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 */
 	protected function secure_payment_fields_asset_base_url() {
 		if ( $this->is_production ) {
-			return 'https://js.globalpay.com/v1';
+			return 'https://js.globalpay.com/' . static::$js_lib_version;
 		}
 
-		return 'https://js-cert.globalpay.com/v1';
+		return 'https://js-cert.globalpay.com/' . static::$js_lib_version;
 	}
 
 	public function save_payment_method_checkbox() {

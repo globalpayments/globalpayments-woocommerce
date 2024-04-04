@@ -106,6 +106,8 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $enable_three_d_secure;
 
+	protected static string $js_lib_version = '3.0.11';
+
 	public function __construct( $is_provider = false ) {
 		parent::__construct( $is_provider );
 		array_push( $this->supports, 'globalpayments_hosted_fields', 'globalpayments_three_d_secure' );
@@ -241,6 +243,10 @@ class GpApiGateway extends AbstractGateway {
 			'env'                   => $this->is_production ? parent::ENVIRONMENT_PRODUCTION : parent::ENVIRONMENT_SANDBOX,
 			'requireCardHolderName' => true,
 			'enableThreeDSecure'    => $this->enable_three_d_secure,
+			'fieldValidation' => [
+				'enabled' => true,
+			],
+			'language' => substr( get_user_locale(), 0, 2 ),
 		);
 	}
 
