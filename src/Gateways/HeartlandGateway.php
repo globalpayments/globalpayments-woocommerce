@@ -128,7 +128,7 @@ class HeartlandGateway extends AbstractGateway {
 				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Log all request to and from gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Log all requests to and from the gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'     => 'no',
 				'desc_tip'    => true,
 			),
@@ -137,7 +137,7 @@ class HeartlandGateway extends AbstractGateway {
 				'label'				=> __( 'Allow customers to use gift cards to pay for purchases in full or in part.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'				=> 'checkbox',
 				'description'		=> sprintf(
-					__( 'This will display a gift card entry field directly below the credit card entry area.' )
+					__( 'This will display a gift card entry field directly below the credit card entry area.', 'globalpayments-gateway-provider-for-woocommerce' )
 				),
 				'default'			=> 'no'
 			),
@@ -205,7 +205,6 @@ class HeartlandGateway extends AbstractGateway {
 			case '51':
 			case '56':
 			case '61':
-			case '62':
 			case '62':
 			case '63':
 			case '65':

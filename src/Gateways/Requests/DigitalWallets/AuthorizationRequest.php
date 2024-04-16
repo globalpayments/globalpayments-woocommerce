@@ -25,6 +25,7 @@ class AuthorizationRequest extends AbstractRequest {
 		}
 
 		$payment_method->mobileType = $this->data['mobile_type'];
+		$payment_method->paymentSource = $this->data['payment_source'];
 
 		return $payment_method->{$this->data['payment_action']}( $this->order->get_total() )
 		                      ->withCurrency( $this->order->get_currency() )

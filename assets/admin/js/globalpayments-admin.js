@@ -1,11 +1,12 @@
 /* global globalpayments_admin_params */
-
 ( function (
 	$,
 	globalpayments_admin_params,
 	globalpayments_admin_txn_params,
 	globalpayments_admin_credentials_params
 ) {
+	const { __ } = wp.i18n;
+
 	function GlobalPaymentsAdmin( globalpayments_admin_params, globalpayments_admin_txn_params, globalpayments_admin_credentials_params ) {
 		this.id = globalpayments_admin_params.gateway_id;
 		this.addValueToCredentialsCheckButton();
@@ -51,7 +52,7 @@
 			var environment = 0;
 
 			if ( ! gateway_app_id || ! gateway_app_key ) {
-				alert( 'Please be sure that you have filled AppId and AppKey fields!' );
+				alert( __( 'Please be sure that you have filled AppId and AppKey fields!', 'globalpayments-gateway-provider-for-woocommerce' ) );
 				return;
 			}
 			if ( this.isLiveMode() ) {
@@ -80,7 +81,7 @@
 		},
 
 		addValueToCredentialsCheckButton: function() {
-			$( '#woocommerce_globalpayments_gpapi_credentials_api_check' ).attr( 'value', 'Credentials check' );
+			$( '#woocommerce_globalpayments_gpapi_credentials_api_check' ).attr( 'value', __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ) );
 		},
 
 		getGatewaySetting: function ( setting ) {

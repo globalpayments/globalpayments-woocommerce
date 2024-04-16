@@ -17,16 +17,10 @@ class Klarna extends AbstractBuyNowPayLater {
 	public $payment_method_BNPL_provider = BNPLType::KLARNA;
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * @var string
-	 */
-	public $default_title = 'Pay with Klarna';
-
-	/**
 	 * @inheritDoc
 	 */
 	public function configure_method_settings() {
+		$this->default_title      = __( 'Pay with Klarna', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->id                 = self::PAYMENT_METHOD_ID;
 		$this->method_title       = __( 'GlobalPayments - Klarna', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->method_description = __( 'Connect to Klarna via Unified Payments Gateway',

@@ -104,9 +104,8 @@ abstract class AbstractBuyNowPayLater extends AbstractAsyncPaymentMethod {
 
 			// Add order note  prior to customer redirect
 			$note_text = sprintf(
-				'%1$s %2$s %4$s. Transaction ID: %3$s.',
+				__( '%1$s payment initiated with %3$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				wc_price( $order->get_total() ),
-				__( 'payment initiated with', 'globalpayments-gateway-provider-for-woocommerce' ),
 				$gateway_response->transactionId,
 				$this->payment_method_BNPL_provider
 			);

@@ -179,7 +179,7 @@ class GpApiGateway extends AbstractGateway {
 				'type'        => 'button',
 				'class'       => 'button-credentials-check button-primary',
 				'default'     => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'description' => __( 'Please note that Payment Methods will not appear on checkout if the credentials are not correct.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Note: The Payment Methods will not be displayed at checkout if the credentials are not correct.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'css'         => 'width: 200px',
 			),
 			'allow_card_saving'    => array(
@@ -201,7 +201,7 @@ class GpApiGateway extends AbstractGateway {
 				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Log all request to and from gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Log all requests to and from the gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'     => 'no',
 				'desc_tip'    => true,
 			),
@@ -209,7 +209,7 @@ class GpApiGateway extends AbstractGateway {
 				'title'             => __( 'Contact Url*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'              => 'text',
 				'desc_tip'          => true,
-				'description'       => __( 'A link to an About or Contact page on your website with customer care information (maxLength: 50).', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description'       => __( 'A link to an About or Contact page on your website with customer care information (maxLength: 256).', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'           => '',
 				'custom_attributes' => array(
 					'required' => 'required',

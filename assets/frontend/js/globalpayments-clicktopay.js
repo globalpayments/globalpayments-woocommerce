@@ -3,6 +3,8 @@
 	globalpayments_clicktopay_params,
 	helper
 ) {
+	const { __ } = wp.i18n;
+
 	function ClickToPayWoocommerce ( options ) {
 		/**
 		 * Click To Pay form instance
@@ -76,7 +78,7 @@
 			this.clearContent();
 
 			if ( ! GlobalPayments.configure ) {
-				console.log( 'Warning! Payment fields cannot be loaded' );
+				console.log( __( 'Warning! Payment fields cannot be loaded', 'globalpayments-gateway-provider-for-woocommerce' ) );
 				return;
 			}
 

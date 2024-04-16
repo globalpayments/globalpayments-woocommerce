@@ -9,6 +9,8 @@
 	globalpayments_secure_payment_threedsecure_params,
 	helper
 ) {
+	const { __ } = wp.i18n;
+
 	/**
 	 * Frontend code for Global Payments in WooCommerce
 	 *
@@ -218,7 +220,7 @@
 				return;
 			}
 			if ( ! GlobalPayments.configure ) {
-				console.log( 'Warning! Payment fields cannot be loaded' );
+				console.log( __( 'Warning! Payment fields cannot be loaded', 'globalpayments-gateway-provider-for-woocommerce' ) );
 				return;
 			}
 			var gatewayConfig = this.gatewayOptions;
@@ -344,7 +346,7 @@
 						return false;
 					}
 					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" !== versionCheckData.liabilityShift ) {
-						helper.showPaymentError( 'Please try again with another card.' );
+						helper.showPaymentError( __( 'Please try again with another card.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 						return false;
 					}
 					if ( "NOT_ENROLLED" === versionCheckData.status && "YES" === versionCheckData.liabilityShift ) {
@@ -386,14 +388,14 @@
 						.catch( function( error ) {
 							console.error( error );
 							console.error( error.reasons );
-							helper.showPaymentError( 'Something went wrong while doing 3DS processing.' );
+							helper.showPaymentError( __( 'Something went wrong while doing 3DS processing.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 							return false;
 						});
 				})
 				.catch( function( error ) {
 					console.error( error );
 					console.error( error.reasons );
-					helper.showPaymentError( 'Something went wrong while doing 3DS processing.' );
+					helper.showPaymentError( __( 'Something went wrong while doing 3DS processing.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 					return false;
 				});
 
@@ -478,7 +480,7 @@
 				return;
 			}
 			if ( ! error.reasons ) {
-				helper.showPaymentError( 'Something went wrong. Please contact us to get assistance.' );
+				helper.showPaymentError( __( 'Something went wrong. Please contact us to get assistance.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 				return;
 			}
 
@@ -487,7 +489,7 @@
 				var reason = error.reasons[i];
 				switch ( reason.code ) {
 					case 'NOT_AUTHENTICATED':
-						helper.showPaymentError( 'We\'re not able to process this payment. Please refresh the page and try again.' );
+						helper.showPaymentError( __( 'We\'re not able to process this payment. Please refresh the page and try again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 						break;
 					case 'INVALID_CARD_NUMBER':
 						this.showValidationError( 'card-number' );

@@ -15,13 +15,6 @@ class ClickToPay extends AbstractDigitalWallet {
 	public const PAYMENT_METHOD_ID = 'globalpayments_clicktopay';
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * @var string
-	 */
-	public $default_title = 'Pay with Click To Pay';
-
-	/**
 	 * Refers to the merchant’s account for Click To Pay.
 	 * @var string
 	 */
@@ -61,6 +54,7 @@ class ClickToPay extends AbstractDigitalWallet {
 	 * @var string
 	 */
 	public function configure_method_settings() {
+		$this->default_title      = __( 'Pay with Click To Pay', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->id                 = self::PAYMENT_METHOD_ID;
 		$this->method_title       = __( 'GlobalPayments - Click To Pay', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->method_description = __( 'Connect to Click To Pay via Unified Payments Gateway', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -148,10 +142,18 @@ class ClickToPay extends AbstractDigitalWallet {
 		wp_enqueue_script(
 			'globalpayments-wc-clicktopay',
 			Plugin::get_url( '/assets/frontend/js/globalpayments-clicktopay.js' ),
-			array( 'wc-checkout', 'globalpayments-secure-payment-fields-lib', 'globalpayments-helper' ),
+			array(
+				'wc-checkout',
+				'globalpayments-secure-payment-fields-lib',
+				'globalpayments-helper',
+				'wp-i18n' // include 'wp-i18n' for translation
+			),
 			Plugin::get_version(),
 			true
 		);
+
+		// set script translation, this will look in plugin languages directory and look for .json translation file
+		wp_set_script_translations('globalpayments-wc-clicktopay', 'globalpayments-gateway-provider-for-woocommerce', WP_PLUGIN_DIR . '/'. basename( dirname( __FILE__ , 4 ) ) . '/languages');
 
 		wp_localize_script(
 			'globalpayments-wc-clicktopay',

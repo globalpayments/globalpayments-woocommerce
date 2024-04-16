@@ -3,6 +3,8 @@
 	globalpayments_applepay_params,
 	helper
 ) {
+	const { __ } = wp.i18n;
+
 	function ApplePayWoocommerce ( options ) {
 		/**
 		 * Payment method id
@@ -67,10 +69,9 @@
 
 			var self = this
 			var paymentButton = document.createElement( 'div' );
-
 			paymentButton.className = 'apple-pay-button apple-pay-button-' + this.paymentMethodOptions.button_color;
-			paymentButton.title = 'Pay with Apple Pay';
-			paymentButton.alt = 'Pay with Apple Pay';
+			paymentButton.title = __( 'Pay with Apple Pay', 'globalpayments-gateway-provider-for-woocommerce');
+			paymentButton.alt = __( 'Pay with Apple Pay', 'globalpayments-gateway-provider-for-woocommerce');
 			paymentButton.id = self.id;
 
 			paymentButton.addEventListener( 'click', function ( e ) {
@@ -89,8 +90,8 @@
 			try {
 				var applePaySession = new ApplePaySession( 1, self.getPaymentRequest() );
 			} catch ( err ) {
-				console.error( 'Unable to create ApplePaySession', err )
-				alert( 'We\'re unable to take your payment through Apple Pay. Please try again or use an alternative payment method.' );
+				console.error( __( 'Unable to create ApplePaySession', 'globalpayments-gateway-provider-for-woocommerce' ), err )
+				alert( __( 'We\'re unable to take your payment through Apple Pay. Please try again or use an alternative payment method.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 				return false;
 			}
 
@@ -105,7 +106,7 @@
 			}
 
 			applePaySession.oncancel = function ( event ) {
-				alert( 'We\'re unable to take your payment through Apple Pay. Please try again or use an alternative payment method.' );
+				alert( __( 'We\'re unable to take your payment through Apple Pay. Please try again or use an alternative payment method.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 			}.bind( this );
 
 			return applePaySession;
@@ -122,14 +123,14 @@
 				if ( response.error ) {
 					console.log( 'response', response );
 					session.abort();
-					alert( 'We\'re unable to take your payment through Apple Pay. Please try again or use an alternative payment method.' );
+					alert( __( 'We\'re unable to take your payment through Apple Pay. Please try again or use an alternative payment method.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 				} else {
 					session.completeMerchantValidation( JSON.parse( response.message ) );
 				}
 			} ).fail( function ( response ) {
 				console.log( 'response', response );
 				session.abort();
-				alert( 'We\'re unable to take your payment through Apple Pay. Please try again or use an alternative payment method.' );
+				alert( __( 'We\'re unable to take your payment through Apple Pay. Please try again or use an alternative payment method.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 			} );
 		},
 
@@ -185,12 +186,12 @@
 
 		deviceSupported: function () {
 			if ( 'https:' !== location.protocol ) {
-				console.warn( 'Apple Pay requires your checkout be served over HTTPS' );
+				console.warn( __( 'Apple Pay requires your checkout be served over HTTPS', 'globalpayments-gateway-provider-for-woocommerce' ) );
 				return false;
 			}
 
 			if ( true !== ( window.ApplePaySession && ApplePaySession.canMakePayments() ) ) {
-				console.warn( 'Apple Pay is not supported on this device/browser' );
+				console.warn( __( 'Apple Pay is not supported on this device/browser', 'globalpayments-gateway-provider-for-woocommerce' ) );
 				return false;
 			}
 

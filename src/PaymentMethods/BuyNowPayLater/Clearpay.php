@@ -17,16 +17,10 @@ class Clearpay extends AbstractBuyNowPayLater {
 	public $payment_method_BNPL_provider = BNPLType::CLEARPAY;
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * @var string
-	 */
-	public $default_title = 'Pay with Clearpay';
-
-	/**
 	 * @inheritDoc
 	 */
 	public function configure_method_settings() {
+		$this->default_title      = __( 'Pay with Clearpay', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->id                 = self::PAYMENT_METHOD_ID;
 		$this->method_title       = __( 'GlobalPayments - Clearpay',
 			'globalpayments-gateway-provider-for-woocommerce' );

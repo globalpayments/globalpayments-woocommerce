@@ -233,7 +233,7 @@ class TransitGateway extends AbstractGateway {
 				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Log all request to and from gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Log all requests to and from the gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'     => 'no',
 				'desc_tip'    => true,
 			),
@@ -262,7 +262,7 @@ class TransitGateway extends AbstractGateway {
 			} catch ( \Exception $e ) {
 				$settings[$prefix . 'transaction_key'] = '';
 				add_action( 'admin_notices', function() {
-					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Invalid MultiPass User ID or Password. Please try again.' ) . '</strong></p></div>';
+					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Invalid MultiPass User ID or Password. Please try again.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
 				});
 			}
 		}

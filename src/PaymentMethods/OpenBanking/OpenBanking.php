@@ -27,12 +27,6 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 	 *
 	 * @var string
 	 */
-	public $default_title = 'Bank Payment';
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @var string
-	 */
 	public $account_number;
 	public $account_name;
 	public $sort_code;
@@ -44,6 +38,7 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 		parent::add_hooks();
 
 		add_action( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'woocommerce_settings_set_payment_action' ) );
+		add_action( 'woocommerce_order_actions', array( $this, 'remove_capture_order_action' ), 10, 2 );
 	}
 
 	/**
@@ -62,10 +57,15 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 		wp_enqueue_script(
 			'globalpayments-admin',
 			Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
-			array(),
+			array(
+				'wp-i18n' // include 'wp-i18n' for translation
+			),
 			WC()->version,
 			true
 		);
+
+		// set script translation, this will look in plugin languages directory and look for .json translation file
+		wp_set_script_translations('globalpayments-admin', 'globalpayments-gateway-provider-for-woocommerce', WP_PLUGIN_DIR . '/'. basename( dirname( __FILE__ , 4 ) ) . '/languages');
 	}
 
 
@@ -89,6 +89,21 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 		$settings['payment_action'] = AbstractGateway::TXN_TYPE_SALE;
 
 		return $settings;
+	}
+
+	/**
+	 * Remove delayed capture functionality to the "Edit Order" screen
+	 *
+	 * @param array $actions
+	 *
+	 * @return array
+	 */
+	public function remove_capture_order_action( $actions, $order ) {
+		if ( $order->get_data()['payment_method'] === self::PAYMENT_METHOD_ID ) {
+			unset( $actions['capture_credit_card_authorization'] );
+		}
+
+		return $actions;
 	}
 
 	/**
@@ -151,9 +166,8 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 
 			// Add order note  prior to customer redirect
 			$note_text = sprintf(
-				'%1$s %2$s %4$s. Transaction ID: %3$s.',
+				__( '%1$s payment initiated with %3$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				wc_price( $order->get_total() ),
-				__( 'payment initiated with', 'globalpayments-gateway-provider-for-woocommerce' ),
 				$gateway_response->transactionId,
 				__('Bank Payment', 'globalpayments-gateway-provider-for-woocommerce' )
 			);
@@ -215,6 +229,7 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 	 * @var string
 	 */
 	public function configure_method_settings() {
+		$this->default_title      = __( 'Bank Payment', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->id                 = self::PAYMENT_METHOD_ID;
 		$this->method_title       = __( 'GlobalPayments - Bank Payment', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->method_description = __( 'Connect to Bank Payments via Unified Payments Gateway', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -291,10 +306,9 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 	 */
 	public function payment_fields() {
 		parent::payment_fields();
-		$imgPath = plugin_dir_url('') . 'woocommerce-integration/assets/frontend/img/Bank_Payment.png';
+		$imgPath = Plugin::get_url('') . '/assets/frontend/img/Bank_Payment.png';
 		?>
 			<img class="openbanking-img-allign" src="<?= $imgPath ?>">
-
 		<?php
 	}
 }

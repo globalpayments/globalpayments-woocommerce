@@ -6,6 +6,9 @@ use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\MulticheckboxTrait;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\AbstractPaymentMethod;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\GpApiGateway;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGateway;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -32,6 +35,7 @@ abstract class AbstractDigitalWallet extends AbstractPaymentMethod {
 			'mobile_type'        => $this->get_mobile_type(),
 			'payment_action'     => $this->payment_action,
 			'dynamic_descriptor' => $this->gateway->txn_descriptor,
+			'payment_source'	 => $this->get_payment_source()
 		) );
 	}
 
@@ -58,8 +62,25 @@ abstract class AbstractDigitalWallet extends AbstractPaymentMethod {
 	public static function remove_slashes_from_token( string $token ) {
 		$token = str_replace( '\\"', '"', $token );
 		$token = str_replace( '\\"', '"', $token );
-		$token = str_replace( '\\\\\\\\', '\\', $token );
+		if ( Plugin::get_active_gateway() == HeartlandGateway::GATEWAY_ID ) {
+			$token = str_replace( '\\\\\\\\', '\\\\', $token );
+		} else {
+			$token = str_replace( '\\\\\\\\', '\\', $token );
+		}
 
 		return $token;
+	}
+
+	/**
+	 * Determine active gateway.
+	 *
+	 * @inheritdoc
+	 */
+	protected function init_gateway() {
+		if ( Plugin::get_active_gateway() == HeartlandGateway::GATEWAY_ID ) {
+			$this->gateway = new HeartlandGateway( true );
+		} else {
+			$this->gateway = new GpApiGateway( true );
+		}
 	}
 }

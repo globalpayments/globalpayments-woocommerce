@@ -40,13 +40,20 @@ abstract class AbstractPaymentMethod extends WC_Payment_Gateway implements Payme
 	 */
 	public $payment_action;
 
+	/**
+	 * Payment source.
+	 *
+	 * @var string
+	 */
+	protected $payment_source;
+
 	public function __construct() {
-		$this->gateway    = new GpApiGateway( true );
 		$this->has_fields = true;
 		$this->supports   = array(
 			'refunds',
 		);
 
+		$this->init_gateway();
 		$this->configure_method_settings();
 		$this->init_form_fields();
 		$this->init_settings();
@@ -217,10 +224,16 @@ abstract class AbstractPaymentMethod extends WC_Payment_Gateway implements Payme
 		wp_enqueue_script(
 			'globalpayments-admin',
 			Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
-			array(),
+			array(
+				'wp-i18n' // include 'wp-i18n' for translation
+			),
 			WC()->version,
 			true
 		);
+
+		// set script translation, this will look in plugin languages directory and look for .json translation file
+		wp_set_script_translations('globalpayments-admin', 'globalpayments-gateway-provider-for-woocommerce', WP_PLUGIN_DIR . '/'. basename( dirname( __FILE__ , 3 ) ) . '/languages');
+
 		wp_localize_script(
 			'globalpayments-admin',
 			'globalpayments_admin_params',
@@ -286,11 +299,25 @@ abstract class AbstractPaymentMethod extends WC_Payment_Gateway implements Payme
 		return $this->gateway->process_refund( $order_id, $amount, $reason );
 	}
 
+	/**
+	 * Get payment source
+	 */
+	public function get_payment_source() {
+		return $this->payment_source;
+	}
+
 	protected function get_process_payment_result( $is_successful, $order ) {
 		return $is_successful ? 'success' : 'failure';
 	}
 
 	protected function get_process_payment_redirect( $is_successful, $order ) {
 		return $is_successful ? $this->get_return_url( $order ) : false;
+	}
+
+	/**
+	 * init gateway.
+	 */
+	protected function init_gateway() {
+		$this->gateway = new GpApiGateway( true );
 	}
 }

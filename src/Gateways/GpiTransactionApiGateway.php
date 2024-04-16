@@ -124,7 +124,7 @@ class GpiTransactionApiGateway extends AbstractGateway {
 				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Log all request to and from gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Log all requests to and from the gateway. This can also log private data and should only be enabled in a development or stage environment.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'     => 'no',
 				'desc_tip'    => true,
 			),

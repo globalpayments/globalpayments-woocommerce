@@ -20,13 +20,6 @@ class Paypal extends AbstractAsyncPaymentMethod {
 	public string $payment_method_paypal_provider = AlternativePaymentType::PAYPAL;
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * @var string
-	 */
-	public $default_title = 'Pay with PayPal';
-
-	/**
 	 * @inheritDoc
 	 */
 	public function get_method_availability(): array {
@@ -37,6 +30,7 @@ class Paypal extends AbstractAsyncPaymentMethod {
 	 * @inheritDoc
 	 */
 	public function configure_method_settings() {
+		$this->default_title      = __( 'Pay with PayPal', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->id                 = self::PAYMENT_METHOD_ID;
 		$this->method_title       = __( 'GlobalPayments - PayPal',
 			'globalpayments-gateway-provider-for-woocommerce' );
@@ -75,7 +69,7 @@ class Paypal extends AbstractAsyncPaymentMethod {
 	public function add_hooks() {
 		parent::add_hooks();
 
-		add_action( 'woocommerce_order_actions', array( $this, 'add_capture_order_action' ) );
+		add_action( 'woocommerce_order_actions', array( $this, 'add_capture_order_action' ), 10, 2 );
 	}
 
 	/**
@@ -85,7 +79,11 @@ class Paypal extends AbstractAsyncPaymentMethod {
 	 *
 	 * @return array
 	 */
-	public function add_capture_order_action( $actions ) {
+	public function add_capture_order_action( $actions, $order ) {
+		if ( $order->get_data()['payment_method'] !== self::PAYMENT_METHOD_ID ) {
+			return $actions;
+		}
+
 		global $theorder;
 
 		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
@@ -98,7 +96,7 @@ class Paypal extends AbstractAsyncPaymentMethod {
 			return $actions;
 		}
 
-		$actions['capture_credit_card_authorization'] = 'Capture credit card authorization';
+		$actions['capture_credit_card_authorization'] = __( 'Capture credit card authorization', 'globalpayments-gateway-provider-for-woocommerce' );
 
 		return $actions;
 	}
@@ -117,9 +115,8 @@ class Paypal extends AbstractAsyncPaymentMethod {
 
 			// Add order note  prior to customer redirect
 			$note_text = sprintf(
-				'%1$s %2$s %4$s. Transaction ID: %3$s.',
+				__( '%1$s payment initiated with %3$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				wc_price( $order->get_total() ),
-				__( 'payment initiated with', 'globalpayments-gateway-provider-for-woocommerce' ),
 				$gateway_response->transactionId,
 				ucwords($this->payment_method_paypal_provider)
 			);
@@ -218,15 +215,15 @@ class Paypal extends AbstractAsyncPaymentMethod {
 						->withAlternativePaymentType( AlternativePaymentType::PAYPAL )
 						->execute();
 					if ( $this->payment_action == AbstractGateway::TXN_TYPE_SALE ) {
-						$status = __( 'captured', 'globalpayments-gateway-provider-for-woocommerce' );
+						$status = __( 'Captured', 'globalpayments-gateway-provider-for-woocommerce' );
 					} else {
-						$status = __( 'authorized', 'globalpayments-gateway-provider-for-woocommerce' );
+						$status = __( 'Authorized', 'globalpayments-gateway-provider-for-woocommerce' );
 					}
 
 					$note_text = sprintf(
-						'%1$s %2$s. Transaction ID: %3$s.',
-						wc_price( $order->get_total() ),
+						__( '%1$s amount of %2$s. Transaction ID: %3$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 						$status,
+						wc_price( $order->get_total() ),
 						$order->get_transaction_id()
 					);
 					$order->update_status( 'processing', $note_text );
@@ -241,12 +238,17 @@ class Paypal extends AbstractAsyncPaymentMethod {
 					break;
 				default:
 					throw new \Exception(
-					'Order ID: ' . $gateway_response->orderId . '. Unexpected transaction status on returnUrl: ' . $gateway_response->transactionStatus
+						sprintf(
+							__( 'Order ID: %s. Unexpected transaction status on returnUrl: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+							$gateway_response->orderId,
+							$gateway_response->transactionStatus
+						)
 				);
 			}
 		} catch ( \Exception $e ) {
 			$log_text = sprintf(
-				'Error completing order return with ' . $this->id . '. %s %s',
+				__( 'Error completing order return with %s. %s %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+				$this->id,
 				$e->getMessage(),
 				print_r( $request->get_params(), true )
 			);

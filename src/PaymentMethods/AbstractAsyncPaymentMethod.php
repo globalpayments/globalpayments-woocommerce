@@ -96,15 +96,34 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 	protected function get_order( TransactionSummary $gateway_response ) {
 		$order = wc_get_order( $gateway_response->orderId );
 		if ( false === $order || ! ( $order instanceof WC_Order ) ) {
-			throw new \Exception( __( 'Order ID: ' . $gateway_response->orderId . '. Order not found.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+			throw new \Exception(
+				sprintf(
+					__( 'Order ID: %s. Order not found.', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$gateway_response->orderId
+				)
+			);
 		}
 
 		if ( $this->id != $order->get_payment_method() ) {
-			throw new \Exception( __( 'Order ID: ' . $gateway_response->orderId . '. Payment method code changed. Expected ' . $this->id . ', but found ' . $order->get_payment_method() ) );
+			throw new \Exception(
+				sprintf(
+					__( 'Order ID: %s. Payment method code changed. Expected %s, but found %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$gateway_response->orderId,
+					$this->id,
+					$order->get_payment_method()
+				)
+			);
 		}
 
 		if ( $gateway_response->transactionId !== $order->get_transaction_id() ) {
-			throw new \Exception( __( 'Order ID: ' . $gateway_response->orderId . '. Transaction ID changed. Expected ' . $gateway_response->transactionId . ', but found ' . $order->get_transaction_id(), 'globalpayments-gateway-provider-for-woocommerce' ) );
+			throw new \Exception(
+				sprintf(
+					__( 'Order ID: %s. Transaction ID changed. Expected %s, but found %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$gateway_response->orderId,
+					$gateway_response->transactionId,
+					$order->get_transaction_id()
+				)
+			);
 		}
 
 		return $order;
@@ -183,12 +202,17 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 					break;
 				default:
 					throw new \Exception(
-						'Order ID: ' . $gateway_response->orderId . '. Unexpected transaction status on returnUrl: ' . $gateway_response->transactionStatus
+						sprintf(
+							__( 'Order ID: %s. Unexpected transaction status on returnUrl: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+							$gateway_response->orderId,
+							$gateway_response->transactionStatus
+						)
 					);
 			}
 		} catch ( \Exception $e ) {
 			$log_text = sprintf(
-				'Error completing order return with ' . $this->id . '. %s %s',
+				__( 'Error completing order return with %s. %s %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+				$this->id,
 				$e->getMessage(),
 				print_r( $request->get_params(), true )
 			);
@@ -218,9 +242,8 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 			switch( $request->get_param( 'status' ) ) {
 				case TransactionStatus::PREAUTHORIZED:
 					$note_text = sprintf(
-						'%1$s %2$s. Transaction ID: %3$s.',
+						__( 'Authorized amount of %1$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 						wc_price( $order->get_total() ),
-						__( 'authorized', 'globalpayments-gateway-provider-for-woocommerce' ),
 						$order->get_transaction_id()
 					);
 					$order->update_status( 'processing', $note_text );
@@ -232,9 +255,8 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 					break;
 				case TransactionStatus::CAPTURED:
 					$note_text = sprintf(
-						'%1$s %2$s. Transaction ID: %3$s.',
+						__( 'Captured amount of %1$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 						wc_price( $order->get_total() ),
-						__( 'captured', 'globalpayments-gateway-provider-for-woocommerce' ),
 						$order->get_transaction_id()
 					);
 					$order->update_status( 'processing', $note_text );
@@ -246,12 +268,17 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 					break;
 				default:
 					throw new \Exception(
-						'Order ID: ' . $gateway_response->orderId . '. Unexpected transaction status on statusUrl: ' . $request->get_param( 'status' )
+						sprintf(
+							__( 'Order ID: %s. Unexpected transaction status on statusUrl: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+							$gateway_response->orderId,
+							$request->get_param( 'status' )
+						)
 					);
 			}
 		} catch ( \Exception $e ) {
 			$log_text = sprintf(
-				'Error completing order status with ' . $this->id . '. %s %s',
+				__( 'Error completing order status with %s. %s %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+				$this->id,
 				$e->getMessage(),
 				print_r( $request->get_body(), true )
 			);
@@ -266,9 +293,8 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 	 */
 	protected function cancel_order( $order ) {
 		$note_text = sprintf(
-			'%1$s %2$s. Transaction ID: %3$s.',
+			__( 'Payment of %1$s declined/failed. Transaction ID: %2$s', 'globalpayments-gateway-provider-for-woocommerce' ),
 			wc_price( $order->get_total() ),
-			__( 'payment failed/declined', 'globalpayments-gateway-provider-for-woocommerce' ),
 			$order->get_transaction_id()
 		);
 		$order->update_status( 'cancelled', $note_text );
@@ -286,15 +312,15 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 			$order = $this->get_order( $gateway_response );
 
 			$note_text = sprintf(
-				'%1$s %2$s. Transaction ID: %3$s.',
+				__( '%1$s payment canceled by customer. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				wc_price( $order->get_total() ),
-				__( 'payment canceled by customer', 'globalpayments-gateway-provider-for-woocommerce' ),
 				$order->get_transaction_id()
 			);
 			$order->update_status( 'cancelled', $note_text );
 		} catch ( \Exception $e ) {
 			$log_text = sprintf(
-				'Error completing order cancel with ' . $this->id . '. %s %s',
+				__( 'Error completing order cancel with %s. %s %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+				$this->id,
 				$e->getMessage(),
 				print_r( $request->get_params(), true )
 			);

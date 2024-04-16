@@ -2,6 +2,8 @@
     $,
     single_toggle_gateways
 ) {
+    const { __, sprintf } = wp.i18n;
+
     $( function() {
         // Toggle GlobalPayments gateway on/off.
         $( '[data-gateway_id^="globalpayments_"]' ).on( 'click', '.wc-payment-gateway-method-toggle-enabled', function() {
@@ -22,8 +24,12 @@
                 if ( ! $( this ).find( 'span.woocommerce-input-toggle--disabled' ).length > 0 ) {
                     if ( single_toggle_gateways.includes( $( this ).data( 'gateway_id' ) ) && single_toggle_gateways.includes( clicked ) ) {
                         var gateway_title = $( this ).closest( 'tr' ).find( 'a.wc-payment-gateway-method-title' ).text();
-                        window.alert( 'You can enable only one GlobalPayments gateway at a time. ' +
-                            'Please disable ' + gateway_title + ' first!' );
+                        window.alert(
+                            sprintf(
+                                __( 'You can enable only one GlobalPayments gateway at a time. Please disable %s first!', 'globalpayments-gateway-provider-for-woocommerce' ),
+                                gateway_title
+                            )
+                        );
                         toggle = false;
                         return;
                     }

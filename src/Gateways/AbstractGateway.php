@@ -348,7 +348,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		self::hosted_fields_script();
 
-		$secure_payment_fields_deps = array( 'globalpayments-secure-payment-fields-lib' );
+		// include 'wp-i18n' for translation
+		$secure_payment_fields_deps = array( 'globalpayments-secure-payment-fields-lib', 'wp-i18n' );
 
 		if ( $this->supports( 'globalpayments_three_d_secure' ) && is_checkout() ) {
 			wp_enqueue_script(
@@ -376,6 +377,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			Plugin::VERSION,
 			true
 		);
+
+		// set script translation, this will look in plugin languages directory and look for .json translation file
+		wp_set_script_translations('globalpayments-secure-payment-fields', 'globalpayments-gateway-provider-for-woocommerce', WP_PLUGIN_DIR . '/'. basename( dirname( __FILE__ , 3 ) ) . '/languages');
 
 		wp_localize_script(
 			'globalpayments-secure-payment-fields',
@@ -505,7 +509,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'type'              => 'text',
 					'description'       => sprintf(
 					/* translators: %s: Email address of support team */
-						__( 'During a Capture or Authorize payment action, this value will be passed along as the transaction-specific descriptor listed on the customer\'s bank account. Please contact <a href="mailto:%s?Subject=WooCommerce%%20Transaction%%20Descriptor%%20Option">support</a> with any questions regarding this option.', 'globalpayments-gateway-provider-for-woocommerce' ),
+						__( 'During a Capture or Authorize payment action, this value will be passed along as the transaction-specific descriptor listed on the customer\'s bank account. Please contact <a href="mailto:%s?Subject=WooCommerce%%20Transaction%%20Descriptor%%20Option">support</a> with any questions regarding this option (maxLength: 25).', 'globalpayments-gateway-provider-for-woocommerce' ),
 						$this->get_first_line_support_email()
 					),
 					'default'           => '',
@@ -896,7 +900,12 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			return;
 		}
 
-		$order->add_order_note( __( 'Order created with Transaction ID: ' ) . $order->get_transaction_id() );
+		$order->add_order_note(
+			sprintf(
+				__( 'Order created with Transaction ID: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+				$order->get_transaction_id()
+			)
+		);
 	}
 
 	/**
@@ -1002,7 +1011,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		if ( $is_successful ) {
 			$note_text = sprintf(
-				'%s%s was reversed or refunded. Transaction ID: %s ',
+				__( '%s%s was reversed or refunded. Transaction ID: %s ', 'globalpayments-gateway-provider-for-woocommerce' ),
 				get_woocommerce_currency_symbol(), $amount, $response->transactionReference->transactionId
 			);
 
@@ -1040,9 +1049,11 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			case GeniusGateway::GATEWAY_ID:
 				$gateway = new GeniusGateway();
 				break;
-			case GpApiGateway::GATEWAY_ID:
 			case GooglePay::PAYMENT_METHOD_ID:
 			case ApplePay::PAYMENT_METHOD_ID:
+				$gateway = Plugin::get_active_gateway() == HeartlandGateway::GATEWAY_ID ? new HeartlandGateway() : new GpApiGateway();
+				break;
+			case GpApiGateway::GATEWAY_ID:
 			case Affirm::PAYMENT_METHOD_ID:
 			case Klarna::PAYMENT_METHOD_ID:
 			case Clearpay::PAYMENT_METHOD_ID:
@@ -1071,7 +1082,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				}
 
 				$order->add_order_note(
-					"Transaction captured. Transaction ID for the capture: " . $response->transactionReference->transactionId
+					sprintf(
+						__( 'Transaction captured. Transaction ID for the capture: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+						$response->transactionReference->transactionId
+					)
 				);
 				$order->save();
 			}
@@ -1300,7 +1314,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				AbstractGateway::TXN_TYPE_DW_AUTHORIZATION !== $payment_action ) {
 			return $actions;
 		}
-		$actions['capture_credit_card_authorization'] = 'Capture credit card authorization';
+		$actions['capture_credit_card_authorization'] = __( 'Capture credit card authorization', 'globalpayments-gateway-provider-for-woocommerce' );
 
 		return $actions;
 	}
@@ -1351,32 +1365,32 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 	public function avs_rejection_conditions() {
 		return array(
-			'A' => 'A - Address matches, zip No Match',
-			'N' => 'N - Neither address or zip code match',
-			'R' => 'R - Retry - system unable to respond',
-			'U' => 'U - Visa / Discover card AVS not supported',
-			'S' => 'S - Master / Amex card AVS not supported',
-			'Z' => 'Z - Visa / Discover card 9-digit zip code match, address no match',
-			'W' => 'W - Master / Amex card 9-digit zip code match, address no match',
-			'Y' => 'Y - Visa / Discover card 5-digit zip code and address match',
-			'X' => 'X - Master / Amex card 5-digit zip code and address match',
-			'G' => 'G - Address not verified for International transaction',
-			'B' => 'B - Address match, Zip not verified',
-			'C' => 'C - Address and zip mismatch',
-			'D' => 'D - Address and zip match',
-			'I' => 'I - AVS not verified for International transaction',
-			'M' => 'M - Street address and postal code matches',
-			'P' => 'P - Address and Zip not verified'
+			'A' => __( 'A - Address matches, zip No Match', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'N' => __( 'N - Neither address or zip code match', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'R' => __( 'R - Retry - system unable to respond', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'U' => __( 'U - Visa / Discover card AVS not supported', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'S' => __( 'S - Master / Amex card AVS not supported', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'Z' => __( 'Z - Visa / Discover card 9-digit zip code match, address no match', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'W' => __( 'W - Master / Amex card 9-digit zip code match, address no match', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'Y' => __( 'Y - Visa / Discover card 5-digit zip code and address match', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'X' => __( 'X - Master / Amex card 5-digit zip code and address match', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'G' => __( 'G - Address not verified for International transaction', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'B' => __( 'B - Address match, Zip not verified', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'C' => __( 'C - Address and zip mismatch', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'D' => __( 'D - Address and zip match', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'I' => __( 'I - AVS not verified for International transaction', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'M' => __( 'M - Street address and postal code matches', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'P' => __( 'P - Address and Zip not verified', 'globalpayments-gateway-provider-for-woocommerce' ),
 		);
 	}
 
 	public function cvn_rejection_conditions() {
 		return array(
-			'N' => 'N - Not Matching',
-			'P' => 'P - Not Processed',
-			'S' => 'S - Result not present',
-			'U' => 'U - Issuer not certified',
-			'?' => '? - CVV unrecognized'
+			'N' => __( 'N - Not Matching', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'P' => __( 'P - Not Processed', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'S' => __( 'S - Result not present', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'U' => __( 'U - Issuer not certified', 'globalpayments-gateway-provider-for-woocommerce' ),
+			'?' => __( '? - CVV unrecognized', 'globalpayments-gateway-provider-for-woocommerce' )
 		);
 	}
 
@@ -1401,8 +1415,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				$settings['enabled'] = 'no';
 				add_action( 'woocommerce_sections_checkout', function () use ( $gateway ) {
 						echo '<div id="message" class="error inline"><p><strong>' .
-						__( 'You can enable only one GlobalPayments gateway at a time. Please disable ' . $gateway->method_title . ' first!',
-							'globalpayments-gateway-provider-for-woocommerce'
+						sprintf(
+							__( 'You can enable only one GlobalPayments gateway at a time. Please disable %s first!', 'globalpayments-gateway-provider-for-woocommerce' ),
+							$gateway->method_title
 						) . '</strong></p></div>';
 					}
 				);
@@ -1427,10 +1442,18 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			if ( wp_script_is( 'globalpayments-enforce-single-gateway', 'enqueued' ) ) {
 				return;
 			}
+
 			wp_enqueue_script(
 				'globalpayments-enforce-single-gateway',
-				Plugin::get_url( '/assets/admin/js/globalpayments-enforce-single-gateway.js' )
+				Plugin::get_url( '/assets/admin/js/globalpayments-enforce-single-gateway.js' ),
+				array(
+					'wp-i18n' // include 'wp-i18n' for translation
+				)
 			);
+
+			// set script translation, this will look in plugin languages directory and look for .json translation file
+			wp_set_script_translations('globalpayments-enforce-single-gateway', 'globalpayments-gateway-provider-for-woocommerce', WP_PLUGIN_DIR . '/'. basename( dirname( __FILE__ , 3 ) ) . '/languages');
+
 
 			wp_localize_script(
 				'globalpayments-enforce-single-gateway',
@@ -1449,10 +1472,16 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		wp_enqueue_script(
 			'globalpayments-admin',
 			Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
-			array(),
+			array(
+				'wp-i18n' // include 'wp-i18n' for translation
+			),
 			WC()->version,
 			true
 		);
+
+		// set script translation, this will look in plugin languages directory and look for .json translation file
+		wp_set_script_translations('globalpayments-admin', 'globalpayments-gateway-provider-for-woocommerce', WP_PLUGIN_DIR . '/'. basename( dirname( __FILE__ , 3 ) ) . '/languages');
+
 		wp_localize_script(
 			'globalpayments-admin',
 			'globalpayments_admin_params',

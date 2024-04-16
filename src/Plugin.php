@@ -20,13 +20,15 @@ class Plugin {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.10.6';
+	const VERSION = '1.10.7';
 
 	/**
 	 * Init the package.
 	 */
 	public static function init() {
-		load_plugin_textdomain( 'globalpayments-gateway-provider-for-woocommerce', false, self::get_path() . '/languages' );
+		$pluginDirName = basename( dirname( __FILE__ , 2 ) );
+
+		load_plugin_textdomain( 'globalpayments-gateway-provider-for-woocommerce', false, $pluginDirName . '/languages' );
 
 		if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
 			return;
@@ -98,5 +100,27 @@ class Plugin {
 
 	public static function get_url( $path ) {
 		return plugins_url( $path, dirname( __FILE__ ) );
+	}
+
+	/**
+	 * Return the active gateway of enforcing a single toggle.
+	 *
+	 * @return string
+	 */
+	public static function get_active_gateway() {
+		$availableGateways = array(
+			Gateways\HeartlandGateway::GATEWAY_ID,
+			Gateways\GeniusGateway::GATEWAY_ID,
+			Gateways\TransitGateway::GATEWAY_ID,
+			Gateways\GpApiGateway::GATEWAY_ID,
+		);
+		foreach ( $availableGateways as $gateway ) {
+			$gatewaySettings = get_option( 'woocommerce_' . $gateway . '_settings' );
+			if ( ! empty( $gatewaySettings ) && isset( $gatewaySettings['enabled'] ) && 'yes' === $gatewaySettings['enabled'] ) {
+				return $gateway;
+			}
+		}
+
+		return;
 	}
 }

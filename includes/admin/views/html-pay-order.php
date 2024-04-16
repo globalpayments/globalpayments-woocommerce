@@ -1,6 +1,6 @@
 <p class="form-field form-field-wide">
-    <button class="button button-secondary wc-globalpayments-pay-order"><?php esc_html_e( 'Pay for Order', 'woo-payment-gateway' ); ?></button>
-    <?php echo wc_help_tip( __( 'Admins can process customer orders over the phone using this functionality.', 'woo-payment-gateway' ) ); ?>
+    <button class="button button-secondary wc-globalpayments-pay-order"><?php esc_html_e( 'Pay for Order', 'globalpayments-gateway-provider-for-woocommerce' ); ?></button>
+    <?php echo wc_help_tip( __( 'Admins can process customer orders over the phone using this functionality.', 'globalpayments-gateway-provider-for-woocommerce' ) ); ?>
 </p>
 <script type="text/template" id="tmpl-wc-globalpayments-pay-order-modal">
     <div class="wc-backbone-modal">
@@ -63,8 +63,8 @@
                 </article>
                 <footer>
                     <div class="inner">
-                        <button type="submit" class="button button-primary button-large" id="place_order" value="Pay" data-value="Pay">
-                            <?php esc_html_e( 'Pay', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
+                        <button type="submit" class="button button-primary button-large" id="place_order" value="Pay" data-value="<?php esc_html_e( 'Pay', 'globalpayments-gateway-provider-for-woocommerce' ); ?>">
+	                        <?php esc_html_e( 'Pay', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
                         </button>
                     </div>
                 </footer>

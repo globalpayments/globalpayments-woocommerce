@@ -43,11 +43,16 @@ trait PayOrderTrait {
 			array(
 				'jquery',
 				'jquery-blockui',
-				'globalpayments-modal'
+				'globalpayments-modal',
+				'wp-i18n', // include 'wp-i18n' for translation
 			),
 			WC()->version,
 			true
 		);
+
+		// set script translation, this will look in plugin languages directory and look for .json translation file
+		wp_set_script_translations('globalpayments-admin', 'globalpayments-gateway-provider-for-woocommerce', WP_PLUGIN_DIR . '/'. basename( dirname( __FILE__ , 4 ) ) . '/languages');
+
 		wp_localize_script(
 			'globalpayments-admin',
 			'globalpayments_admin_params',

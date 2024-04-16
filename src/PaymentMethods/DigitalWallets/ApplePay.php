@@ -4,19 +4,13 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\Digita
 
 use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
+use GlobalPayments\Api\Entities\Enums\PaymentDataSourceType;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
 class ApplePay extends AbstractDigitalWallet {
 	public const PAYMENT_METHOD_ID = 'globalpayments_applepay';
-
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @var string
-	 */
-	public $default_title = 'Pay with Apple Pay';
 
 	/**
 	 * Supported credit card types
@@ -79,7 +73,15 @@ class ApplePay extends AbstractDigitalWallet {
 	 *
 	 * @var string
 	 */
+	protected $payment_source = PaymentDataSourceType::APPLEPAYWEB;
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @var string
+	 */
 	public function configure_method_settings() {
+		$this->default_title      = __( 'Pay with Apple Pay', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->id                 = self::PAYMENT_METHOD_ID;
 		$this->method_title       = __( 'GlobalPayments - Apple Pay', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->method_description = __( 'Connect to Apple Pay via Unified Payments Gateway', 'globalpayments-gateway-provider-for-woocommerce' );
@@ -172,10 +174,17 @@ class ApplePay extends AbstractDigitalWallet {
 		wp_enqueue_script(
 			'globalpayments-wc-applepay',
 			Plugin::get_url( '/assets/frontend/js/globalpayments-applepay.js' ),
-			array( 'wc-checkout', 'globalpayments-helper' ),
+			array(
+				'wc-checkout',
+				'globalpayments-helper',
+				'wp-i18n' // include 'wp-i18n' for translation
+			),
 			Plugin::get_version(),
 			true
 		);
+
+		// set script translation, this will look in plugin languages directory and look for .json translation file
+		wp_set_script_translations('globalpayments-wc-applepay', 'globalpayments-gateway-provider-for-woocommerce', WP_PLUGIN_DIR . '/'. basename( dirname( __FILE__ , 4 ) ) . '/languages');
 
 		wp_localize_script(
 			'globalpayments-wc-applepay',

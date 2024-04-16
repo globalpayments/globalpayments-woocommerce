@@ -5,19 +5,13 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\Digita
 use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Enums\PaymentDataSourceType;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
 class GooglePay extends AbstractDigitalWallet {
 	public const PAYMENT_METHOD_ID = 'globalpayments_googlepay';
-
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @var string
-	 */
-	public $default_title = 'Pay with Google Pay';
 
 	/**
 	 * Supported credit card types
@@ -67,7 +61,15 @@ class GooglePay extends AbstractDigitalWallet {
 	 *
 	 * @var string
 	 */
+	protected $payment_source = PaymentDataSourceType::GOOGLEPAYWEB;
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @var string
+	 */
 	public function configure_method_settings() {
+		$this->default_title      = __( 'Pay with Google Pay', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->id                 = self::PAYMENT_METHOD_ID;
 		$this->method_title       = __( 'GlobalPayments - Google Pay', 'globalpayments-gateway-provider-for-woocommerce' );
 		$this->method_description = __( 'Connect to Google Pay via Unified Payments Gateway', 'globalpayments-gateway-provider-for-woocommerce' );
