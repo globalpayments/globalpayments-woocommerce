@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests;
 
+use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\Utils;
 use WC_Order;
 
 defined( 'ABSPATH' ) || exit;
@@ -65,9 +66,16 @@ abstract class AbstractRequest implements RequestInterface {
 	 * @return mixed
 	 */
 	private function get_card_holder_name( $customer_name ) {
-		if ( is_array( $this->data ) && ! empty( $this->data[$this->gateway_id]['token_response'] ) ) {
-			$data = json_decode( stripslashes( $this->data[$this->gateway_id]['token_response'] ) );
+		if ( is_array( $this->data ) ) {
+			$gatewayData = $this->data[ $this->gateway_id ] ?? null;
+			if ( ! empty( $gatewayData['token_response'] ) ) {
+				$data = json_decode( stripslashes( $gatewayData['token_response'] ) );
+			} elseif ( ! empty( $gatewayData[ 'payment_data' ] ) ) {
+				$token_response = Utils::get_data_from_payment_data( $gatewayData[ 'payment_data' ], 'token_response' );
+				$data = $token_response ? json_decode( stripslashes( $token_response ) ) : null;
+			}
 		}
+
 		return $data->details->cardholderName ?? $customer_name;
 	}
 

@@ -60,4 +60,20 @@ class Utils {
 				return __( 'An error occurred while processing the payment. Please try again or use a different payment method.', 'globalpayments-gateway-provider-for-woocommerce' );
 		}
 	}
+
+	/**
+	 * Payment data come as an array of key-value pair object, we search for specific key and return its value
+	 *
+	 * @param array $payment_data
+	 * @param string $key
+	 */
+	public static function get_data_from_payment_data( array $payment_data, string $key ) {
+		foreach ( $payment_data as $data) {
+			if ($data->key === $key) {
+				return $data->value;
+			}
+		}
+
+		return null;
+	}
 }

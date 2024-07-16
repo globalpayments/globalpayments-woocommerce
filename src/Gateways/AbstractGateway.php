@@ -233,16 +233,17 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * Builds payment fields area - including environment indicator
 	 */
 	public function payment_fields() {
-		$this->environment_indicator();
+		echo $this->environment_indicator();
+
 		parent::payment_fields();
 	}
 
 	/**
 	 * Adds environment indicator in sandbox/test mode.
 	 */
-	protected function environment_indicator() {
+	public function environment_indicator() {
 		if ( ! wc_string_to_bool( $this->is_production ) ) {
-			echo sprintf( '<div class="woocommerce-globalpayments-sandbox-warning">%s</div>',
+			return sprintf( '<div class="woocommerce-globalpayments-sandbox-warning">%s</div>',
 				__( 'This page is currently in sandbox/test mode. Do not use real/active card numbers.', 'globalpayments-gateway-provider-for-woocommerce' )
 			);
 		}
@@ -396,16 +397,20 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				'globalpayments-secure-payment-fields',
 				'globalpayments_secure_payment_threedsecure_params',
 				array(
-					'threedsecure' => array(
-						'methodNotificationUrl'     => WC()->api_request_url( 'globalpayments_threedsecure_methodnotification' ),
-						'challengeNotificationUrl'  => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
-						'checkEnrollmentUrl'        => WC()->api_request_url( 'globalpayments_threedsecure_checkenrollment' ),
-						'initiateAuthenticationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_initiateauthentication' ),
-						'ajaxCheckoutUrl'           => \WC_AJAX::get_endpoint( 'checkout' ),
-					)
+					'threedsecure' => $this->getThreedsecureFields()
 				)
 			);
 		}
+	}
+
+	public function getThreedsecureFields() {
+		return array(
+				'methodNotificationUrl'     => WC()->api_request_url( 'globalpayments_threedsecure_methodnotification' ),
+				'challengeNotificationUrl'  => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
+				'checkEnrollmentUrl'        => WC()->api_request_url( 'globalpayments_threedsecure_checkenrollment' ),
+				'initiateAuthenticationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_initiateauthentication' ),
+				'ajaxCheckoutUrl'           => \WC_AJAX::get_endpoint( 'checkout' ),
+		);
 	}
 
 	/**
@@ -441,18 +446,22 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		wp_localize_script(
 			'globalpayments-helper',
 			'globalpayments_helper_params',
-			array(
-				'orderInfoUrl' => WC()->api_request_url( 'globalpayments_order_info' ),
-				'order'        => $this->get_order_data(),
-				'toggle'       => array(
-					$this->id,
-					GooglePay::PAYMENT_METHOD_ID,
-					ApplePay::PAYMENT_METHOD_ID,
-				),
-				'hide'         => array(
-					ClickToPay::PAYMENT_METHOD_ID,
-				),
-			)
+			$this->get_helper_params()
+		);
+	}
+
+	public function get_helper_params() {
+		return array(
+			'orderInfoUrl' => WC()->api_request_url( 'globalpayments_order_info' ),
+			'order'        => $this->get_order_data(),
+			'toggle'       => array(
+				$this->id,
+				GooglePay::PAYMENT_METHOD_ID,
+				ApplePay::PAYMENT_METHOD_ID,
+			),
+			'hide'         => array(
+				ClickToPay::PAYMENT_METHOD_ID,
+			),
 		);
 	}
 
@@ -565,7 +574,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 *
 	 * @return array
 	 */
-	protected function secure_payment_fields_config() {
+	public function secure_payment_fields_config() {
 		try {
 			return $this->get_frontend_gateway_options();
 		} catch ( \Exception $e ) {
@@ -583,7 +592,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 *
 	 * @return array
 	 */
-	protected function secure_payment_fields() {
+	public function secure_payment_fields() {
 		return array(
 			'card-number-field' => array(
 				'class'       => 'card-number',
@@ -617,7 +626,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 *
 	 * @return mixed|void
 	 */
-	protected function secure_payment_fields_styles() {
+	public function secure_payment_fields_styles() {
 		$image_base = $this->secure_payment_fields_asset_base_url() . '/images';
 
 		$secure_payment_fields_styles = array(
@@ -869,7 +878,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		// hooks only active when the gateway is enabled
 		add_filter( 'woocommerce_credit_card_form_fields', array( $this, 'woocommerce_credit_card_form_fields' ), 10, 2 );
 
-		if ( is_add_payment_method_page() ) {
+		if ( str_contains( $_SERVER['REQUEST_URI'], 'add-payment-method' ) ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'tokenization_script' ) );
 			add_filter( 'woocommerce_available_payment_gateways', array(
 				$this,

@@ -13,6 +13,11 @@
             "GlobalPayments\\WooCommercePaymentGatewayProvider\\": "src/"
         }
     },
+    "config": {
+        "platform": {
+            "php": ">=7.4"
+        }
+    },
     "require": {
         "globalpayments/php-sdk": "8.0.1",
         "psr/log": "^1.1"

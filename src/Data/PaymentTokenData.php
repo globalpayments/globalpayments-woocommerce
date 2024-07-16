@@ -4,6 +4,7 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Data;
 
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestInterface;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\Utils;
 use WC_Payment_Tokens;
 use WC_Payment_Token_CC;
 
@@ -98,10 +99,16 @@ class PaymentTokenData {
 		$gateway      = $this->request->get_request_data( 'payment_method' );
 		$request_data = $this->request->get_request_data( $gateway );
 		if ( ! isset( $request_data['token_response'] ) ) {
-			return null;
-		}
+			$payment_data   = $this->request->get_request_data( 'payment_data' );
+			$token_response = Utils::get_data_from_payment_data( $payment_data, 'token_response' );
+			if ( ! isset( $token_response ) ) {
+				return null;
+			}
 
-		$data = json_decode( stripslashes( $request_data['token_response'] ) );
+			$data = json_decode( stripslashes( $token_response ) );
+		} else {
+			$data = json_decode( stripslashes( $request_data['token_response'] ) );
+		}
 
 		if ( empty( $data ) ) {
 			return null;
@@ -186,8 +193,13 @@ class PaymentTokenData {
 			return null;
 		}
 
-		$gateway  = $this->request->get_request_data( 'payment_method' );
-		$token_id = $this->request->get_request_data( sprintf( 'wc-%s-payment-token', $gateway ) );
+		$gateway = $this->request->get_request_data( 'payment_method' );
+		$payment_data = $this->request->get_request_data( 'payment_data' );
+		if ( ! empty( $payment_data ) ) {
+			$token_id = Utils::get_data_from_payment_data( $payment_data, sprintf( 'wc-%s-payment-token', $gateway ) );
+		} else {
+			$token_id = $this->request->get_request_data( sprintf( 'wc-%s-payment-token', $gateway ) );
+		}
 
 		if ( 'new' === $token_id ) {
 			return null;
@@ -211,9 +223,16 @@ class PaymentTokenData {
 
 	protected function get_should_save_for_later() {
 		$gateway = $this->request->get_request_data( 'payment_method' );
+		$payment_data = $this->request->get_request_data( 'payment_data' );
+		if ( ! empty( $payment_data ) ) {
+			$store_payment_method = Utils::get_data_from_payment_data( $payment_data, sprintf( 'wc-%s-new-payment-method', $gateway ) );
+		} else {
+			$store_payment_method = $this->request->get_request_data( sprintf( 'wc-%s-new-payment-method', $gateway ) ) === 'true';
+		}
+
 		return // Verify transactions always mean we're storing a token
 			$this->request->get_transaction_type() === AbstractGateway::TXN_TYPE_VERIFY ||
 			// Merchant has enabled card storage. Customer has elected to store card.
-			$this->request->get_request_data( sprintf( 'wc-%s-new-payment-method', $gateway ) ) === 'true';
+			$store_payment_method;
 	}
 }

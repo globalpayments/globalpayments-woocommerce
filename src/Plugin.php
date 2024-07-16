@@ -5,9 +5,10 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider;
 
-use GlobalPayments\Api\Gateways\Gateway;
+use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\GpApiGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGateway;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\GpApiGatewayBlock;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,7 +21,7 @@ class Plugin {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.10.7';
+	const VERSION = '1.11.0';
 
 	/**
 	 * Init the package.
@@ -55,6 +56,7 @@ class Plugin {
 			Gateways\AbstractGateway::class,
 			'capture_credit_card_authorization'
 		) );
+		add_action( 'woocommerce_blocks_loaded', array( self::class, 'add_block_gateways' ) );
 	}
 
 	/**
@@ -78,6 +80,15 @@ class Plugin {
 		}
 
 		return $methods;
+	}
+
+	public static function add_block_gateways() {
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			function( PaymentMethodRegistry $payment_method_registry ) {
+				$payment_method_registry->register( new GpApiGatewayBlock() );
+			}
+		);
 	}
 
 	/**

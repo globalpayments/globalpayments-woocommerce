@@ -106,7 +106,7 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $enable_three_d_secure;
 
-	protected static string $js_lib_version = '3.0.11';
+	protected static string $js_lib_version = '4.0.15';
 
 	public function __construct( $is_provider = false ) {
 		parent::__construct( $is_provider );
@@ -294,7 +294,7 @@ class GpApiGateway extends AbstractGateway {
 		return $this->id . '_' . WC()->session->get_session_cookie()[0];
 	}
 
-	protected function secure_payment_fields() {
+	public function secure_payment_fields() {
 		$fields = parent::secure_payment_fields();
 		$fields['card-holder-name-field'] = array(
 			'class'       => 'card-holder-name',

@@ -32,7 +32,7 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestInterface;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure\AbstractAuthenticationsRequest;
-use Psr\Log\LogLevel;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\Utils;
 use WC_Payment_Token_CC;
 
 defined( 'ABSPATH' ) || exit;
@@ -195,6 +195,14 @@ class SdkClient implements ClientInterface {
 			$request->get_default_args(),
 			$request->get_args()
 		);
+
+		$paymentData = $request->get_request_data( 'payment_data' );
+		if ( isset( $paymentData ) ) {
+			$serverTransId = Utils::get_data_from_payment_data( $paymentData, 'serverTransId' );
+			if ( isset( $serverTransId ) && ! $this->has_arg( RequestArg::SERVER_TRANS_ID )) {
+				$this->args[ RequestArg::SERVER_TRANS_ID ] = $serverTransId;
+			}
+		}
 	}
 
 	protected function prepare_request_objects() {

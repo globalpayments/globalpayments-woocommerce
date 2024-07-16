@@ -27,6 +27,11 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 	 *
 	 * @var string
 	 */
+	public $default_title = 'Bank Payment';
+
+	/**
+	 * @var string
+	 */
 	public $account_number;
 	public $account_name;
 	public $sort_code;
@@ -46,28 +51,14 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 	 *
 	 * @return
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_payment_scripts() {
 		wp_enqueue_style(
 			'globalpayments-openbanking',
 			Plugin::get_url( '/assets/frontend/css/globalpayments-openbanking.css' ),
 			array(),
 			Plugin::get_version()
 		);
-
-		wp_enqueue_script(
-			'globalpayments-admin',
-			Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
-			array(
-				'wp-i18n' // include 'wp-i18n' for translation
-			),
-			WC()->version,
-			true
-		);
-
-		// set script translation, this will look in plugin languages directory and look for .json translation file
-		wp_set_script_translations('globalpayments-admin', 'globalpayments-gateway-provider-for-woocommerce', WP_PLUGIN_DIR . '/'. basename( dirname( __FILE__ , 4 ) ) . '/languages');
 	}
-
 
 	/**
 	 * @inheritdoc

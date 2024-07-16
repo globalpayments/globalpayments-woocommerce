@@ -139,6 +139,13 @@ class ClickToPay extends AbstractDigitalWallet {
 		AbstractGateway::hosted_fields_script();
 		$this->gateway->helper_script();
 
+		wp_enqueue_style(
+			'globalpayments-clicktopay',
+			Plugin::get_url( '/assets/frontend/css/globalpayments-clicktopay.css' ),
+			array(),
+			Plugin::get_version()
+		);
+
 		wp_enqueue_script(
 			'globalpayments-wc-clicktopay',
 			Plugin::get_url( '/assets/frontend/js/globalpayments-clicktopay.js' ),
