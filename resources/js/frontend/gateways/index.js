@@ -1,12 +1,11 @@
 import { register } from '../utils/register';
-import { Content } from './component';
+import { gpapiPaymentMethods } from './gpapi';
+import { getPaymentMethods } from '@woocommerce/blocks-registry';
 
-const gatewayIds = [ 'globalpayments_gpapi' ];
+const paymentMethods = getPaymentMethods();
 
-for ( let gatewayId of gatewayIds ) {
-	const props = {
-		id: gatewayId,
-		Content: <Content id={ gatewayId } />
+gpapiPaymentMethods.forEach( ( paymentMethodProps ) => {
+	if ( ! paymentMethods.hasOwnProperty( paymentMethodProps.id ) ) {
+		register( paymentMethodProps );
 	}
-	register( props );
-}
+} );

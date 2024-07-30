@@ -198,11 +198,11 @@ class Paypal extends AbstractAsyncPaymentMethod {
 			$order = $this->get_order( $gateway_response );
 
 			switch( $gateway_response->transactionStatus ) {
-				case TransactionStatus::INITIATED:
 				case TransactionStatus::PREAUTHORIZED:
 				case TransactionStatus::CAPTURED:
 					wp_safe_redirect( $order->get_checkout_order_received_url() );
 					break;
+				case TransactionStatus::INITIATED:
 				case TransactionStatus::PENDING:
 					$transaction = Transaction::fromId(
 						$request->get_param('id'),
@@ -216,6 +216,12 @@ class Paypal extends AbstractAsyncPaymentMethod {
 						->execute();
 					if ( $this->payment_action == AbstractGateway::TXN_TYPE_SALE ) {
 						$status = __( 'Captured', 'globalpayments-gateway-provider-for-woocommerce' );
+
+						if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+							$order->add_meta_data( '_globalpayments_payment_captured', 'is_captured', true );
+						} else {
+							add_post_meta( $order->get_id(), '_globalpayments_payment_captured', 'is_captured', true );
+						}
 					} else {
 						$status = __( 'Authorized', 'globalpayments-gateway-provider-for-woocommerce' );
 					}

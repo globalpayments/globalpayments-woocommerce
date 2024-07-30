@@ -44,7 +44,7 @@ const cancelTransaction = () => {
 /**
  * 3DS Process
  */
-export const threeDSecure = ( { state, helper, dispatchError, dispatchInfo, placeOrder } ) => {
+export const threeDSecure = ( { state, helper, dispatchError, placeOrder } ) => {
 	helper.blockOnSubmit();
 	state.settings.helper_params.order = helper.order;
 

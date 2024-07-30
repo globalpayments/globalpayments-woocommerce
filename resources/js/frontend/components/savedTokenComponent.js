@@ -79,16 +79,6 @@ const unblockFormElements = () => {
 	});
 };
 
-const dispatchInfo = ( message ) => {
-	helper.dispatchInfo( {
-		message,
-		cb: () => {
-			removeSpinnerFromPlaceOrderButton();
-			unblockFormElements();
-		}
-	} );
-};
-
 const dispatchError = ( message ) => {
 	helper.dispatchError( {
 		message,
@@ -114,13 +104,13 @@ const handlePlaceOrder = () => {
 	}
 
 	if ( state.settings.gateway_options.enableThreeDSecure ) {
+		helper.getOrderInfo();
 		addSpinnerToPlaceOrderButton();
 		blockFormElements();
 		threeDSecure( {
 			state,
 			helper,
 			dispatchError,
-			dispatchInfo,
 			placeOrder: () => {
 				const paymentMethodData = window.wp.data.select( window.wc.wcBlocksData.PAYMENT_STORE_KEY ).getPaymentMethodData();
 				paymentMethodData.serverTransId = state.serverTransId;

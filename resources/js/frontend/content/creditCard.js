@@ -12,7 +12,7 @@ const state = {
 };
 
 let helper = {};
-export const Content = ( props ) => {
+export const CreditCard = ( props ) => {
 	const { id, eventRegistration } = props;
 
 	const settings = getSetting( id + '_data', {} );
@@ -179,16 +179,6 @@ const unblockFormElements = () => {
 	});
 };
 
-const dispatchInfo = ( message ) => {
-	helper.dispatchInfo( {
-		message,
-		cb: () => {
-			removeSpinnerFromSubmitButton();
-			unblockFormElements();
-		}
-	} );
-};
-
 const dispatchError = ( message ) => {
 	helper.dispatchError( {
 		message,
@@ -267,13 +257,13 @@ const handleResponse = ( response ) => {
 		removeSpinnerFromSubmitButton();
 		unblockFormElements();
 
+		window.wp.data.dispatch( window.wc.wcBlocksData.VALIDATION_STORE_KEY).showAllValidationErrors();
+
 		document.querySelector( '.has-error' )?.scrollIntoView( {
 			behavior: 'smooth',
 			block: 'center',
 			inline: 'start',
 		} );
-		// Use place order here to trigger fields validation error message
-		helper.placeOrder();
 
 		return;
 	}
@@ -289,11 +279,12 @@ const handleResponse = ( response ) => {
 
 const handlePlaceOrder = () => {
 	if ( state.settings.gateway_options.enableThreeDSecure ) {
+		helper.getOrderInfo();
+
 		threeDSecure( {
 			state,
 			helper,
 			dispatchError,
-			dispatchInfo,
 			placeOrder
 		} );
 	} else {

@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Utils\GenerationUtils;
@@ -254,6 +255,12 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 					$order->payment_complete();
 					break;
 				case TransactionStatus::CAPTURED:
+					if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+						$order->add_meta_data( '_globalpayments_payment_captured', 'is_captured', true );
+					} else {
+						add_post_meta( $order->get_id(), '_globalpayments_payment_captured', 'is_captured', true );
+					}
+
 					$note_text = sprintf(
 						__( 'Captured amount of %1$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 						wc_price( $order->get_total() ),

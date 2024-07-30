@@ -6,6 +6,13 @@
 namespace GlobalPayments\WooCommercePaymentGatewayProvider;
 
 use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\AffirmBlock;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\ApplePayBlock;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\ClickToPayBlock;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\GooglePayBlock;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\KlarnaBlock;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\OpenBankingBlock;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\PaypalBlock;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\GpApiGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\GpApiGatewayBlock;
@@ -21,7 +28,7 @@ class Plugin {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.11.0';
+	const VERSION = '1.12.0';
 
 	/**
 	 * Init the package.
@@ -83,12 +90,22 @@ class Plugin {
 	}
 
 	public static function add_block_gateways() {
-		add_action(
-			'woocommerce_blocks_payment_method_type_registration',
-			function( PaymentMethodRegistry $payment_method_registry ) {
-				$payment_method_registry->register( new GpApiGatewayBlock() );
-			}
-		);
+		$current_page = get_page_by_path( $_SERVER['PATH_INFO'] );
+		if ( false !== strpos( $current_page->post_content, '<!-- wp:woocommerce/checkout' ) ) {
+			add_action(
+				'woocommerce_blocks_payment_method_type_registration',
+				function (PaymentMethodRegistry $payment_method_registry) {
+					$payment_method_registry->register( new GpApiGatewayBlock() );
+					$payment_method_registry->register( new ApplePayBlock() );
+					$payment_method_registry->register( new ClickToPayBlock() );
+					$payment_method_registry->register( new GooglePayBlock() );
+					$payment_method_registry->register( new AffirmBlock() );
+					$payment_method_registry->register( new KlarnaBlock() );
+					$payment_method_registry->register( new OpenBankingBlock() );
+					$payment_method_registry->register( new PaypalBlock() );
+				}
+			);
+		}
 	}
 
 	/**

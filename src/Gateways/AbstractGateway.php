@@ -937,13 +937,23 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		$is_successful = $this->handle_response( $request, $response );
 
 		if ( $is_successful ) {
+			if ( $this->payment_action == self::TXN_TYPE_AUTHORIZE ) {
+				$this->payment_action = __( 'authorized', 'globalpayments-gateway-provider-for-woocommerce' );
+			} else {
+				$this->payment_action = __( 'charged', 'globalpayments-gateway-provider-for-woocommerce' );
+
+				if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+					$order->add_meta_data( '_globalpayments_payment_captured', 'is_captured', true );
+				} else {
+					add_post_meta( $order->get_id(), '_globalpayments_payment_captured', 'is_captured', true );
+				}
+			}
+
 			$note_text = sprintf(
 				'%1$s%2$s %3$s. Transaction ID: %4$s.',
 				get_woocommerce_currency_symbol( $order->get_currency() ),
 				$order->get_total(),
-				$this->payment_action == self::TXN_TYPE_AUTHORIZE ?
-					__( 'authorized', 'globalpayments-gateway-provider-for-woocommerce' ) :
-					__( 'charged', 'globalpayments-gateway-provider-for-woocommerce' ),
+				$this->payment_action,
 				$order->get_transaction_id()
 			);
 
@@ -1323,6 +1333,17 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				AbstractGateway::TXN_TYPE_DW_AUTHORIZATION !== $payment_action ) {
 			return $actions;
 		}
+
+		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$order_is_captured = $theorder->get_meta( '_globalpayments_payment_captured' );
+		} else {
+			$order_is_captured = get_post_meta( $theorder->get_id(), '_globalpayments_payment_captured', true );
+		}
+
+		if ( $order_is_captured === 'is_captured' || $payment_action === AbstractGateway::TXN_TYPE_SALE ) {
+			return $actions;
+		}
+
 		$actions['capture_credit_card_authorization'] = __( 'Capture credit card authorization', 'globalpayments-gateway-provider-for-woocommerce' );
 
 		return $actions;

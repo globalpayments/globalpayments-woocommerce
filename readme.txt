@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.12.0 (07/30/24) =
+* Block checkout compatibility for Digital Wallets, Buy Now Pay Later, Bank Payment and PayPal
+
 = 1.11.0 (07/16/24) =
 * Block checkout compatibility for Unified Payments
 

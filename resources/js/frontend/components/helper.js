@@ -1,3 +1,5 @@
+import { getPaymentMethods } from '@woocommerce/blocks-registry';
+
 const getElement = ( selector ) => {
 	return document.querySelector( selector );
 };
@@ -36,29 +38,8 @@ const showElement = ( element ) => {
 
 let params = {};
 
- /**
- * Get order info
- */
-const getOrderInfo = () => {
-	helper_functions.blockOnSubmit();
-
-	fetch( params.orderInfoUrl )
-	.then( ( res ) => res.json() )
-	.then( ( result ) => {
-		params.order = result.message;
-	} )
-	.catch( ( jqXHR, textStatus, errorThrown ) => {
-		console.log(errorThrown);
-	} )
-	.finally( () => {
-		helper_functions.unblockOnError();
-	} );
-};
-
 export const helper = ( helper_params ) => {
 	params = helper_params;
-
-	getOrderInfo();
 
 	return {
 		...helper_functions,
@@ -67,6 +48,24 @@ export const helper = ( helper_params ) => {
 };
 
 const helper_functions = {
+	/**
+	 * Get order info
+	 */
+	getOrderInfo: () => {
+		helper_functions.blockOnSubmit();
+
+		fetch( params.orderInfoUrl )
+			.then( ( res ) => res.json() )
+			.then( ( result ) => {
+				params.order = result.message;
+			} )
+			.catch( ( jqXHR, textStatus, errorThrown ) => {
+				console.log( errorThrown );
+			} )
+			.finally( () => {
+				helper_functions.unblockOnError();
+			} );
+	},
 	/**
 	 * Convenience function to get CSS selector for the built-in 'Place Order' button
 	 *
@@ -287,7 +286,10 @@ const helper_functions = {
 		getElement( helper_functions.getFormSelector() )?.unblock?.();
 	},
 	hidePaymentMethod: ( id ) => {
-		hideElement( getElement( '#payment-method #radio-control-wc-payment-method-options-' + id ) );
+		const paymentMethods = getPaymentMethods();
+		delete paymentMethods[ id ];
+
+		window.wp.data.dispatch( window.wc.wcBlocksData.PAYMENT_STORE_KEY).__internalRemoveAvailablePaymentMethod( id );
 	},
 	/**
 	 * Note: if 'setPaymentMethodData' is called multiple times will override previous data

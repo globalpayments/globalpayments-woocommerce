@@ -4,6 +4,7 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\GpApiGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
 abstract class AbstractGatewayBlock extends AbstractPaymentMethodType {

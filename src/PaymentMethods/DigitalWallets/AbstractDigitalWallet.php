@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\MulticheckboxTrait;
@@ -47,13 +48,23 @@ abstract class AbstractDigitalWallet extends AbstractPaymentMethod {
 			return;
 		}
 
+		if ( $this->payment_action == AbstractGateway::TXN_TYPE_AUTHORIZE ) {
+			$this->payment_action = __( 'authorized', 'globalpayments-gateway-provider-for-woocommerce' );
+		} else {
+			$this->payment_action = __( 'charged', 'globalpayments-gateway-provider-for-woocommerce' );
+
+			if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+				$order->add_meta_data( '_globalpayments_payment_captured', 'is_captured', true );
+			} else {
+				add_post_meta( $order->get_id(), '_globalpayments_payment_captured', 'is_captured', true );
+			}
+		}
+
 		$note_text = sprintf(
 			'%1$s%2$s %3$s. Transaction ID: %4$s.',
 			get_woocommerce_currency_symbol( $order->get_currency() ),
 			$order->get_total(),
-			$this->payment_action == AbstractGateway::TXN_TYPE_AUTHORIZE ?
-				__( 'authorized', 'globalpayments-gateway-provider-for-woocommerce' ) :
-				__( 'charged', 'globalpayments-gateway-provider-for-woocommerce' ),
+			$this->payment_action,
 			$order->get_transaction_id()
 		);
 		$order->add_order_note( $note_text );

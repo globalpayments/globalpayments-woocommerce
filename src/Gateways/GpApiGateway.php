@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\Channel;
@@ -343,6 +344,7 @@ class GpApiGateway extends AbstractGateway {
 			$this,
 			'process_threeDSecure_challengeNotification'
 		) );
+		add_action( 'woocommerce_order_actions', array( $this, 'handle_adding_capture_order_action' ) );
 	}
 
 	public function woocommerce_globalpayments_gpapi_settings( $settings ) {
@@ -489,6 +491,32 @@ class GpApiGateway extends AbstractGateway {
 				'message' => $e->getMessage(),
 			] );
 		}
+	}
+
+	/**
+	 * Handle adding capture functionality to the "Edit Order" screen
+	 *
+	 * @param array $actions
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
+	public function handle_adding_capture_order_action( $actions ) {
+		global $theorder;
+
+		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$order_is_captured = $theorder->get_meta( '_globalpayments_payment_captured' );
+		} else {
+			$order_is_captured = get_post_meta( $theorder->get_id(), '_globalpayments_payment_captured', true );
+		}
+
+		if ( $order_is_captured === 'is_captured' || $this->payment_action === AbstractGateway::TXN_TYPE_SALE ) {
+			return $actions;
+		}
+
+		$actions['capture_credit_card_authorization'] = __( 'Capture credit card authorization', 'globalpayments-gateway-provider-for-woocommerce' );
+
+		return $actions;
 	}
 
 	/**
