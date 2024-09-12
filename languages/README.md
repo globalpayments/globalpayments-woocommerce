@@ -66,6 +66,7 @@ E.g.
     locale: fr_FR, fr_CA, etc.
 
 Notes:
+- for merging an existing .pot file, use the --merge argument
 - after you create the .pot file you can add your translation
 - you can translate formatted strings as well
 - make-pot scans PHP, Blade-PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files if the source directory is detected as either a plugin or theme
@@ -77,6 +78,10 @@ Notes:
 Or
 
 2. Rename the .pot to .po
+
+## Update .po file
+
+Run: wp i18n update-po path/to/lang-dir/text-domain-locale.po
 
 ## Create .mo file
 

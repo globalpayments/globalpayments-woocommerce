@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Gateways\IPaymentGateway;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -399,8 +400,14 @@ class SdkClient implements ClientInterface {
 				if ( $this->has_arg( RequestArg::SECONDS_TO_EXPIRE ) ) {
 					$gatewayConfig->secondsToExpire = $this->get_arg( RequestArg::SECONDS_TO_EXPIRE );
 				}
+				$account_name = $this->get_arg( RequestArg::SERVICES_CONFIG )['accountName'] ?? null;
+				if ( ! empty( $account_name ) ) {
+					$access_token_info = new AccessTokenInfo();
+					$access_token_info->transactionProcessingAccountName = $account_name;
+					$gatewayConfig->accessTokenInfo = $access_token_info;
+				}
 				break;
-		    	case GatewayProvider::TRANSACTION_API:
+			case GatewayProvider::TRANSACTION_API:
 				$gatewayConfig = new TransactionApiConfig();
 				break;
 		}

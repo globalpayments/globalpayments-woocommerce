@@ -51,6 +51,14 @@ class GpApiGateway extends AbstractGateway {
 	public $app_key;
 
 	/**
+	 * Live Account Name
+	 *
+	 *
+	 * @var string
+	 */
+	public string $account_name;
+
+	/**
 	 * Sandbox App ID
 	 *
 	 * @var string
@@ -64,6 +72,14 @@ class GpApiGateway extends AbstractGateway {
 	 * @var string
 	 */
 	public $sandbox_app_key;
+
+	/**
+	 * Sandbox Account Name
+	 *
+	 *
+	 * @var string
+	 */
+	public string $sandbox_account_name;
 
 	/**
 	 * Should live payments be accepted
@@ -156,6 +172,13 @@ class GpApiGateway extends AbstractGateway {
 					'required' => 'required'
 				),
 			),
+			'account_name'         => array(
+				'title'       => __( 'Account Name', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
+				'default'     => '',
+				'class'       => 'live-toggle',
+				'description' => __( 'Specify which account to use when processing a transaction. Default account will be used if this is not specified.', 'globalpayments-gateway-provider-for-woocommerce' ),
+			),
 			'sandbox_app_id'       => array(
 				'title'   => __( 'Sandbox App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'text',
@@ -173,6 +196,13 @@ class GpApiGateway extends AbstractGateway {
 				'custom_attributes' => array(
 					'required' => 'required'
 				),
+			),
+			'sandbox_account_name'  => array(
+				'title'       => __( 'Sandbox Account Name', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'text',
+				'default'     => '',
+				'class'       => 'sandbox-toggle',
+				'description' => __( 'Specify which account to use when processing a transaction. Default account will be used if this is not specified.', 'globalpayments-gateway-provider-for-woocommerce' ),
 			),
 			'credentials_api_check'	=> array(
 				'title'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -257,6 +287,7 @@ class GpApiGateway extends AbstractGateway {
 		return array(
 			'appId'                    => $this->get_credential_setting( 'app_id' ),
 			'appKey'                   => $this->get_credential_setting( 'app_key' ),
+			'accountName'              => $this->get_credential_setting( 'account_name' ),
 			'channel'                  => Channel::CardNotPresent,
 			'country'                  => wc_get_base_location()['country'],
 			'developerId'              => '',
