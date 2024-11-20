@@ -237,6 +237,12 @@ class SdkClient implements ClientInterface {
 				$this->builder_args['requestMultiUseToken'] = array( true );
 			}
 		}
+		// Checks if order contains a subscription and requests a muti-use token.
+		if(function_exists("wcs_order_contains_subscription")){
+			if(isset($this->builder_args['orderId']) && wcs_order_contains_subscription(wc_get_order($this->builder_args['orderId'][0]))){
+				$this->builder_args['requestMultiUseToken'] = array( true );
+			}
+		}
 
 		if ( $this->has_arg( RequestArg::DIGITAL_WALLET_TOKEN ) ) {
 			$this->card_data             = new CreditCardData();

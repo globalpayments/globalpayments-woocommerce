@@ -71,6 +71,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	const TXN_TYPE_INITIATE_AUTHENTICATION = 'initiateAuthentication';
 
 	const TXN_TYPE_PAYPAL_INITIATE = 'initiatePayment';
+	// Subscription 
+	const TXN_TYPE_SUBSCRIPTION_PAYMENT = "subscriptionPayment";
+
 
 	/**
 	 * Gateway provider. Should be overriden by individual gateway implementations
@@ -956,6 +959,11 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				$this->payment_action,
 				$order->get_transaction_id()
 			);
+			// If the order contains a subscription, add the muti-use token to the order meta for repeat payments.
+			if(function_exists("wcs_order_contains_subscription") && wcs_order_contains_subscription($order) && $is_successful){
+				$order->add_meta_data("_GP_multi_use_token", $response->token, true);
+				$order->save_meta_data();
+			}
 
 			$order->add_order_note( $note_text );
 		}
@@ -1167,6 +1175,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			self::TXN_TYPE_BNPL_AUTHORIZE          => Requests\BuyNowPayLater\InitiatePaymentRequest::class,
 			self::TXN_TYPE_OB_AUTHORIZATION        => Requests\OpenBanking\InitiatePaymentRequest::class,
 			self::TXN_TYPE_PAYPAL_INITIATE         => Requests\Apm\InitiatePaymentRequest::class,
+			self::TXN_TYPE_SUBSCRIPTION_PAYMENT    => Requests\Subscriptions\SubscriptionRequest::class
 		);
 
 		if ( ! isset( $map[ $txn_type ] ) ) {
