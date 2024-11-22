@@ -377,22 +377,24 @@ class GpApiGateway extends AbstractGateway {
 		) );
 		add_action( 'woocommerce_order_actions', array( $this, 'handle_adding_capture_order_action' ) );
 
-		add_action('woocommerce_scheduled_subscription_payment_' . $this->id, array($this, "renew_subscription"), 10, 3);
+		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, array(
+			$this,
+			'renew_subscription'
+		), 10, 3 );
 		// When subscription is canceled remove the meta data
-		add_action('woocommerce_subscription_status_pending-cancel_to_cancelled', function($subscription){
-			if($subscription->get_payment_method() === $this->id){
-			$original_order = wc_get_order($subscription->get_parent_id());
-					if($original_order->get_meta("_GP_multi_use_token")){
-						$original_order->delete_meta_data('_GP_multi_use_token');
+		add_action( 'woocommerce_subscription_status_pending-cancel_to_cancelled', function( $subscription ){
+			if( $subscription->get_payment_method() === $this->id ) {
+				$original_order = wc_get_order( $subscription->get_parent_id() );
+					if( $original_order->get_meta( "_GP_multi_use_token" ) ) {
+						$original_order->delete_meta_data( '_GP_multi_use_token' );
 						$original_order->save();
-				}else{
-					return;
-				}
-			}else{
+					} else {
+						return;
+					}
+			} else {
 				return;
 			}
-		});
-
+		} );
 	}
 
 	public function woocommerce_globalpayments_gpapi_settings( $settings ) {
@@ -571,34 +573,36 @@ class GpApiGateway extends AbstractGateway {
 	 * Handles subscription renewals, gets the muti-use token from the order meta and charges it. 
 	 * @return bool
 	 */
-
-	public function renew_subscription($amount_to_charge, $renewal_order)
-	{
-		$renewal_order_subscriptions = wcs_get_subscriptions_for_renewal_order($renewal_order->get_id(),array("order_type"=>"parent"));
+	public function renew_subscription( $amount_to_charge, $renewal_order ) {
+		$renewal_order_subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id(),array( "order_type"=>"parent") );
 		$parent_order = false;
-		foreach($renewal_order_subscriptions as $renewal_order_subscription){
-			if($renewal_order_subscription->get_parent_id()){
-				$parent_order = wc_get_order($renewal_order_subscription->get_parent_id());
+		foreach( $renewal_order_subscriptions as $renewal_order_subscription ) {
+			if( $renewal_order_subscription->get_parent_id() ) {
+				$parent_order = wc_get_order( $renewal_order_subscription->get_parent_id() );
 			}
 		}
 
-		if( !$parent_order || !$parent_order->get_meta("_GP_multi_use_token")){
+		if( !$parent_order || !$parent_order->get_meta( "_GP_multi_use_token" ) ) {
+
 			return;
 		}
-		$request  = $this->prepare_request(parent::TXN_TYPE_SUBSCRIPTION_PAYMENT, $renewal_order, array("multi_use_token"=> $parent_order->get_meta("_GP_multi_use_token")));
+		$request  = $this->prepare_request( parent::TXN_TYPE_SUBSCRIPTION_PAYMENT, $renewal_order, array( "multi_use_token"=> $parent_order->get_meta( "_GP_multi_use_token" ) ) );
 		$response = $this->client->submit_request( $request );
 		$client_trans_ref = $response->transactionReference->clientTransactionId;
-		if(parent::handle_response($request,$response)){
-			$renewal_order->add_order_note(__("Subscription Renewal Successful \r\n Transaction Reference: ". $client_trans_ref));
+
+		if( parent::handle_response( $request, $response ) ) {
+			$renewal_order->add_order_note( sprintf( __( "Subscription Renewal Successful \r\n Transaction Reference: %s", "globalpayments-gateway-provider-for-woocommerce" ), $client_trans_ref ) );
 			$renewal_order->payment_complete();
 			$renewal_order->save();
+
 			return true;
 		}else{
-
-			$renewal_order->add_order_note(__("Subscription Renewal Payment Failed \r\nTransaction Reference: ". $client_trans_ref));
+			$renewal_order->add_order_note( sprintf( __( "Subscription Renewal Payment Failed \r\nTransaction Reference: %s", "globalpayments-gateway-provider-for-woocommerce" ), $client_trans_ref ) );
 			$renewal_order->save();
+
 			return false;
 		}
+
 		return false;
 	}
 	/**

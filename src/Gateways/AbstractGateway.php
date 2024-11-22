@@ -72,7 +72,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 	const TXN_TYPE_PAYPAL_INITIATE = 'initiatePayment';
 	// Subscription 
-	const TXN_TYPE_SUBSCRIPTION_PAYMENT = "subscriptionPayment";
+	const TXN_TYPE_SUBSCRIPTION_PAYMENT = 'subscriptionPayment';
 
 
 	/**
@@ -960,8 +960,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				$order->get_transaction_id()
 			);
 			// If the order contains a subscription, add the muti-use token to the order meta for repeat payments.
-			if(function_exists("wcs_order_contains_subscription") && wcs_order_contains_subscription($order) && $is_successful){
-				$order->add_meta_data("_GP_multi_use_token", $response->token, true);
+			if ( function_exists( "wcs_order_contains_subscription" ) && wcs_order_contains_subscription( $order ) && $is_successful ) {
+				$order->add_meta_data( "_GP_multi_use_token", $response->token, true );
 				$order->save_meta_data();
 			}
 
