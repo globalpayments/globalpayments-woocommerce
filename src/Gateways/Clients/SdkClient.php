@@ -238,8 +238,8 @@ class SdkClient implements ClientInterface {
 			}
 		}
 		// Checks if order contains a subscription and requests a muti-use token.
-		if( function_exists( "wcs_order_contains_subscription" ) ){
-			if( isset( $this->builder_args['orderId'] ) && wcs_order_contains_subscription( wc_get_order( $this->builder_args['orderId'][0] ) ) ) {
+		if ( function_exists( "wcs_order_contains_subscription" ) ) {
+			if ( isset( $this->builder_args['orderId'] ) && wcs_order_contains_subscription( wc_get_order( $this->builder_args['orderId'][0] ) ) ) {
 				$this->builder_args['requestMultiUseToken'] = array( true );
 			}
 		}

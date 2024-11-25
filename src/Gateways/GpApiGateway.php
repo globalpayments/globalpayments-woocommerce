@@ -382,8 +382,8 @@ class GpApiGateway extends AbstractGateway {
 			'renew_subscription'
 		), 10, 3 );
 		// When subscription is canceled remove the meta data
-		add_action( 'woocommerce_subscription_status_pending-cancel_to_cancelled', function( $subscription ){
-			if( $subscription->get_payment_method() === $this->id ) {
+		add_action( 'woocommerce_subscription_status_pending-cancel_to_cancelled', function( $subscription ) {
+			if ( $subscription->get_payment_method() === $this->id ) {
 				$original_order = wc_get_order( $subscription->get_parent_id() );
 					if( $original_order->get_meta( "_GP_multi_use_token" ) ) {
 						$original_order->delete_meta_data( '_GP_multi_use_token' );
@@ -576,13 +576,13 @@ class GpApiGateway extends AbstractGateway {
 	public function renew_subscription( $amount_to_charge, $renewal_order ) {
 		$renewal_order_subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id(),array( "order_type"=>"parent") );
 		$parent_order = false;
-		foreach( $renewal_order_subscriptions as $renewal_order_subscription ) {
-			if( $renewal_order_subscription->get_parent_id() ) {
+		foreach ( $renewal_order_subscriptions as $renewal_order_subscription ) {
+			if ( $renewal_order_subscription->get_parent_id() ) {
 				$parent_order = wc_get_order( $renewal_order_subscription->get_parent_id() );
 			}
 		}
 
-		if( !$parent_order || !$parent_order->get_meta( "_GP_multi_use_token" ) ) {
+		if ( !$parent_order || !$parent_order->get_meta( "_GP_multi_use_token" ) ) {
 
 			return;
 		}
@@ -590,13 +590,13 @@ class GpApiGateway extends AbstractGateway {
 		$response = $this->client->submit_request( $request );
 		$client_trans_ref = $response->transactionReference->clientTransactionId;
 
-		if( parent::handle_response( $request, $response ) ) {
+		if ( parent::handle_response( $request, $response ) ) {
 			$renewal_order->add_order_note( sprintf( __( "Subscription Renewal Successful \r\n Transaction Reference: %s", "globalpayments-gateway-provider-for-woocommerce" ), $client_trans_ref ) );
 			$renewal_order->payment_complete();
 			$renewal_order->save();
 
 			return true;
-		}else{
+		} else {
 			$renewal_order->add_order_note( sprintf( __( "Subscription Renewal Payment Failed \r\nTransaction Reference: %s", "globalpayments-gateway-provider-for-woocommerce" ), $client_trans_ref ) );
 			$renewal_order->save();
 

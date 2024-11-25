@@ -40,10 +40,10 @@ class SubscriptionRequest extends AbstractRequest {
 
 		return $response;
 	}
-	private function get_muti_use_token(){
+	private function get_muti_use_token() {
 		return $this->order->get_meta( "_GP_multi_use_token" ) ? $this->order->get_meta( "_GP_multi_use_token" ) : $this->config['multi_use_token'];
 	}
-	private function get_shipping_details(){
+	private function get_shipping_details() {
 		$shipping_details = new Address();
 		$shipping_details->streetAddress1 = $this->order->get_billing_address_1();
 		$shipping_details->streetAddress2 = $this->order->get_billing_address_2();
@@ -54,7 +54,7 @@ class SubscriptionRequest extends AbstractRequest {
 
 		return $shipping_details;
 	}
-	protected function get_billing_address(){
+	protected function get_billing_address() {
 		$billing_address = new Address();
 		$billing_address->streetAddress1 = $this->order->get_billing_address_1();
 		$billing_address->streetAddress2 = $this->order->get_billing_address_2();
@@ -65,7 +65,7 @@ class SubscriptionRequest extends AbstractRequest {
 
 		return $billing_address;
 	}
-	private function get_customer_data(){
+	private function get_customer_data() {
 		$customer            = new Customer();
 		$customer->id        = $this->order->get_customer_id();
 		$customer->firstName = Utils::sanitize_string( $this->order->get_billing_first_name() );
