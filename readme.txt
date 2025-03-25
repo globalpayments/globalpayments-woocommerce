@@ -3,7 +3,7 @@ Contributors: globalpayments
 Tags: woocommerce, woo, unified, commerce, platform, global, payments, heartland, payment, systems, tsys, genius, 3DS, gateway, token, tokenize, save cards
 Requires at least: 6.0
 Tested up to: 6.6
-Stable tag: 1.12.1
+Stable tag: 1.13.0
 License: MIT
 License URI: https://github.com/globalpayments/globalpayments-woocommerce/blob/main/LICENSE
 
@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.13.0 (03/24/25) =
+* Add subscriptions support for GP API gateway
+
 = 1.12.1 (09/12/24) =
 * Add the possibility to configure the Transaction Processing Account Name
 
