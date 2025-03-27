@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.13.1 (03/27/25) =
+* Add support for Spanish translations
+
 = 1.13.0 (03/24/25) =
 * Add subscriptions support for GP API gateway
 
