@@ -7,14 +7,14 @@ defined( 'ABSPATH' ) || exit;
 <fieldset>
       <div class="securesubmit-content gift-card-content">
             <div class="form-row form-row-wide" id="gift-card-row">
-                  <label id="gift-card-label" for="gift-card-number"><?php _e('Use a gift card', 'wc_securesubmit'); ?></label>
+                  <label id="gift-card-label" for="gift-card-number"><?php esc_html_e('Use a gift card', 'globalpayments-gateway-provider-for-woocommerce'); ?></label>
                   <div id="gift-card-input">
                         <input type="tel" placeholder="Gift card" id="gift-card-number" value="" class="input-text">
                         <input type="tel" placeholder="PIN" id="gift-card-pin" value="" class="input-text">
                         <p id="gift-card-error"></p>
                         <p id="gift-card-success"></p>
                   </div>
-                  <button id="apply-gift-card" class="button"><?php _e('Apply', 'wc_securesubmit'); ?></button>
+                  <button id="apply-gift-card" class="button"><?php esc_html_e('Apply', 'globalpayments-gateway-provider-for-woocommerce'); ?></button>
                   
 <?php
       $html = '<script data-cfasync="false" type="text/javascript">';
@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
       $html .= '}';
       $html .= '</script>';
 
-      echo $html;
+      echo esc_html($html);
 ?>
 
 <script data-cfasync="false">

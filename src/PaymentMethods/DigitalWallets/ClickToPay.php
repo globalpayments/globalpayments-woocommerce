@@ -214,8 +214,8 @@ class ClickToPay extends AbstractDigitalWallet {
 		parent::process_payment_after_gateway_response( $gateway_response, $is_successful, $order );
 
 		$meta = array(
-			'billing_address'  => json_encode( $gateway_response->payerDetails->billingAddress ),
-			'shipping_address' => json_encode( $gateway_response->payerDetails->shippingAddress ),
+			'billing_address'  => wp_json_encode( $gateway_response->payerDetails->billingAddress ),
+			'shipping_address' => wp_json_encode( $gateway_response->payerDetails->shippingAddress ),
 			'email'            => $gateway_response->payerDetails->email,
 			'payer'            => $gateway_response->payerDetails->firstName . ' ' . $gateway_response->payerDetails->lastName,
 		);
@@ -248,12 +248,18 @@ class ClickToPay extends AbstractDigitalWallet {
 				<?php esc_html_e( 'Click To Pay Billing', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
 			</h3>
 			<p>
-				<?php echo $dw_payer . '</br>'; ?>
-				<?php echo $dw_billing_address->streetAddress1 . ( ! empty( $dw_billing_address->streetAddress2 ) ? ', ' . $dw_billing_address->streetAddress2 : '' ) . '</br>'; ?>
-				<?php echo ( ! empty( $dw_billing_address->streetAddress2 ) ? $dw_billing_address->streetAddress3 . '</br>' : '' ); ?>
-				<?php echo $dw_billing_address->city . ', ' . $dw_billing_address->state . ' ' . $dw_billing_address->postalCode; ?>
+.				<?php echo esc_html( $dw_payer ) . '</br>'; ?>
+				<?php echo esc_html( $dw_billing_address->streetAddress1 ) . ( ! empty( esc_html( $dw_billing_address->streetAddress2 ) ) ? ', ' . esc_html( $dw_billing_address->streetAddress2 ) : '' ) . '</br>'; ?>
+				<?php echo ( ! empty( esc_html( $dw_billing_address->streetAddress2 ) ) ? esc_html( $dw_billing_address->streetAddress3 ) . '</br>' : '' ); ?>
+				<?php echo esc_html( $dw_billing_address->city ) . ', ' . esc_html( $dw_billing_address->state ) . ' ' . esc_html( $dw_billing_address->postalCode ); ?>
 			</p>
-			<?php echo '<p><strong>' . __( 'Email address:', 'globalpayments-gateway-provider-for-woocommerce' ) . ':</strong> <a href="' . esc_url( 'mailto:' . $dw_email ) . '">' . $dw_email . '</a></p>'; ?>
+			<?php echo '<p><strong>' . esc_html__( 'Email address:', 'globalpayments-gateway-provider-for-woocommerce' )
+			. ':</strong> <a href="'
+			. esc_url( 'mailto:'
+			. esc_html( $dw_email ) )
+			. '">'
+			. esc_html( $dw_email )
+			. '</a></p>'; ?>
 		</div>
 
 		<?php
@@ -276,9 +282,9 @@ class ClickToPay extends AbstractDigitalWallet {
 				<?php esc_html_e( 'Click To Pay Shipping', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
 			</h3>
 			<p>
-				<?php echo $dw_shipping_address->streetAddress1 . ( ! empty( $dw_shipping_address->streetAddress2 ) ? ', ' . $dw_shipping_address->streetAddress2 : '' ) . '</br>'; ?>
-				<?php echo ( ! empty( $dw_shipping_address->streetAddress2 ) ? $dw_shipping_address->streetAddress3 . '</br>' : '' ); ?>
-				<?php echo $dw_shipping_address->city . ', ' . $dw_shipping_address->state . ' ' . $dw_shipping_address->postalCode; ?>
+				<?php echo esc_html( $dw_shipping_address->streetAddress1 ) . ( ! empty( $dw_shipping_address->streetAddress2 ) ? ', ' . esc_html( $dw_shipping_address->streetAddress2 ) : '' ) . '</br>'; ?>
+				<?php echo ( ! empty( $dw_shipping_address->streetAddress2 ) ? esc_html( $dw_shipping_address->streetAddress3 ) . '</br>' : '' ); ?>
+				<?php echo esc_html( $dw_shipping_address->city ) . ', ' . esc_html( $dw_shipping_address->state ) . ' ' . esc_html( $dw_shipping_address->postalCode ); ?>
 			</p>
 		</div>
 

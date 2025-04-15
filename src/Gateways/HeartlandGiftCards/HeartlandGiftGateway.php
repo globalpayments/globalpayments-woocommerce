@@ -44,7 +44,7 @@ class HeartlandGiftGateway
         );
 
         if ($gift_card_balance['error']) {
-            echo json_encode(
+            echo wp_json_encode(
                 array(
                     'error' => 1,
                     'message' => $gift_card_balance['message'],
@@ -56,7 +56,7 @@ class HeartlandGiftGateway
             $this->addGiftCardToCartSession();
             $this->updateGiftCardCartTotal();
 
-            echo json_encode(
+            echo wp_json_encode(
                 array(
                     'error'   => 0,
                     'balance' => html_entity_decode(get_woocommerce_currency_symbol()) . $gift_card_balance['message'],
@@ -119,7 +119,7 @@ class HeartlandGiftGateway
         $digits_to_display = 5;
         $last_digits       = substr($gift_card_number, $digits_to_display * - 1);
 
-        return __('Gift Card', 'wc_securesubmit') . ' ' . $last_digits;
+        return esc_html__('Gift Card', 'globalpayments-gateway-provider-for-woocommerce') . ' ' . $last_digits;
     }
 
     protected function updateGiftCardCartTotal()
@@ -153,7 +153,11 @@ class HeartlandGiftGateway
                 $zero_balance_message = apply_filters(
                     'securesubmit_zero_balance_message',
                     sprintf(
-                        __('%s has a balance of zero and could not be applied to this order.', 'wc_securesubmit'),
+                        /* translators: %s: lower balance message */
+                        esc_html__(
+                            '%s has a balance of zero and could not be applied to this order.',
+                        'globalpayments-gateway-provider-for-woocommerce'
+                        ),
                         $gift_card_object_entered->gift_card_name
                     )
                 );
@@ -251,7 +255,7 @@ class HeartlandGiftGateway
                 $securesubmit_data->original_total = $original_total;
                 WC()->session->set('securesubmit_data', $securesubmit_data);
 
-                $message           = __('Total Before Gift Cards', 'wc_securesubmit');
+                $message           = esc_html__('Total Before Gift Cards', 'globalpayments-gateway-provider-for-woocommerce');
                 
                 $ajaxUrl = admin_url('admin-ajax.php');
                 $order_total_html  = <<<EOT
@@ -286,7 +290,7 @@ class HeartlandGiftGateway
                 $order_total_html .= '<td data-title="' . esc_attr($message) . '">' . wc_price($original_total) . '</td>';
                 $order_total_html .= '</tr>';
 
-                echo apply_filters('securesubmit_before_gift_cards_order_total', $order_total_html, $original_total, $message);
+                echo esc_html(apply_filters('securesubmit_before_gift_cards_order_total', $order_total_html, $original_total, $message));
 
                 foreach ($gift_card_object_applied as $applied_gift_card) {
                     $remove_link = '<a href="#" id="' . $applied_gift_card->gift_card_id . '" class="securesubmit-remove-gift-card">(Remove)</a>';
@@ -296,7 +300,7 @@ class HeartlandGiftGateway
                     $gift_card_html .= '<td data-title="' . esc_attr($applied_gift_card->gift_card_name) . '">' . wc_price($applied_gift_card->used_amount) . '</td>';
                     $gift_card_html .= '</tr>';
 
-                    echo apply_filters('securesubmit_gift_card_used_total', $gift_card_html, $applied_gift_card->gift_card_name, $remove_link, $applied_gift_card->used_amount);
+                    echo esc_html(apply_filters('securesubmit_gift_card_used_total', $gift_card_html, $applied_gift_card->gift_card_name, $remove_link, $applied_gift_card->used_amount));
                 }
             }
         } else {
@@ -305,7 +309,11 @@ class HeartlandGiftGateway
             $this->removeAllGiftCardsFromSession();
 
             if (is_object($applied_cards) && count(get_object_vars($applied_cards)) > 0) {
-                wc_add_notice(__('Sorry, we are unable to allow gift cards to be used when purchasing a subscription. Any gift cards already applied to the order have been cleared', 'wc_securesubmit'), 'notice');
+                wc_add_notice(esc_html__(
+                    'Sorry, we are unable to allow gift cards to be used when purchasing a subscription. Any gift cards already applied to the order have been cleared',
+                    'globalpayments-gateway-provider-for-woocommerce'
+                ),
+                    'notice');
             }
         }
     }

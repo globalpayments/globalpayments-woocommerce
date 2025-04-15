@@ -115,7 +115,8 @@ class Paypal extends AbstractAsyncPaymentMethod {
 
 			// Add order note  prior to customer redirect
 			$note_text = sprintf(
-				__( '%1$s payment initiated with %3$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
+                /* translators: %1$s: Payment initiated %2$s Transaction ID */
+				esc_html__( '%1$s payment initiated with %3$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				wc_price( $order->get_total() ),
 				$gateway_response->transactionId,
 				ucwords($this->payment_method_paypal_provider)
@@ -136,7 +137,7 @@ class Paypal extends AbstractAsyncPaymentMethod {
 			);
 		} catch ( Exception $e ) {
 			wc_get_logger()->error( $e->getMessage() );
-			throw new Exception( Utils::map_response_code_to_friendly_message() );
+			throw new Exception( esc_html( Utils::map_response_code_to_friendly_message() ) );
 		}
 	}
 
@@ -227,7 +228,8 @@ class Paypal extends AbstractAsyncPaymentMethod {
 					}
 
 					$note_text = sprintf(
-						__( '%1$s amount of %2$s. Transaction ID: %3$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
+                        /* translators: %1$s: Amount %2$s Transaction ID %2$s */
+						esc_html__( '%1$s amount of %2$s. Transaction ID: %3$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 						$status,
 						wc_price( $order->get_total() ),
 						$order->get_transaction_id()
@@ -245,7 +247,8 @@ class Paypal extends AbstractAsyncPaymentMethod {
 				default:
 					throw new \Exception(
 						sprintf(
-							__( 'Order ID: %s. Unexpected transaction status on returnUrl: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+                            /* translators: %1$s: Unexpected transaction %2$s Transaction ID */
+							esc_html__( 'Order ID: %%1$s. Unexpected transaction status on returnUrl: %2$s', 'globalpayments-gateway-provider-for-woocommerce' ),
 							$gateway_response->orderId,
 							$gateway_response->transactionStatus
 						)
@@ -253,7 +256,8 @@ class Paypal extends AbstractAsyncPaymentMethod {
 			}
 		} catch ( \Exception $e ) {
 			$log_text = sprintf(
-				__( 'Error completing order return with %s. %s %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+                /* translators: %1$s: Error completing order %2$s %3$s */
+				esc_html__( 'Error completing order return with %1$s. %2$s %3$s', 'globalpayments-gateway-provider-for-woocommerce' ),
 				$this->id,
 				$e->getMessage(),
 				print_r( $request->get_params(), true )

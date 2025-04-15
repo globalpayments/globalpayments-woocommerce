@@ -1,9 +1,9 @@
 === GlobalPayments WooCommerce ===
 Contributors: globalpayments
-Tags: woocommerce, woo, unified, commerce, platform, global, payments, heartland, payment, systems, tsys, genius, 3DS, gateway, token, tokenize, save cards
+Tags: woocommerce, woo, commerce, payments, payments
 Requires at least: 6.0
-Tested up to: 6.6
-Stable tag: 1.13.0
+Tested up to: 6.7.2
+Stable tag: trunk
 License: MIT
 License URI: https://github.com/globalpayments/globalpayments-woocommerce/blob/main/LICENSE
 
@@ -52,6 +52,13 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.13.3 (04/15/25) =
+* Add support for admin panel refunds w/TSYS Genius gateway
+* Added support for Spanish Translations
+
+= 1.13.2 (03/27/25) =
+* Minor WordPress marketplace enhancements
+
 = 1.13.1 (03/27/25) =
 * Add support for Spanish translations
 

@@ -58,19 +58,25 @@ class HeartlandGiftCardOrder
             if ($gift_card_balance['message'] < $gift_card_temp_balance) {
                 $giftcard_gateway->removeGiftCard($gift_card->gift_card_id);
 
-                $balance_message = sprintf(__('The %s now has a lower balance than when it was originally applied to the order. It has been removed from the order. Please add it to the order again.', 'wc_securesubmit'), $gift_card->gift_card_name);
+                $balance_message = sprintf(
+                    /* translators: %s:Lower balance */
+                    esc_html__(
+                        'The %s now has a lower balance than when it was originally applied to the order. It has been removed from the order. Please add it to the order again.',
+                        'globalpayments-gateway-provider-for-woocommerce'),
+                    $gift_card->gift_card_name);
 
                 // Void the already done transactions if any
                 $giftcard_gateway->processGiftCardVoid($gift_card_sales, $order_awaiting_payment);
 
-                throw new Exception($balance_message);
+                throw new Exception(esc_html($balance_message));
             }
 
             $sale_response = $giftcard_gateway->processGiftCardSale($gift_card_number, $gift_card_pin, $gift_card->used_amount);
 
             if (!isset($sale_response->responseCode) || $sale_response->responseCode !== '00') {
                 $error_response_message = sprintf(
-                    __('%s was not able to be processed: %s', 'wc_securesubmit'),
+                    /* translators: %1$s was not able to be processed: %2$s */
+                    esc_html__('%1$s was not able to be processed: %2$s', 'globalpayments-gateway-provider-for-woocommerce'),
                     $gift_card->gift_card_name,
                     substr($sale_response->responseMessage, 20)
                 );
@@ -80,7 +86,7 @@ class HeartlandGiftCardOrder
                     $giftcard_gateway->processGiftCardVoid($gift_card_sales, $order_awaiting_payment);
                 }
 
-                throw new Exception($error_response_message);
+                throw new Exception(esc_html($error_response_message));
             }
 
             $processedAmount = isset($sale_response->splitTenderCardAmount) ? $sale_response->splitTenderCardAmount :
@@ -102,7 +108,11 @@ class HeartlandGiftCardOrder
             $balance_used = wc_price($gift_card_sale->used_amount);
 
             $note_text = sprintf(
-                __('%s was used on this order with a total used amount of %s. Transaction ID: %s ', 'wc_securesubmit'),
+                /* translators: %1$s Total amount %2$s Transaction ID %3$s */
+                esc_html__(
+                    '%1$s was used on this order with a total used amount of %2$s. Transaction ID: %3$s ',
+                    'globalpayments-gateway-provider-for-woocommerce'
+                ),
                 $gift_card_sale->gift_card_name,
                 $balance_used,
                 $gift_card_sale->transaction_id
@@ -129,7 +139,7 @@ class HeartlandGiftCardOrder
         $index_of_order_total = array_search('order_total', array_keys($rows));
 
         $gift_card_array['original_total'] = array(
-            'label' => __('Total before Gift Cards', 'wc_securesubmit'),
+            'label' => esc_html__('Total before Gift Cards', 'globalpayments-gateway-provider-for-woocommerce'),
             'value' => wc_price($order_total),
         );
 

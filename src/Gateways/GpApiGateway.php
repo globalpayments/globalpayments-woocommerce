@@ -147,7 +147,7 @@ class GpApiGateway extends AbstractGateway {
 				'type'        => 'checkbox',
 				'description' => sprintf(
 				/* translators: %s: Email address of support team */
-					__( 'Get your App Id and App Key from your <a href="https://developer.globalpay.com/user/register" target="_blank">Global Payments Developer Account</a>. ' .
+					esc_html__( 'Get your App Id and App Key from your <a href="https://developer.globalpay.com/user/register" target="_blank">Global Payments Developer Account</a>. ' .
 					    'Please follow the instructions provided in the <a href="https://wordpress.org/plugins/global-payments-woocommerce/" target="_blank">plugin description</a>.<br/>' .
 					    'When you are ready for Live, please contact <a href="mailto:%s?Subject=WooCommerce%%20Live%%20Credentials">support</a> to get you live credentials.',
 						'globalpayments-gateway-provider-for-woocommerce'
@@ -405,7 +405,7 @@ class GpApiGateway extends AbstractGateway {
 			if ( empty( $settings['app_id'] ) || empty( $settings['app_key'] ) ) {
 				add_action( 'admin_notices', function () {
 					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' .
-					     __( 'Please provide Live Credentials.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
+					     esc_html__( 'Please provide Live Credentials.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
 				} );
 			}
 
@@ -414,7 +414,7 @@ class GpApiGateway extends AbstractGateway {
 		if ( empty( $settings['sandbox_app_id'] ) || empty( $settings['sandbox_app_key'] ) ) {
 			add_action( 'admin_notices', function () {
 				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' .
-				     __( 'Please provide Sandbox Credentials.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
+				     esc_html__( 'Please provide Sandbox Credentials.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
 			} );
 		}
 
@@ -471,7 +471,7 @@ class GpApiGateway extends AbstractGateway {
 		}
 
 		$convertedThreeDSMethodData = wc_clean( json_decode( base64_decode( $_POST['threeDSMethodData'] ) ) );
-		$response                   = json_encode( [
+		$response                   = wp_json_encode( [
 			'threeDSServerTransID' => $convertedThreeDSMethodData->threeDSServerTransID,
 		] );
 
@@ -510,7 +510,7 @@ class GpApiGateway extends AbstractGateway {
 			if ( isset( $_POST['cres'] ) ) {
 				$convertedCRes = wc_clean( json_decode( base64_decode( $_POST['cres'] ) ) );
 
-				$response = json_encode( [
+				$response = wp_json_encode( [
 					'threeDSServerTransID' => $convertedCRes->threeDSServerTransID,
 					'transStatus'          => $convertedCRes->transStatus ?? '',
 				] );

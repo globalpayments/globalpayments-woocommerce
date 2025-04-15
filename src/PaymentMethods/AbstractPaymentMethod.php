@@ -133,10 +133,10 @@ abstract class AbstractPaymentMethod extends WC_Payment_Gateway implements Payme
 					'default' => 'no',
 				),
 				'title'   => array(
-					'title'             => __( 'Title', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'title'             => esc_html__( 'Title', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'type'              => 'text',
-					'description'       => __( 'This controls the title which the user sees during checkout.', 'globalpayments-gateway-provider-for-woocommerce' ),
-					'default'           => __( $this->default_title, 'globalpayments-gateway-provider-for-woocommerce' ),
+					'description'       => esc_html__( 'This controls the title which the user sees during checkout.', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'default'           => esc_html__( $this->default_title, 'globalpayments-gateway-provider-for-woocommerce' ),
 					'desc_tip'          => true,
 					'custom_attributes' => array( 'required' => 'required' ),
 				),
@@ -286,9 +286,9 @@ abstract class AbstractPaymentMethod extends WC_Payment_Gateway implements Payme
 		} catch ( \Exception $e ) {
 			wc_get_logger()->error( $e->getMessage() );
 			if ( $e instanceof GatewayException ) {
-				throw new \Exception( Utils::map_response_code_to_friendly_message() );
+				throw new \Exception( esc_html( Utils::map_response_code_to_friendly_message() ) );
 			}
-			throw new \Exception( $e->getMessage() );
+			throw new \Exception( esc_html( $e->getMessage() ) );
 		}
 	}
 

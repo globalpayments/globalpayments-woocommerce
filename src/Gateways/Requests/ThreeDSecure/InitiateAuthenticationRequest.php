@@ -43,7 +43,7 @@ class InitiateAuthenticationRequest extends AbstractAuthenticationsRequest {
 			$threeDSecureData = Secure3dService::initiateAuthentication( $paymentMethod, $threeDSecureData )
 				->withAmount( $requestData->order->amount )
 				->withCurrency( $requestData->order->currency )
-				->withOrderCreateDate( date( 'Y-m-d H:i:s' ) )
+				->withOrderCreateDate( gmdate( 'Y-m-d H:i:s' ) )
 				->withAddress( $this->map_address( $requestData->order->billingAddress ), AddressType::BILLING )
 				->withAddress( $this->map_address( $requestData->order->shippingAddress ), AddressType::SHIPPING )
 				->withAddressMatchIndicator( $requestData->order->addressMatchIndicator )

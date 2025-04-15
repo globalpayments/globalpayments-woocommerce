@@ -31,13 +31,13 @@ abstract class AbstractAuthenticationsRequest extends AbstractRequest {
 
 	protected function getToken( $requestData ) {
 		if ( ! isset( $requestData->wcTokenId ) && ! isset( $requestData->tokenResponse ) ) {
-			throw new \Exception( __( 'Not enough data to perform 3DS. Unable to retrieve token.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+			throw new \Exception( esc_html__( 'Not enough data to perform 3DS. Unable to retrieve token.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 		}
 
 		if ( isset( $requestData->wcTokenId ) && 'new' !== $requestData->wcTokenId ) {
 			$tokenResponse = \WC_Payment_Tokens::get( $requestData->wcTokenId );
 			if ( empty( $tokenResponse ) ) {
-				throw new \Exception( __( 'Not enough data to perform 3DS. Unable to retrieve token.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+				throw new \Exception( esc_html__( 'Not enough data to perform 3DS. Unable to retrieve token.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 			}
 
 			return $tokenResponse->get_token();
@@ -45,7 +45,7 @@ abstract class AbstractAuthenticationsRequest extends AbstractRequest {
 
 		$tokenResponse = json_decode( $requestData->tokenResponse );
 		if ( empty( $tokenResponse->paymentReference ) ) {
-			throw new \Exception( __( 'Not enough data to perform 3DS. Unable to retrieve token.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+			throw new \Exception( esc_html__( 'Not enough data to perform 3DS. Unable to retrieve token.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 		}
 
 		return $tokenResponse->paymentReference;

@@ -236,7 +236,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * Builds payment fields area - including environment indicator
 	 */
 	public function payment_fields() {
-		echo $this->environment_indicator();
+		echo esc_html($this->environment_indicator());
 
 		parent::payment_fields();
 	}
@@ -795,7 +795,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		 *
 		 * @param array $secure_payment_fields_styles CSS styles.
 		 */
-		return apply_filters( 'globalpayments_secure_payment_fields_styles', json_encode( $secure_payment_fields_styles ) );
+		return apply_filters( 'globalpayments_secure_payment_fields_styles', wp_json_encode( $secure_payment_fields_styles ) );
 	}
 
 	/**
@@ -914,7 +914,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		$order->add_order_note(
 			sprintf(
-				__( 'Order created with Transaction ID: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+                /* translators: %s: Order created with Transaction ID */
+				esc_html__( 'Order created with Transaction ID: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
 				$order->get_transaction_id()
 			)
 		);
@@ -1022,7 +1023,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			$amount = str_replace( ',', '.', $amount );
 			$amount = number_format( (float) round( $amount, 2, PHP_ROUND_HALF_UP ), 2, '.', '' );
 			if ( ! is_numeric( $amount ) ) {
-				throw new Exception( __( 'Refund amount must be a valid number', 'globalpayments-gateway-provider-for-woocommerce' ) );
+				throw new Exception( esc_html__( 'Refund amount must be a valid number', 'globalpayments-gateway-provider-for-woocommerce' ) );
 			}
 		}
 		$request->set_request_data( array(
@@ -1031,14 +1032,15 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		) );
 		$request_args = $request->get_args();
 		if ( 0 >= (float)$request_args[ RequestArg::AMOUNT ] ) {
-			throw new Exception( __( 'Refund amount must be greater than zero.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+			throw new Exception( esc_html__( 'Refund amount must be greater than zero.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 		}
 		$response      = $this->submit_request( $request );
 		$is_successful = $this->handle_response( $request, $response );
 
 		if ( $is_successful ) {
 			$note_text = sprintf(
-				__( '%s%s was reversed or refunded. Transaction ID: %s ', 'globalpayments-gateway-provider-for-woocommerce' ),
+                /* translators: %1$s%2$s was reversed or refunded. Transaction ID: %3$s */
+				esc_html__( '%1$s%2$s was reversed or refunded. Transaction ID: %3$s ', 'globalpayments-gateway-provider-for-woocommerce' ),
 				get_woocommerce_currency_symbol(), $amount, $response->transactionReference->transactionId
 			);
 
@@ -1110,7 +1112,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 				$order->add_order_note(
 					sprintf(
-						__( 'Transaction captured. Transaction ID for the capture: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+                        /* translators: %s: Transaction ID for the capture */
+						esc_html__( 'Transaction captured. Transaction ID for the capture: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
 						$response->transactionReference->transactionId
 					)
 				);
@@ -1120,7 +1123,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			return $response;
 		} catch ( Exception $e ) {
 			wp_die(
-				$e->getMessage(),
+				esc_html($e->getMessage()),
 				'',
 				array(
 					'back_link' => true,
@@ -1250,7 +1253,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				}
 			}
 
-			throw new ApiException( Utils::map_response_code_to_friendly_message( $response->responseCode ) );
+			throw new ApiException( esc_html(Utils::map_response_code_to_friendly_message( $response->responseCode )) );
 		}
 
 		// phpcs:ignore WordPress.NamingConventions.ValidVariableName
@@ -1289,7 +1292,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 							->execute();
 					}
 
-					throw new \Exception( Utils::map_response_code_to_friendly_message() );
+					throw new \Exception( esc_html(Utils::map_response_code_to_friendly_message()) );
 				}
 			}
 		}
@@ -1455,8 +1458,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				add_action( 'woocommerce_sections_checkout', function () use ( $gateway ) {
 						echo '<div id="message" class="error inline"><p><strong>' .
 						sprintf(
-							__( 'You can enable only one GlobalPayments gateway at a time. Please disable %s first!', 'globalpayments-gateway-provider-for-woocommerce' ),
-							$gateway->method_title
+                            /* translators: %s: You can enable only one GlobalPayments gateway at a time */
+							esc_html__( 'You can enable only one GlobalPayments gateway at a time. Please disable %s first!', 'globalpayments-gateway-provider-for-woocommerce' ),
+							esc_html($gateway->method_title)
 						) . '</strong></p></div>';
 					}
 				);

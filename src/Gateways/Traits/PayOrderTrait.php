@@ -215,6 +215,6 @@ trait PayOrderTrait {
 			'white-space'     => 'nowrap',
 		);
 
-		return json_encode( $secure_payment_fields_styles );
+		return wp_json_encode( $secure_payment_fields_styles );
 	}
 }

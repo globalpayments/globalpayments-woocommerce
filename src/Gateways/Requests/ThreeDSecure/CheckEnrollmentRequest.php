@@ -57,9 +57,9 @@ class CheckEnrollmentRequest extends AbstractAuthenticationsRequest {
 		catch( ApiException $e ) {
 			wc_get_logger()->error( $e->getMessage() );
 			if ( '50022' == $e->responseCode ) {
-				throw new \Exception( __( 'Please try again with another card.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+				throw new \Exception( esc_html__( 'Please try again with another card.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 			}
-			throw new \Exception( $e->getMessage() );
+			throw new \Exception( esc_html($e->getMessage()) );
 		} catch (\Exception $e) {
 			$response = [
 				'error'    => true,

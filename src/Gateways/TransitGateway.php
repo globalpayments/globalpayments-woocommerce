@@ -262,7 +262,11 @@ class TransitGateway extends AbstractGateway {
 			} catch ( \Exception $e ) {
 				$settings[$prefix . 'transaction_key'] = '';
 				add_action( 'admin_notices', function() {
-					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' . __( 'Invalid MultiPass User ID or Password. Please try again.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
+					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>'
+                        . esc_html__(
+                            'Invalid MultiPass User ID or Password. Please try again.',
+                            'globalpayments-gateway-provider-for-woocommerce' )
+                        . '</strong></p></div>';
 				});
 			}
 		}

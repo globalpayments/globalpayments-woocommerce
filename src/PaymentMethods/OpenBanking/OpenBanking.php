@@ -157,10 +157,11 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 
 			// Add order note  prior to customer redirect
 			$note_text = sprintf(
-				__( '%1$s payment initiated with %3$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
+                /* translators: %1$s: Captured amount %3$s %2$s Transaction ID */
+				esc_html__( '%1$s payment initiated with %3$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				wc_price( $order->get_total() ),
 				$gateway_response->transactionId,
-				__('Bank Payment', 'globalpayments-gateway-provider-for-woocommerce' )
+				esc_html__('Bank Payment', 'globalpayments-gateway-provider-for-woocommerce' )
 			);
 
 			$order->add_order_note( $note_text );
@@ -180,7 +181,7 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 			);
 		} catch ( \Exception $e ) {
 			wc_get_logger()->error( $e->getMessage() );
-			throw new \Exception( Utils::map_response_code_to_friendly_message() );
+			throw new \Exception( esc_html( Utils::map_response_code_to_friendly_message() ) );
 		}
 	}
 
@@ -299,7 +300,7 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 		parent::payment_fields();
 		$imgPath = Plugin::get_url('') . '/assets/frontend/img/Bank_Payment.png';
 		?>
-			<img class="openbanking-img-allign" src="<?= $imgPath ?>">
+			<img class="openbanking-img-allign" src="<?php echo esc_html( $imgPath ) ?>">
 		<?php
 	}
 }

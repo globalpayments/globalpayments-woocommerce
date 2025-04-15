@@ -2,7 +2,7 @@
     <button class="button button-secondary wc-globalpayments-transaction-info">
         <?php esc_html_e( 'View Transaction Info', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
     </button>
-    <?php echo wc_help_tip( __( 'Admins can view transaction details using this functionality.', 'globalpayments-gateway-provider-for-woocommerce' ) ); ?>
+    <?php echo esc_html( wc_help_tip( esc_html__( 'Admins can view transaction details using this functionality.', 'globalpayments-gateway-provider-for-woocommerce' ) ) ); ?>
 </p>
 <script type="text/template" id="tmpl-wc-globalpayments-transaction-info-modal">
     <div class="wc-backbone-modal">

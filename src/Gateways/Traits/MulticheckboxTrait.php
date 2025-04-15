@@ -33,7 +33,7 @@ trait MulticheckboxTrait {
 		?>
 		<tr valign="top">
 			<th scope="row" class="titledesc">
-				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo esc_html($this->get_tooltip_html( $data )); // WPCS: XSS ok. ?></label>
 			</th>
 			<td class="forminp">
 				<fieldset>
@@ -42,15 +42,15 @@ trait MulticheckboxTrait {
 						<?php foreach ( (array) $data['options'] as $option_key => $option_value ) : ?>
 							<li>
 								<input type="checkbox" id="<?php echo esc_attr( $field_key );echo esc_attr( $option_key ); ?>" name="<?php echo esc_attr( $field_key ); ?>[]" value="<?php echo esc_attr( $option_key ); ?>"
-									class="<?php echo $data['class'] ?>"
+									class="<?php echo esc_html($data['class']) ?>"
                                     <?php checked( in_array( (string) $option_key, $value, true ), true  ); ?> />
 								<label for="<?php echo esc_attr( $field_key );echo esc_attr( $option_key ); ?>"><?php echo esc_html( $option_value ); ?></label>
 							</li>
 						<?php endforeach; ?>
 					</ul>
-					<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
+					<?php echo esc_html( $this->get_description_html( $data ) ); // WPCS: XSS ok. ?>
 					<?php if ( $data['select_buttons'] ) : ?>
-						<br/><a class="select_all button" href="#"><?php esc_html_e( 'Select all', 'woocommerce' ); ?></a> <a class="select_none button" href="#"><?php esc_html_e( 'Select none', 'woocommerce' ); ?></a>
+						<br/><a class="select_all button" href="#"><?php esc_html_e( 'Select all', 'globalpayments-gateway-provider-for-woocommerce' ); ?></a> <a class="select_none button" href="#"><?php esc_html_e( 'Select none', 'globalpayments-gateway-provider-for-woocommerce' ); ?></a>
 					<?php endif; ?>
 				</fieldset>
 			</td>

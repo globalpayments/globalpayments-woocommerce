@@ -2,8 +2,10 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 
+use Exception;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -166,5 +168,51 @@ class GeniusGateway extends AbstractGateway {
 			'merchantKey'    => $this->get_credential_setting( 'merchant_key' ),
 			'environment'    => $this->is_production ? Environment::PRODUCTION : Environment::TEST,
 		);
+	}
+
+	/**
+	 * Overrides parent class method
+	 *
+	 * @param int    $order_id
+	 * @param null   $amount
+	 * @param string $reason
+	 *
+	 * @return bool
+	 * @throws ApiException
+	 */
+	public function process_refund( $order_id, $amount = null, $reason = '' ) {
+		$order = wc_get_order( $order_id );
+
+		$request = $this->prepare_request( self::TXN_TYPE_REFUND, $order );
+
+		if ( null != $amount ) {
+			$amount = str_replace( ',', '.', $amount );
+			$amount = number_format( (float) round( $amount, 2, PHP_ROUND_HALF_UP ), 2, '.', '' );
+			if ( ! is_numeric( $amount ) ) {
+				throw new Exception( esc_html__( 'Refund amount must be a valid number', 'globalpayments-gateway-provider-for-woocommerce' ) );
+			}
+		}
+		$request->set_request_data( array(
+			'refund_amount' => $amount,
+			'refund_reason' => $reason,
+		) );
+		$request_args = $request->get_args();
+		if ( 0 >= (float)$request_args[ RequestArg::AMOUNT ] ) {
+			throw new Exception( esc_html__( 'Refund amount must be greater than zero.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+		}
+		$response      = $this->submit_request( $request );
+		$is_successful = $this->handle_response( $request, $response );
+
+		if ( $is_successful ) {
+			$note_text = sprintf(
+                /* translators: %1$s%2$s was reversed or refunded. Transaction ID: %3$s */
+				esc_html__( '%1$s%2$s was reversed or refunded. Transaction ID: %3$s ', 'globalpayments-gateway-provider-for-woocommerce' ),
+				get_woocommerce_currency_symbol(), $amount, $response->transactionReference->transactionId
+			);
+
+			$order->add_order_note( $note_text );
+		}
+
+		return $is_successful;
 	}
 }

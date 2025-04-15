@@ -104,7 +104,8 @@ abstract class AbstractBuyNowPayLater extends AbstractAsyncPaymentMethod {
 
 			// Add order note  prior to customer redirect
 			$note_text = sprintf(
-				__( '%1$s payment initiated with %3$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
+                /* translators: %1$s: Payment initiated %3$s Transaction ID %2$s */
+				esc_html__( '%1$s payment initiated with %3$s. Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				wc_price( $order->get_total() ),
 				$gateway_response->transactionId,
 				$this->payment_method_BNPL_provider
@@ -127,7 +128,7 @@ abstract class AbstractBuyNowPayLater extends AbstractAsyncPaymentMethod {
 			);
 		} catch ( \Exception $e ) {
 			wc_get_logger()->error( $e->getMessage() );
-			throw new \Exception( Utils::map_response_code_to_friendly_message() );
+			throw new \Exception( esc_html( Utils::map_response_code_to_friendly_message() ) );
 		}
 	}
 
