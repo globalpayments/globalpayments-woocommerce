@@ -2,7 +2,7 @@
 Contributors: globalpayments
 Tags: woocommerce, woo, commerce, payments, payments
 Requires at least: 6.0
-Tested up to: 6.7.2
+Tested up to: 6.8
 Stable tag: trunk
 License: MIT
 License URI: https://github.com/globalpayments/globalpayments-woocommerce/blob/main/LICENSE
@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.13.4 (05/01/25) =
+* Fixed gateway settings display bug
+
 = 1.13.3 (04/15/25) =
 * Add support for admin panel refunds w/TSYS Genius gateway
 * Added support for Spanish Translations

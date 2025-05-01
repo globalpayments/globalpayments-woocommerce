@@ -146,13 +146,17 @@ class GpApiGateway extends AbstractGateway {
 				'title'       => __( 'Live Mode', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
 				'description' => sprintf(
-				/* translators: %s: Email address of support team */
-					esc_html__( 'Get your App Id and App Key from your <a href="https://developer.globalpay.com/user/register" target="_blank">Global Payments Developer Account</a>. ' .
-					    'Please follow the instructions provided in the <a href="https://wordpress.org/plugins/global-payments-woocommerce/" target="_blank">plugin description</a>.<br/>' .
-					    'When you are ready for Live, please contact <a href="mailto:%s?Subject=WooCommerce%%20Live%%20Credentials">support</a> to get you live credentials.',
+					/* translators: %s: Email address of support team */
+					esc_html__(
+						'Get your App Id and App Key from your %sGlobal Payments Developer Account%s. Please follow the instructions provided in the %splugin description%s. When you are ready for Live, please contact %ssupport to get you live credentials.',
 						'globalpayments-gateway-provider-for-woocommerce'
 					),
-					$this->get_first_line_support_email()
+					'<a href="https://developer.globalpay.com/user/register" target="_blank">',
+					'</a>',
+					'<a href="https://wordpress.org/plugins/global-payments-woocommerce/" target="_blank">',
+					'</a>',
+					'<a href="mailto:' . $this->get_first_line_support_email() . '?Subject=WooCommerce Live Credentials">',
+					'</a>'
 				),
 				'default'     => 'no',
 			),
