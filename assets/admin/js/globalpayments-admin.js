@@ -29,8 +29,8 @@
 			$( document ).on( 'change', $( '.accepted_cards.required' ), this.validate_checkbox_fields.bind( this, '.accepted_cards.required' ) );
 			$( document ).on( 'change', $( '.aca_methods.required' ), this.validate_checkbox_fields.bind( this, '.aca_methods.required' ) );
 			$( document ).on( 'change', $( '.ob_currencies.required' ), this.validate_checkbox_fields.bind( this, '.ob_currencies.required' ) );
-			$( document ).on( 'click', this.getCheckCredentialsButtonSelector(), this.checkApiCredentials.bind( this ));
-
+			$( document ).on( 'click', this.getCheckCredentialsButtonSelector(), this.checkApiCredentials.bind( this , 'account_name_dropdown', 'account_name' ) );
+			$( document ).on( 'load ', this.checkApiCredentials( 'account_name_dropdown', 'account_name', 'change' ));
 			// Admin Pay for Order
 			$( '#customer_user' ).on( 'change', this.updatePaymentMethods );
 			$( '.wc-globalpayments-pay-order' ).on( 'click', this.payForOrder );
@@ -41,15 +41,31 @@
 			$( '#woocommerce_globalpayments_clicktopay_payment_action' ).prop( 'disabled', true );
 			$( '#woocommerce_globalpayments_fasterpayments_payment_action' ).prop( 'disabled', true );
 			$( '#woocommerce_globalpayments_bankpayment_payment_action' ).prop( 'disabled', true );
+
+			$( document ).on( 'ready',function () {
+				var selector = '';
+				if( $( '#woocommerce_' + this.id + '_is_production' ).is( ':checked' ) ) {
+					selector = 'woocommerce_globalpayments_gpapi_';
+				} else {
+					selector = 'woocommerce_globalpayments_gpapi_sandbox_';
+				}
+				$('#' + selector + 'account_name_dropdown').on('change', function () {
+					// Get the selected value from the dropdown
+					const selectedValue =  $(this).find('option:selected').text();
+
+					// Set the value of the textbox
+					$('#' + selector + 'account_name').val(selectedValue);
+				});
+			});
 		},
 
-		checkApiCredentials: function ( e ) {
-			e.preventDefault();
+		checkApiCredentials: function ( setting1, setting2, event = '' ) {
 			$(' .notice ').remove();
 
 			var gateway_app_id = this.getGatewaySetting( 'app_id' );
 			var gateway_app_key = this.getGatewaySetting( 'app_key' );
 			var environment = 0;
+			var selector = '';
 
 			if ( ! gateway_app_id || ! gateway_app_key ) {
 				alert( __( 'Please be sure that you have filled AppId and AppKey fields!', 'globalpayments-gateway-provider-for-woocommerce' ) );
@@ -57,6 +73,12 @@
 			}
 			if ( this.isLiveMode() ) {
 				environment = 1;
+				$('#woocommerce_globalpayments_gpapi_' + setting2).hide();
+				selector = 'woocommerce_globalpayments_gpapi_';
+			}
+			 else {
+				$('#woocommerce_globalpayments_gpapi_sandbox_' + setting2).hide();
+				selector = 'woocommerce_globalpayments_gpapi_sandbox_';
 			}
 			var self = this;
 
@@ -73,7 +95,39 @@
 				if ( response.error ) {
 					self.displayNotice( 'error', response.message );
 				} else {
-					self.displayNotice( 'success', response.message );
+					var dropdown = '';
+					if ( environment ) {
+						dropdown = $('#woocommerce_globalpayments_gpapi_' + setting1);
+					} else {
+						dropdown = $('#woocommerce_globalpayments_gpapi_sandbox_' + setting1);
+					}
+					dropdown.empty();
+					if(response.accounts) {
+						var default_value;
+						response.accounts.forEach(item => {
+							if ( environment ) {
+								if( $('#woocommerce_globalpayments_gpapi_' + setting2).val() == item.name ) {
+									default_value = item.id;
+								}
+							} else {
+								if( $('#woocommerce_globalpayments_gpapi_sandbox_' + setting2).val() == item.name ) {
+									default_value = item.id;
+								}
+							}
+
+							dropdown.append(
+								$('<option>', {
+									value: item.id,
+									text: item.name,
+								})
+							);
+						});
+						$('#'+selector + setting1).val( default_value );
+					}
+
+					if( !event || event.type) {
+						self.displayNotice( 'success', response.message );
+					}
 				}
 			}).fail( function ( xhr, textStatus, errorThrown ) {
 				window.alert( errorThrown );
@@ -280,6 +334,12 @@
 
 			$( '.live-toggle' ).parents( 'tr' ).toggle( display );
 			$( '.sandbox-toggle' ).parents( 'tr' ).toggle( !display );
+			if ( display ) {
+				$( '#woocommerce_globalpayments_gpapi_account_name' ).hide();
+			}
+			else {
+				$( '#woocommerce_globalpayments_gpapi_sandbox_account_name' ).hide();
+			}
 
 			this.toggleRequiredSettings();
 		},

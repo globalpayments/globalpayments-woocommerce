@@ -244,9 +244,14 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	/**
 	 * Adds environment indicator in sandbox/test mode.
 	 */
-	public function environment_indicator() {
-		if ( ! wc_string_to_bool( $this->is_production ) ) {
-			return sprintf( '<div class="woocommerce-globalpayments-sandbox-warning">%s</div>',
+	public function environment_indicator()
+	{
+		if (
+			! wc_string_to_bool( $this->is_production )
+			&& ( $this->id !== 'globalpayments_gpapi' )
+		) {
+			return sprintf(
+				'<div class="woocommerce-globalpayments-sandbox-warning">%s</div>',
 				__( 'This page is currently in sandbox/test mode. Do not use real/active card numbers.', 'globalpayments-gateway-provider-for-woocommerce' )
 			);
 		}

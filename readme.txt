@@ -52,6 +52,11 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.13.7 (06/10/25) =
+* Added account name mandetory with dropdown to select account
+* GPAPI gateway: switched to Drop-in UI card fields
+* Added PHP configuration checks
+
 = 1.13.4 (05/01/25) =
 * Fixed gateway settings display bug
 

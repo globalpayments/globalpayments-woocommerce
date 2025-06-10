@@ -12,10 +12,14 @@ class GetAccessTokenRequest extends AbstractRequest {
 	}
 
 	public function get_args() {
-		return array(
-			RequestArg::PERMISSIONS => array(
-				'PMT_POST_Create_Single',
-			),
-		);
+        if( isset($_POST['_wpnonce']) ) {
+            return array();
+        }
+
+        return array(
+            RequestArg::PERMISSIONS => array(
+                'PMT_POST_Create_Single',
+            ),
+        );
 	}
 }

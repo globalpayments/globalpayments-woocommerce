@@ -53,6 +53,7 @@ trait CheckApiCredentialsTrait {
 			if ( ! empty($gatewayResponse->token )) {
 				$response['error'] = false;
 				$response['message'] = __( 'Your credentials were successfully confirmed!', 'globalpayments-gateway-provider-for-woocommerce' );
+                $response['accounts'] = $gatewayResponse->accounts;
 			} else {
 				$response['error'] = true;
 				$response['message'] = __( 'Unable to perform request. Invalid data.', 'globalpayments-gateway-provider-for-woocommerce' );

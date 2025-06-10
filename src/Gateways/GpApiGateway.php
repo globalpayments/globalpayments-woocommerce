@@ -123,7 +123,7 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $enable_three_d_secure;
 
-	protected static string $js_lib_version = '4.0.15';
+	protected static string $js_lib_version = '4.1.10';
 
 	public function __construct( $is_provider = false ) {
 		parent::__construct( $is_provider );
@@ -177,12 +177,19 @@ class GpApiGateway extends AbstractGateway {
 				),
 			),
 			'account_name'         => array(
-				'title'       => __( 'Account Name', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'title'       => __( '', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
 				'class'       => 'live-toggle',
-				'description' => __( 'Specify which account to use when processing a transaction. Default account will be used if this is not specified.', 'globalpayments-gateway-provider-for-woocommerce' ),
 			),
+            'account_name_dropdown'         => array(
+                'title'       => __( 'Live Account Name*', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'type'        => 'select',
+                'default'     => '',
+                'default'     => '',
+                'class'       => 'required live-toggle',
+                'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" arget="_blank">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
+            ),
 			'sandbox_app_id'       => array(
 				'title'   => __( 'Sandbox App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'text',
@@ -202,21 +209,27 @@ class GpApiGateway extends AbstractGateway {
 				),
 			),
 			'sandbox_account_name'  => array(
-				'title'       => __( 'Sandbox Account Name', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
 				'class'       => 'sandbox-toggle',
-				'description' => __( 'Specify which account to use when processing a transaction. Default account will be used if this is not specified.', 'globalpayments-gateway-provider-for-woocommerce' ),
 			),
-			'credentials_api_check'	=> array(
-				'title'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'label'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'        => 'button',
-				'class'       => 'button-credentials-check button-primary',
-				'default'     => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'description' => __( 'Note: The Payment Methods will not be displayed at checkout if the credentials are not correct.', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'css'         => 'width: 200px',
-			),
+            'sandbox_account_name_dropdown'  => array(
+                'title'       => __( 'Sandbox Account Name*', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'type'        => 'select',
+                'default'     => '',
+                'default'     => '',
+                'class'       => 'required sandbox-toggle',
+                'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" arget="_blank">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
+            ),
+            'credentials_api_check'	=> array(
+                'title'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'label'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'type'        => 'button',
+                'class'       => 'button-credentials-check button-primary',
+                'default'     => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'description' => __( 'Note: The Payment Methods will not be displayed at checkout if the credentials are not correct.', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'css'         => 'width: 200px',
+            ),
 			'allow_card_saving'    => array(
 				'title'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
