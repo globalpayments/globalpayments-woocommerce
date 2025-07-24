@@ -306,6 +306,9 @@
       serverTransId: null,
     };
   let g = {};
+  let initRetryCount = 0;
+  let isFormInitialized = false;
+  const MAX_RETRY_COUNT = 20;
   const y = (t) => {
     const { id: o, field: n } = t;
     return (0, e.createElement)(
@@ -321,32 +324,109 @@
     );
   },
     h = () => {
-      const e = u.settings.gateway_options;
-      e.error && v(e.message),
+        // Check if form is already initialized
+        if (isFormInitialized && u.cardForm) {
+            console.log('GlobalPayments form is already initialized, skipping...');
+            return;
+        }
+
+        // Check retry limit
+        if (initRetryCount >= MAX_RETRY_COUNT) {
+            console.error('Maximum retry attempts reached. GlobalPayments form initialization failed.');
+            v('Payment form could not be loaded. Please refresh the page and try again.');
+            return;
+        }
+
+        const e = u.settings.gateway_options;
+        e.error && v(e.message);
+
+        // Create submit button if it doesn't exist
         document.querySelector(
           g.getSubmitButtonTargetSelector(u.settings.id),
         ) || g.createSubmitButtonTarget(u.settings.id);
-      const t = GlobalPayments;
-      t.configure(e),
-        t.on("error", f),
-        (u.cardForm = t.creditCard.form(
-          "#" + u.settings.id + "-" + u.fieldOptions["payment-form"].class,
-          {
-            style: "gp-default",
-          },
-        )),
-        u.cardForm.on("submit", "click", () => {
-          w(), b(), g.blockOnSubmit();
-        }),
-        u.cardForm.on("token-success", T),
-        u.cardForm.on("token-error", f),
-        u.cardForm.on("error", f),
-        u.cardForm.on("card-form-validity", (e) => {
-          e || (g.unblockOnError(), S(), _());
-        }),
-        u.cardForm.ready(() => {
-          g.toggleSubmitButtons();
-        });
+        // Check if GlobalPayments is loaded
+        if (typeof GlobalPayments === 'undefined') {
+            console.warn('GlobalPayments is not loaded. Retrying in 500ms...');
+            initRetryCount++;
+            setTimeout(h, 500);
+            return;
+        }
+
+        // Check if required GlobalPayments methods exist
+        if (!GlobalPayments.configure || !GlobalPayments.creditCard || !GlobalPayments.creditCard.form) {
+            console.warn('GlobalPayments methods not available. Retrying in 300ms...');
+            initRetryCount++;
+            setTimeout(h, 300);
+            return;
+        }
+
+        // Check if field options are loaded
+        if (!u.fieldOptions || !u.fieldOptions["payment-form"]) {
+            console.warn('Field options not loaded. Retrying in 200ms...');
+            initRetryCount++;
+            setTimeout(h, 200);
+            return;
+        }
+
+        // Check if the payment form container exists
+        const formContainer = "#" + u.settings.id + "-" + u.fieldOptions["payment-form"].class;
+        const containerElement = document.querySelector(formContainer);
+
+        if (!containerElement) {
+            console.warn('Payment form container not found:', formContainer, 'Retrying in 200ms...');
+            initRetryCount++;
+            setTimeout(h, 200);
+            return;
+        }
+
+        // Check if form already exists in the container to prevent duplicates
+        if (containerElement.children.length > 0) {
+            console.log('Payment form already exists in container, marking as initialized');
+            isFormInitialized = true;
+            return;
+        }
+
+        // Reset retry count on successful dependency check
+        initRetryCount = 0;
+
+        const t = GlobalPayments;
+        try {
+            t.configure(e);
+            t.on("error", f);
+
+            u.cardForm = t.creditCard.form(formContainer, {
+                style: "gp-default",
+            });
+
+            // Mark form as initialized
+            isFormInitialized = true;
+
+            // Add event handlers only if form was successfully created
+            if (u.cardForm) {
+                u.cardForm.on("submit", "click", () => {
+                    w(), b(), g.blockOnSubmit();
+                });
+                u.cardForm.on("token-success", T);
+                u.cardForm.on("token-error", f);
+                u.cardForm.on("error", f);
+                u.cardForm.on("card-form-validity", (e) => {
+                    e || (g.unblockOnError(), S(), _());
+                });
+                u.cardForm.ready(() => {
+                    g.toggleSubmitButtons();
+                });
+
+            } else {
+                console.error('Failed to create GlobalPayments form');
+                isFormInitialized = false;
+                v('Payment form initialization failed. Please refresh the page.');
+            }
+        } catch (error) {
+            console.error('Error initializing GlobalPayments form:', error);
+            isFormInitialized = false;
+            v('Payment system initialization failed. Please refresh the page.');
+            return;
+        }
     },
     w = () => {
       const e = document.querySelector(
@@ -861,65 +941,116 @@
             return (
               (0, e.useEffect)(() => {
                 document
-                  .querySelector("#order_review, #add_payment_method")
-                  ?.addEventListener("click", (e) => {
-                    e.target.matches('#payment-method input[type="radio"]') &&
-                      g.toggleSubmitButtons();
-                  }),
-                  document.body.addEventListener("checkout_error", () => {
-                    document
-                      .querySelector("#globalpayments_gpapi-serverTransId")
-                      ?.remove();
-                  }),
-                  document.addEventListener(
-                    "globalpayments_pay_order_modal_loaded",
-                    h,
-                  ),
-                  document.addEventListener(
-                    "globalpayments_pay_order_modal_error",
-                    (e, t) => {
-                      g.showPaymentError(t);
-                    },
-                  ),
-                  (g.isFirstPaymentMethod(u.settings.id) ||
-                    g.isOnlyGatewayMethodDisplayed(u.settings.id)) &&
-                  (window.onload = () => {
-                    h();
-                  }),
-                  document
-                    .querySelector(
-                      "#radio-control-wc-payment-method-options-globalpayments_gpapi",
+                    .querySelector("#order_review, #add_payment_method")
+                    ?.addEventListener("click", (e) => {
+                        e.target.matches('#payment-method input[type="radio"]') &&
+                        g.toggleSubmitButtons();
+                    }),
+                    document.body.addEventListener("checkout_error", () => {
+                        document
+                            .querySelector("#globalpayments_gpapi-serverTransId")
+                            ?.remove();
+                    }),
+                    document.addEventListener(
+                        "globalpayments_pay_order_modal_loaded",
+                        h,
+                    ),
+                    document.addEventListener(
+                        "globalpayments_pay_order_modal_error",
+                        (e, t) => {
+                            g.showPaymentError(t);
+                        },
+                    );
+
+                    // Initialize payment form when the payment method is first/only or when document is ready
+                    const initializeForm = () => {
+
+                        // Try immediate initialization first
+                        h();
+
+                        // If form isn't initialized yet, try again with delays
+                        if (!isFormInitialized) {
+                            setTimeout(() => {
+                                if (!isFormInitialized) h();
+                            }, 500);
+
+                            setTimeout(() => {
+                                if (!isFormInitialized) h();
+                            }, 1000);
+                        }
+                    };
+
+                    if (g.isFirstPaymentMethod(u.settings.id) || g.isOnlyGatewayMethodDisplayed(u.settings.id)) {
+
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', initializeForm);
+                            window.addEventListener('load', initializeForm);
+                        } else if (document.readyState === 'interactive') {
+                            setTimeout(initializeForm, 100);
+                            window.addEventListener('load', initializeForm);
+                        } else {
+                            // Document is already complete
+                            initializeForm();
+                        }
+                    } else {
+                        console.log('Not the first payment method, will wait for user selection');
+                    }
+
+                    // Add event listener for payment method change
+                    const radioElement = document.querySelector(
+                        "#radio-control-wc-payment-method-options-globalpayments_gpapi",
+                    );
+
+                    const handlePaymentMethodChange = () => {
+                        console.log('Payment method changed to GlobalPayments');
+                        // Reset initialization state when payment method changes
+                        isFormInitialized = false;
+                        initRetryCount = 0;
+                        h();
+                    };
+
+                    if (radioElement) {
+                        radioElement.addEventListener("change", handlePaymentMethodChange);
+                    } else {
+                        // If radio element doesn't exist yet, try again after a delay
+                        setTimeout(() => {
+                            const delayedRadioElement = document.querySelector(
+                                "#radio-control-wc-payment-method-options-globalpayments_gpapi",
+                            );
+                            if (delayedRadioElement) {
+                                delayedRadioElement.addEventListener("change", handlePaymentMethodChange);
+                            }
+                        }, 500);
+                    }
+                    const e = c(() => {
+                        _(), S();
+                    });
+                    return () => {
+                        document.querySelector(
+                            g.getPaymentMethodRadioSelector(u.settings.id),
+                        )?.checked ||
+                        (document
+                            .querySelector(
+                                g.getSubmitButtonTargetSelector(u.settings.id),
+                            )
+                            ?.remove(),
+                            g.showPlaceOrderButton()),
+                            e();
+                    };
+                }, [c]),
+                    (0, e.createElement)(
+                        e.Fragment,
+                        null,
+                        (0, e.createElement)("div", {
+                            dangerouslySetInnerHTML: {
+                                __html: u.settings.environment_indicator,
+                            },
+                        }),
+                        s.map((t) =>
+                            (0, e.createElement)(y, { id: o, field: t[1], key: t[0] }),
+                        ),
+                        (0, e.createElement)(l, { context: "gp-wp-context" }),
                     )
-                    .addEventListener("change", h);
-                const e = c(() => {
-                  _(), S();
-                });
-                return () => {
-                  document.querySelector(
-                    g.getPaymentMethodRadioSelector(u.settings.id),
-                  )?.checked ||
-                    (document
-                      .querySelector(
-                        g.getSubmitButtonTargetSelector(u.settings.id),
-                      )
-                      ?.remove(),
-                      g.showPlaceOrderButton()),
-                    e();
-                };
-              }, [c]),
-              (0, e.createElement)(
-                e.Fragment,
-                null,
-                (0, e.createElement)("div", {
-                  dangerouslySetInnerHTML: {
-                    __html: u.settings.environment_indicator,
-                  },
-                }),
-                s.map((t) =>
-                  (0, e.createElement)(y, { id: o, field: t[1], key: t[0] }),
-                ),
-                (0, e.createElement)(l, { context: "gp-wp-context" }),
-              )
             );
           },
           { id: "globalpayments_gpapi" },

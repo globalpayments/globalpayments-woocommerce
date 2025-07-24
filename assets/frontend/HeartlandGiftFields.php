@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
       $html .= '}';
       $html .= '</script>';
 
-      echo esc_html($html);
+      echo $html;
 ?>
 
 <script data-cfasync="false">

@@ -236,7 +236,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * Builds payment fields area - including environment indicator
 	 */
 	public function payment_fields() {
-		echo esc_html($this->environment_indicator());
+		echo $this->environment_indicator();
 
 		parent::payment_fields();
 	}
@@ -252,7 +252,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		) {
 			return sprintf(
 				'<div class="woocommerce-globalpayments-sandbox-warning">%s</div>',
-				__( 'This page is currently in sandbox/test mode. Do not use real/active card numbers.', 'globalpayments-gateway-provider-for-woocommerce' )
+				esc_html( 'This page is currently in sandbox/test mode. Do not use real/active card numbers.', 'globalpayments-gateway-provider-for-woocommerce' )
 			);
 		}
 	}

@@ -46,8 +46,8 @@ class HeartlandGiftGateway
         if ($gift_card_balance['error']) {
             echo wp_json_encode(
                 array(
-                    'error' => 1,
-                    'message' => $gift_card_balance['message'],
+                    'error'   => true,
+                    'message' => esc_html($gift_card_balance['message']),
                 )
             );
         } else {
@@ -59,7 +59,7 @@ class HeartlandGiftGateway
             echo wp_json_encode(
                 array(
                     'error'   => 0,
-                    'balance' => html_entity_decode(get_woocommerce_currency_symbol()) . $gift_card_balance['message'],
+                    'balance' => html_entity_decode(esc_html(get_woocommerce_currency_symbol())) . esc_html($gift_card_balance['message']),
                 )
             );
         }

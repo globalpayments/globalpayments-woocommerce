@@ -2,7 +2,7 @@
 Contributors: globalpayments
 Tags: woocommerce, woo, commerce, payments, payments
 Requires at least: 6.0
-Tested up to: 6.8
+Tested up to: 6.8.2
 Stable tag: trunk
 License: MIT
 License URI: https://github.com/globalpayments/globalpayments-woocommerce/blob/main/LICENSE
@@ -52,6 +52,10 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.13.8 (07/24/25) =
+* Various security remediations
+* Fixed HPS gift card display issue
+
 = 1.13.7 (06/10/25) =
 * Added account name mandetory with dropdown to select account
 * GPAPI gateway: switched to Drop-in UI card fields
