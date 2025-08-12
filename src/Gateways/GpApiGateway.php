@@ -3,19 +3,15 @@
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 
 use Automattic\WooCommerce\Utilities\OrderUtil;
-use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
-use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\{Environment, GatewayProvider, Channel};
 use GlobalPayments\Api\Gateways\GpApiConnector;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\DiUiApms\{BankSelect, Blik};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\Apm\Paypal;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Affirm;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure\CheckEnrollmentRequest;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\PayOrderTrait;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ApplePay;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ClickToPay;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\GooglePay;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Clearpay;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Klarna;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\{ApplePay, ClickToPay, GooglePay};
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\{Clearpay, Klarna};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\OpenBanking;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
@@ -123,7 +119,7 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $enable_three_d_secure;
 
-	protected static string $js_lib_version = '4.1.10';
+	protected static string $js_lib_version = '4.1.11';
 
 	public function __construct( $is_provider = false ) {
 		parent::__construct( $is_provider );
@@ -412,7 +408,36 @@ class GpApiGateway extends AbstractGateway {
 				return;
 			}
 		} );
-	}
+
+		if ( $this->enable_blik === "yes" ) {
+			// Add BLIK payment status callback handler
+			add_action(
+				'woocommerce_api_globalpayments_blik_status_handler',
+				array( Blik::class, 'handle_gpapi_apm_status_notification' )
+			);
+
+			// Add BLIK payment redirect/response callback handler
+			add_action(
+				'woocommerce_api_globalpayments_blik_redirect_handler',
+				array( Blik::class, 'handle_gpapi_apm_success_redirect' )
+			);
+		}
+
+		if ( $this->enable_bank_select === "yes" ) {
+			// Add bank_select payment status callback handler
+			add_action(
+				'woocommerce_api_globalpayments_bank_select_status_handler',
+				array( BankSelect::class, 'handle_gpapi_apm_status_notification' )
+			);
+
+			// Add bank_select payment redirect/response callback handler
+			add_action(
+				'woocommerce_api_globalpayments_bank_select_redirect_handler',
+				array( BankSelect::class, 'handle_gpapi_apm_success_redirect' )
+			);
+		}
+		
+}
 
 	public function woocommerce_globalpayments_gpapi_settings( $settings ) {
 		if ( ! wc_string_to_bool( $settings['enabled'] ) ) {
@@ -638,5 +663,51 @@ class GpApiGateway extends AbstractGateway {
 			OpenBanking::class,
 			Paypal::class,
 		);
+	}
+
+	/**
+	 * Configures GpApi gateway options
+	 *
+	 * @return
+	 */
+	public function init_form_fields()
+	{
+		parent::init_form_fields();
+		if ( WC()->countries->get_base_country() === 'PL' && get_woocommerce_currency() === 'PLN' ) {
+			$this->form_fields = array_merge(
+				$this->form_fields,
+				array(
+					'enable_blik'     => array(
+						'title'       => __( 'Enable Blik Payment', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'label'       => __( 'Enable Blik Payment', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'type'        => 'checkbox',
+						'default'     => ''
+					),
+					'enable_bank_select'     => array(
+						'title'       => __( 'Enable Open Banking Payment', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'label'       => __( 'Enable Open Banking Payment', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'type'        => 'checkbox',
+						'default'     => ''
+					),
+				)
+			);
+		}
+	}
+
+	/**
+	 * Use DiUi handler or abstract method
+	 *
+	 * @param int $order_id
+	 *
+	 * @return array
+	 * @throws ApiException
+	 */
+	public function process_payment( $order_id ) {
+		if ( !empty( $_POST["blik-payment"] ) && $_POST["blik-payment"] === "1" )
+			return Blik::process_blik_sale( $this, $order_id );
+		if ( !empty( $_POST["open_banking"] ) )
+			return BankSelect::process_bank_select_sale( $this, $order_id );
+
+		return parent::process_payment( $order_id );
 	}
 }

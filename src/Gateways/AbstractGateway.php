@@ -71,9 +71,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	const TXN_TYPE_INITIATE_AUTHENTICATION = 'initiateAuthentication';
 
 	const TXN_TYPE_PAYPAL_INITIATE = 'initiatePayment';
-	// Subscription 
+	// Subscription
 	const TXN_TYPE_SUBSCRIPTION_PAYMENT = 'subscriptionPayment';
-
 
 	/**
 	 * Gateway provider. Should be overriden by individual gateway implementations
@@ -153,6 +152,20 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @var array
 	 */
 	public $avs_reject_conditions;
+
+    /**
+     * Enable Blik Payment Method
+     *
+     * @var array
+     */
+	public $enable_blik;
+
+	/**
+	 * Enable Open Banking/ Bank Select Method
+	 *
+	 * @var array
+	 */
+	public $enable_bank_select;
 
 	/**
 	 * CVN result codes
@@ -278,11 +291,13 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @return
 	 */
 	public function configure_merchant_settings() {
-		$this->title             = $this->get_option( 'title' );
-		$this->enabled           = $this->get_option( 'enabled' );
-		$this->payment_action    = $this->get_option( 'payment_action' );
-		$this->txn_descriptor    = $this->get_option( 'txn_descriptor' );
-		$this->allow_card_saving = $this->get_option( 'allow_card_saving' ) === 'yes';
+		$this->title             	= $this->get_option( 'title' );
+		$this->enabled           	= $this->get_option( 'enabled' );
+		$this->payment_action    	= $this->get_option( 'payment_action' );
+		$this->txn_descriptor    	= $this->get_option( 'txn_descriptor' );
+		$this->allow_card_saving 	= $this->get_option( 'allow_card_saving' ) === 'yes';
+		$this->enable_blik       	= $this->get_option( 'enable_blik' );
+		$this->enable_bank_select   = $this->get_option( 'enable_bank_select' );
 
 		foreach ( $this->get_gateway_form_fields() as $key => $options ) {
 			if ( ! property_exists( $this, $key ) ) {

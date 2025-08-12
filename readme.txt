@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.14.0 (08/12/25) =
+* Added DiUI-based APMs: Blik & Bank Select (Poland-only APMs)
+
 = 1.13.8 (07/24/25) =
 * Various security remediations
 * Fixed HPS gift card display issue

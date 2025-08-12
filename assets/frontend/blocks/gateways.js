@@ -324,20 +324,55 @@
     );
   },
     h = () => {
-        // Check if form is already initialized
-        if (isFormInitialized && u.cardForm) {
-            console.log('GlobalPayments form is already initialized, skipping...');
-            return;
-        }
+      // Check if form is already initialized
+      if (isFormInitialized && u.cardForm) {
+        console.log('GlobalPayments form is already initialized, skipping...');
+        return;
+      }
 
-        // Check retry limit
-        if (initRetryCount >= MAX_RETRY_COUNT) {
-            console.error('Maximum retry attempts reached. GlobalPayments form initialization failed.');
-            v('Payment form could not be loaded. Please refresh the page and try again.');
-            return;
-        }
+      // Check retry limit
+      if (initRetryCount >= MAX_RETRY_COUNT) {
+        console.error('Maximum retry attempts reached. GlobalPayments form initialization failed.');
+        v('Payment form could not be loaded. Please refresh the page and try again.');
+        return;
+      }
 
-        const e = u.settings.gateway_options;
+      const e = u.settings.gateway_options;
+
+      // Alternate payment options
+      let acceptBlik = (u.settings.enable_blik === 'yes') ? true : false;
+      let acceptOpenBanking = (u.settings.enable_bank_select === 'yes') ? true : false;
+
+      let apmsEnabled = (acceptBlik || acceptOpenBanking) ? true : false;
+
+      if (apmsEnabled) {
+        var x = {
+          apms: {
+            currencyCode: "PLN",
+            countryCode: "PL",
+            nonCardPayments: {
+              allowedPaymentMethods: [
+                {
+                  provider: GlobalPayments.enums.ApmProviders.Blik,
+                  enabled: acceptBlik,
+                },
+              ]
+            }
+          },
+        };
+
+        // using push because Open Banking doesn't respect the 'enabled' property currently
+        if (acceptOpenBanking) {
+          x.apms.nonCardPayments.allowedPaymentMethods.push(
+            {
+              provider: GlobalPayments.enums.ApmProviders.OpenBanking,
+              enabled: acceptOpenBanking,
+              category: "TBD"
+            }
+          )
+        }
+      }
+
         e.error && v(e.message);
 
         // Create submit button if it doesn't exist
@@ -386,47 +421,116 @@
             return;
         }
 
-        // Reset retry count on successful dependency check
-        initRetryCount = 0;
+      // Reset retry count on successful dependency check
+      initRetryCount = 0;
 
+      let apmArray = (apmsEnabled) ? [] : false;
+
+      try {
         const t = GlobalPayments;
-        try {
-            t.configure(e);
-            t.on("error", f);
+        const ee = Object.assign(e, x);
+        t.configure(ee),
+          t.on("error", f),
+          (u.cardForm = t.creditCard.form(
+            "#" + u.settings.id + "-" + u.fieldOptions["payment-form"].class,
+            {
+              amount: u.settings.helper_params.order.amount,
+              style: "gp-default",
+              apms: apmArray,
+            },
+          )),
+          // for blik click process
+          u.cardForm.on(GlobalPayments.enums.ApmEvents.PaymentMethodSelection, paymentProviderData => {
+            const {
+              provider,
+              countryCode,
+              currencyCode,
+              bankName
+            } = paymentProviderData;
+            console.log('Selected provider: ' + provider);
 
-            u.cardForm = t.creditCard.form(formContainer, {
-                style: "gp-default",
+            let detail = {};
+
+            switch (provider) {
+              case GlobalPayments.enums.ApmProviders.Blik:
+                g.setPaymentMethodData({ 'blik-payment': true });
+                g.placeOrder();
+                break;
+              case GlobalPayments.enums.ApmProviders.OpenBanking:
+                if (!bankName) {
+                  detail = {
+                    provider,
+                    redirect_url: "https://fluentlenium.com/",
+                    countryCode,
+                    currencyCode,
+                  }
+                } else {
+                  g.setPaymentMethodData({ 'OPEN_BANKING': bankName });
+                  g.placeOrder();
+                }
+                break;
+              default:
+                detail = {
+                  "seconds_to_expire": "900",
+                  "next_action": "REDIRECT_IN_FRAME",
+                  "redirect_url": 'https://google.com/',
+                  provider,
+                };
+                break;
+            }
+
+            const merchantCustomEventProvideDetails = new CustomEvent(GlobalPayments.enums.ApmEvents.PaymentMethodActionDetail, {
+              detail: detail
             });
 
-            // Mark form as initialized
-            isFormInitialized = true;
+            // may need to modify this in the future, but for now the only time for this event to fire
+            // is when Open Banking payment option is clicked 
+            if (!bankName) window.dispatchEvent(merchantCustomEventProvideDetails);
 
-            // Add event handlers only if form was successfully created
-            if (u.cardForm) {
-                u.cardForm.on("submit", "click", () => {
-                    w(), b(), g.blockOnSubmit();
-                });
-                u.cardForm.on("token-success", T);
-                u.cardForm.on("token-error", f);
-                u.cardForm.on("error", f);
-                u.cardForm.on("card-form-validity", (e) => {
-                    e || (g.unblockOnError(), S(), _());
-                });
-                u.cardForm.ready(() => {
-                    g.toggleSubmitButtons();
-                });
+            // this prevents the page the checkout form refreshing when this button is clicked
+            if (document.getElementById("select-another-payment-method-button")) {
+              document.getElementById("select-another-payment-method-button").addEventListener("click", function(event) {
+              event.preventDefault();
+            });            
+          }
+        });
 
-            } else {
-                console.error('Failed to create GlobalPayments form');
-                isFormInitialized = false;
-                v('Payment form initialization failed. Please refresh the page.');
-            }
-        } catch (error) {
-            console.error('Error initializing GlobalPayments form:', error);
-            isFormInitialized = false;
-            v('Payment system initialization failed. Please refresh the page.');
-            return;
+        // Mark form as initialized
+        isFormInitialized = true;
+
+        function apmClick(event) {
+          event.preventDefault();
         }
+
+        for (let item of document.getElementById("globalpayments_gpapi-payment-form").getElementsByTagName("button")) {
+          item.addEventListener("click", apmClick, false)
+        }
+
+        // Add event handlers only if form was successfully created
+        if (u.cardForm) {
+          u.cardForm.on("submit", "click", () => {
+            w(), b(), g.blockOnSubmit();
+          });
+          u.cardForm.on("token-success", T);
+          u.cardForm.on("token-error", f);
+          u.cardForm.on("error", f);
+          u.cardForm.on("card-form-validity", (e) => {
+            e || (g.unblockOnError(), S(), _());
+          });
+          u.cardForm.ready(() => {
+            g.toggleSubmitButtons();
+          });
+        } else {
+          console.error('Failed to create GlobalPayments form');
+          isFormInitialized = false;
+          v('Payment form initialization failed. Please refresh the page.');
+        }
+      } catch (error) {
+        console.error('Error initializing GlobalPayments form:', error);
+        isFormInitialized = false;
+        v('Payment system initialization failed. Please refresh the page.');
+        return;
+      }
     },
     w = () => {
       const e = document.querySelector(
