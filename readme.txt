@@ -1,4 +1,4 @@
-=== GlobalPayments WooCommerce ===
+=== GlobalPayments Gateway Provider for WooCommerce ===
 Contributors: globalpayments
 Tags: woocommerce, woo, commerce, payments, payments
 Requires at least: 6.0
@@ -38,8 +38,8 @@ For more information or questions, please email <a href="mailto:developers@globa
 Discover our developer portal powered by Heartland, a Global Payments Company (https://developer.heartlandpaymentsystems.com/) or our portal for companies located outside the US (https://developer.globalpay.com/).
 
 == Installation ==
-After you have installed and configured the main WooCommerce plugin use the following steps to install the GlobalPayments WooCommerce:
-1. In your WordPress admin, go to Plugins > Add New and search for "GlobalPayments WooCommerce"
+After you have installed and configured the main WooCommerce plugin use the following steps to install the GlobalPayments Gateway Provider for WooCommerce:
+1. In your WordPress admin, go to Plugins > Add New and search for "GlobalPayments Gateway Provider for WooCommerce"
 2. Click Install, once installed click Activate
 3. Configure and Enable gateways in WooCommerce by adding your public and secret Api Keys
 
@@ -52,6 +52,12 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.14.1 (08/26/25) =
+* Enhanced functionality for determining optimal configuration for 3DS
+* Fixed Admin Panel "Pay for Order" button display issue
+* Minor labeling and description improvements
+* GPAPI gateway: fixed admin-panel configuration screen display issue
+
 = 1.14.0 (08/12/25) =
 * Added DiUI-based APMs: Blik & Bank Select (Poland-only APMs)
 

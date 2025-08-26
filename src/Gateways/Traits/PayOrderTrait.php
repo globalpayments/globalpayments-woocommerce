@@ -62,6 +62,7 @@ trait PayOrderTrait {
 				'payorder_url'        => WC()->api_request_url( 'globalpayments_pay_order' ),
 				'payment_methods'     => $this->get_stored_payment_methods( $order->get_customer_id() ),
 				'payment_methods_url' => WC()->api_request_url( 'globalpayments_get_payment_methods' ),
+				"is_admin_order_page" => ! is_null( get_current_screen() ) && 'woocommerce_page_wc-orders' === get_current_screen()->base,
 			)
 		);
 		wp_enqueue_style(

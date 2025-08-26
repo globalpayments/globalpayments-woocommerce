@@ -1,6 +1,6 @@
 <p class="form-field form-field-wide">
     <button class="button button-secondary wc-globalpayments-pay-order"><?php esc_html_e( 'Pay for Order', 'globalpayments-gateway-provider-for-woocommerce' ); ?></button>
-    <?php echo esc_html(wc_help_tip( esc_html__( 'Admins can process customer orders over the phone using this functionality.', 'globalpayments-gateway-provider-for-woocommerce' ) )); ?>
+    <?php echo wc_help_tip( esc_html__( 'Admins can process customer orders over the phone using this functionality.', 'globalpayments-gateway-provider-for-woocommerce' ) ); ?>
 </p>
 <script type="text/template" id="tmpl-wc-globalpayments-pay-order-modal">
     <div class="wc-backbone-modal">
@@ -45,7 +45,7 @@
                                     <#})#>
                                 <#}#>
                                 <?php
-                                echo esc_html($this->get_new_payment_method_option_html());
+                                echo $this->get_new_payment_method_option_html();
                                 $this->form();
                                 ?>
                             </ul>

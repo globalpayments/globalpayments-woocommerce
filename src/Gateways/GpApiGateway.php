@@ -144,7 +144,7 @@ class GpApiGateway extends AbstractGateway {
 				'description' => sprintf(
 					/* translators: %s: Email address of support team */
 					esc_html__(
-						'Get your App Id and App Key from your %sGlobal Payments Developer Account%s. Please follow the instructions provided in the %splugin description%s. When you are ready for Live, please contact %ssupport to get you live credentials.',
+						'Get your App ID and App Key from your %sGlobal Payments Developer Account%s. Please follow the instructions provided in the %splugin description%s. When you are ready to go Live, please contact %ssupport to get you live credentials.',
 						'globalpayments-gateway-provider-for-woocommerce'
 					),
 					'<a href="https://developer.globalpay.com/user/register" target="_blank">',
@@ -264,7 +264,9 @@ class GpApiGateway extends AbstractGateway {
 				'title'   => __( 'Enable 3D Secure', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'   => __( 'Enable 3D Secure', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'checkbox',
-				'default' => 'yes'
+				'default' => 'yes',
+				'description'       => __( $this->get_three_d_secure_display_text(), 'globalpayments-gateway-provider-for-woocommerce' ),
+				'custom_attributes' => $this->three_d_secure_required() ? ["disabled"=> true] : []
 			),
 		);
 	}
@@ -442,6 +444,10 @@ class GpApiGateway extends AbstractGateway {
 	public function woocommerce_globalpayments_gpapi_settings( $settings ) {
 		if ( ! wc_string_to_bool( $settings['enabled'] ) ) {
 			return $settings;
+		}
+		// Prevent the user from disabling 3DS option if required in their country, only applicable in production mode
+		if( !wc_string_to_bool( $settings['enable_three_d_secure'] ) && self::three_d_secure_required() ) {
+			$settings['enable_three_d_secure'] = "yes";
 		}
 		if ( wc_string_to_bool( $settings['is_production'] ) ) {
 			if ( empty( $settings['app_id'] ) || empty( $settings['app_key'] ) ) {
@@ -647,6 +653,7 @@ class GpApiGateway extends AbstractGateway {
 
 		return false;
 	}
+  
 	/**
 	 * Returns gateway supported payment methods.
 	 *
@@ -664,6 +671,45 @@ class GpApiGateway extends AbstractGateway {
 			Paypal::class,
 		);
 	}
+
+	 /**
+     * Determines if 3DS is required, based on store location
+     * 
+     * @return bool
+     */
+    private function three_d_secure_required()
+    {
+        //Note: cannot access class varables from get_gateway_form_fields method.
+        if ( isset( $this->is_production ) && false == $this->is_production ) {
+            return false;
+        } else {
+            $plugin_settings = get_option( 'woocommerce_' . self::GATEWAY_ID . '_settings', array() );
+            if( isset( $plugin_settings["is_production"] ) && false === wc_string_to_bool( $plugin_settings["is_production"] ) 
+                || isset( $plugin_settings["enabled"] ) && false === wc_string_to_bool( $plugin_settings["enabled"] ) ) {
+                return false;
+            }
+        }
+
+        $three_d_secure_required_countries = array(
+			"AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU",
+			"IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES",
+			"SE","EU","IS","LI","NO","CH","AL","BA","MD","ME","MK","RS","TR",
+			"UA","AD","BY","MC","RU","SM","GB","VA", "JP", "IN"
+        );
+		
+        return in_array( WC()->countries->get_base_country(), $three_d_secure_required_countries );
+    }
+    /**
+     * Returns display text for 3DS option
+     */
+    private function get_three_d_secure_display_text()
+    {
+        return sprintf(
+            "Based on the WooCommerce store location 3D Secure %s", ( self::three_d_secure_required() ) ? 
+            "is required for all tranactions, when in live mode" : 
+            "is not required"
+        );
+    }
 
 	/**
 	 * Configures GpApi gateway options
@@ -709,5 +755,15 @@ class GpApiGateway extends AbstractGateway {
 			return BankSelect::process_bank_select_sale( $this, $order_id );
 
 		return parent::process_payment( $order_id );
+
+	 * Used for handling AVS/CVN response codes
+	 *
+	 * @param Transaction $response
+	 *
+	 * @return void
+	 */
+	protected function handle_avs_cvn_response_codes( Transaction $response ) {
+		$response->avsResponseCode = $response->cardIssuerResponse->avsAddressResult;
+		$response->cvnResponseCode = $response->cardIssuerResponse->cvvResult;
 	}
 }

@@ -1,6 +1,6 @@
 {
   "name": "globalpayments-woocommerce",
-  "title": "Global Payments WooCommerce",
+  "title": "GlobalPayments Gateway Provider for WooCommerce",
   "version": "1.0.0",
   "author": "Global Payments",
   "license": "MIT",

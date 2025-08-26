@@ -1292,6 +1292,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		//reverse incase of AVS/CVN failure
 		if ( ! empty( $response->transactionReference->transactionId ) && $this->get_option( 'check_avs_cvv' ) === 'yes' ) {
+			$this->handle_avs_cvn_response_codes( $response );
+
 			if ( ! empty( $response->avsResponseCode ) || ! empty( $response->cvnResponseCode ) ) {
 				//check admin selected decline condtions
 				if ( in_array( $response->avsResponseCode, $this->get_option( 'avs_reject_conditions' ) ) ||
@@ -1567,5 +1569,15 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			GeniusGateway::GATEWAY_ID,
 			GpiTransactionApiGateway::GATEWAY_ID
 		);
+	}
+
+	/**
+	 * Used for handling AVS/CVN response codes
+	 *
+	 * @param Transaction $response
+	 *
+	 * @return void
+	 */
+	protected function handle_avs_cvn_response_codes( Transaction $response ) {
 	}
 }

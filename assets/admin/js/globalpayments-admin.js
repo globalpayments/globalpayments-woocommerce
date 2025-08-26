@@ -9,6 +9,7 @@
 
 	function GlobalPaymentsAdmin( globalpayments_admin_params, globalpayments_admin_txn_params, globalpayments_admin_credentials_params ) {
 		this.id = globalpayments_admin_params.gateway_id;
+		this.is_admin_order_page = globalpayments_admin_params.is_admin_order_page || false;
 		this.addValueToCredentialsCheckButton();
 		this.toggleCredentialsSettings();
 		this.toggleValidations();
@@ -24,13 +25,15 @@
 		 * @returns
 		 */
 		attachEventHandlers: function () {
-			$( document ).on( 'change', this.getLiveModeSelector(), this.toggleCredentialsSettings.bind( this ) );
-			$( document ).on( 'change', this.getEnabledGatewaySelector(), this.toggleValidations.bind( this ) );
-			$( document ).on( 'change', $( '.accepted_cards.required' ), this.validate_checkbox_fields.bind( this, '.accepted_cards.required' ) );
-			$( document ).on( 'change', $( '.aca_methods.required' ), this.validate_checkbox_fields.bind( this, '.aca_methods.required' ) );
-			$( document ).on( 'change', $( '.ob_currencies.required' ), this.validate_checkbox_fields.bind( this, '.ob_currencies.required' ) );
-			$( document ).on( 'click', this.getCheckCredentialsButtonSelector(), this.checkApiCredentials.bind( this , 'account_name_dropdown', 'account_name' ) );
-			$( document ).on( 'load ', this.checkApiCredentials( 'account_name_dropdown', 'account_name', 'change' ));
+			if ( ! this.is_admin_order_page ) {
+				$( document ).on( 'change', this.getLiveModeSelector(), this.toggleCredentialsSettings.bind( this ) );
+				$( document ).on( 'change', this.getEnabledGatewaySelector(), this.toggleValidations.bind( this ) );
+				$( document ).on( 'change', $( '.accepted_cards.required' ), this.validate_checkbox_fields.bind( this, '.accepted_cards.required' ) );
+				$( document ).on( 'change', $( '.aca_methods.required' ), this.validate_checkbox_fields.bind( this, '.aca_methods.required' ) );
+				$( document ).on( 'change', $( '.ob_currencies.required' ), this.validate_checkbox_fields.bind( this, '.ob_currencies.required' ) );
+				$( document ).on( 'click', this.getCheckCredentialsButtonSelector(), this.checkApiCredentials.bind( this , 'account_name_dropdown', 'account_name' ) );
+				$( document ).on( 'load ', this.checkApiCredentials( 'account_name_dropdown', 'account_name', 'change' ));
+			}
 			// Admin Pay for Order
 			$( '#customer_user' ).on( 'change', this.updatePaymentMethods );
 			$( '.wc-globalpayments-pay-order' ).on( 'click', this.payForOrder );
@@ -42,9 +45,10 @@
 			$( '#woocommerce_globalpayments_fasterpayments_payment_action' ).prop( 'disabled', true );
 			$( '#woocommerce_globalpayments_bankpayment_payment_action' ).prop( 'disabled', true );
 
+			var self = this;
 			$( document ).on( 'ready',function () {
 				var selector = '';
-				if( $( '#woocommerce_' + this.id + '_is_production' ).is( ':checked' ) ) {
+				if( $( '#woocommerce_' + self.id + '_is_production' ).is( ':checked' ) ) {
 					selector = 'woocommerce_globalpayments_gpapi_';
 				} else {
 					selector = 'woocommerce_globalpayments_gpapi_sandbox_';
