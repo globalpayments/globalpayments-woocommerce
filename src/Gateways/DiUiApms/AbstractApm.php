@@ -51,10 +51,21 @@ class AbstractApm{
 			// Find the order
 			$order = wc_get_order( $order_id );
 
-			// If status notification transaction id and order transaction id are
-			// the same then update the order status
-			if ( $order->get_transaction_id() === $transaction_id )
+			// If status notification transaction id and order transaction id are the same then update the order status
+			if ( $order->get_transaction_id() === $transaction_id ) {
 				self::update_order_status_from_notification( $order, $payment_status, $transaction_id, $request_data );
+			} else {
+				// Fallback: If payment status is DECLINED or CANCELLED and order is on-hold, update to cancelled
+				$status_upper = strtoupper( $payment_status );
+				if ( in_array( $status_upper, array( 'DECLINED', 'CANCELLED' ) ) && $order->get_status() === 'on-hold' ) {
+					$note_text = sprintf(
+						'Order status updated to cancelled due to payment status: %s (fallback).',
+						$status_upper
+					);
+					$order->update_status( 'cancelled', $note_text );
+					$order->save();
+				}
+			}
 		}
 	}
 
@@ -141,7 +152,8 @@ class AbstractApm{
 				}
 				break;
 			case 'DECLINED':
-				if ( in_array( $order->get_status(), array( 'on-hold', 'pending' ) ) ) {
+			case 'CANCELLED':
+				if ( in_array( $order->get_status(), array( 'on-hold', 'pending', 'cancelled', 'declined' ) ) ) {
 					$note_text = sprintf(
 						'Payment failed/declined via status notification. %s',
 						$callback_summary
@@ -166,13 +178,17 @@ class AbstractApm{
 	{
 		$gateway = new GpApiGateway();
 
-		if ( $_REQUEST["status"] === "DECLINED" ) {			
-			wc_get_order(
+		if ( isset($_REQUEST["status"]) && in_array(strtoupper($_REQUEST["status"]), ["DECLINED", "CANCELLED"]) ) {
+			$order = wc_get_order(
 				str_replace( "WooCommerce_Order_", "", $_REQUEST["reference"] )
-			)->add_order_note( sprintf( 'Payment declined or was cancelled by customer.' ) );
-
+			);
+			if ( $order && $order->get_status() === 'on-hold' ) {
+				$order->update_status( 'cancelled', 'Payment declined or was cancelled by customer.');
+			} else if ($order) {
+				$order->add_order_note( sprintf( 'Payment declined or was cancelled by customer.' ) );
+			}
 			wp_safe_redirect( wc_get_checkout_url() );
-		} elseif( $_REQUEST["status"] === "CAPTURED" ) {
+		} elseif( isset($_REQUEST["status"]) && $_REQUEST["status"] === "CAPTURED" ) {
 			self::handle_gpapi_apm_status_notification();
 
 			WC()->cart->empty_cart();

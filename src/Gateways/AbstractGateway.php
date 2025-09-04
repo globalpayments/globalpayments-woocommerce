@@ -1292,7 +1292,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 		//reverse incase of AVS/CVN failure
 		if ( ! empty( $response->transactionReference->transactionId ) && $this->get_option( 'check_avs_cvv' ) === 'yes' ) {
-			$this->handle_avs_cvn_response_codes( $response );
+			// Will enable once PHP SDK supporting changes are released
+			// $this->handle_avs_cvn_response_codes( $response );
 
 			if ( ! empty( $response->avsResponseCode ) || ! empty( $response->cvnResponseCode ) ) {
 				//check admin selected decline condtions

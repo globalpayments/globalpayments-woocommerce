@@ -318,7 +318,7 @@
         "label",
         { htmlFor: `${o}-${n.class}` },
         n.label,
-        (0, e.createElement)("span", { className: "required" }, "*"),
+        (0, e.createElement)("span", { className: "required" }, ""),
       ),
       (0, e.createElement)("div", { id: `${o}-${n.class}` }),
     );

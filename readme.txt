@@ -52,6 +52,10 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.14.3 (09/04/25) =
+* Updates to order status handling for Blik transactions
+* Minor corrections to file formatting
+
 = 1.14.1 (08/26/25) =
 * Enhanced functionality for determining optimal configuration for 3DS
 * Fixed Admin Panel "Pay for Order" button display issue

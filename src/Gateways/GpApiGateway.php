@@ -4,6 +4,7 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 
 use Automattic\WooCommerce\Utilities\OrderUtil;
 use GlobalPayments\Api\Entities\Enums\{Environment, GatewayProvider, Channel};
+use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\DiUiApms\{BankSelect, Blik};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\Apm\Paypal;
@@ -755,7 +756,9 @@ class GpApiGateway extends AbstractGateway {
 			return BankSelect::process_bank_select_sale( $this, $order_id );
 
 		return parent::process_payment( $order_id );
+	}
 
+	/**
 	 * Used for handling AVS/CVN response codes
 	 *
 	 * @param Transaction $response

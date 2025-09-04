@@ -14,6 +14,7 @@
 		this.toggleCredentialsSettings();
 		this.toggleValidations();
 		this.attachEventHandlers();
+		this.attachCredentialChangeHandlers();
 		this.validate_checkbox_fields('.accepted_cards.required');
 		this.validate_checkbox_fields('.aca_methods.required');
 		this.validate_checkbox_fields('.ob_currencies.required');
@@ -373,6 +374,83 @@
 		 */
 		getCheckCredentialsButtonSelector: function () {
 			return '#woocommerce_globalpayments_gpapi_credentials_api_check';
+		},
+
+		/**
+		 * Attach event handlers for App Id and App Key changes to clear Account Name
+		 */
+		attachCredentialChangeHandlers: function () {
+			var self = this;
+            var originalValues = {};
+
+			// Live mode credential change handlers
+			$(document).on('focus', '#woocommerce_' + this.id + '_app_id', function() {
+				originalValues.appId = $(this).val();
+			});
+
+            $(document).on('blur', '#woocommerce_' + this.id + '_app_id', function() {
+                var currentValue = $(this).val();
+                if (originalValues.appId !== currentValue) {
+                    self.clearAccountName(true);
+                }
+            });
+
+            $(document).on('focus', '#woocommerce_' + this.id + '_app_key', function() {
+                originalValues.appKey = $(this).val();
+            });
+
+            $(document).on('blur', '#woocommerce_' + this.id + '_app_key', function() {
+                var currentValue = $(this).val();
+                if (originalValues.appKey !== currentValue) {
+                    self.clearAccountName(true);
+                }
+            });
+
+            // Sandbox mode credential change handlers
+            $(document).on('focus', '#woocommerce_' + this.id + '_sandbox_app_id', function() {
+                originalValues.sandboxAppId = $(this).val();
+            });
+
+            $(document).on('blur', '#woocommerce_' + this.id + '_sandbox_app_id', function() {
+                var currentValue = $(this).val();
+                if (originalValues.sandboxAppId !== currentValue) {
+                    self.clearAccountName(false);
+                }
+            });
+
+            $(document).on('focus', '#woocommerce_' + this.id + '_sandbox_app_key', function() {
+                originalValues.sandboxAppKey = $(this).val();
+            });
+
+            $(document).on('blur', '#woocommerce_' + this.id + '_sandbox_app_key', function() {
+                var currentValue = $(this).val();
+                if (originalValues.sandboxAppKey !== currentValue) {
+                    self.clearAccountName(false);
+                }
+            });
+		},
+
+		/**
+		 * Clear account name field and dropdown for the specified mode
+		 */
+		clearAccountName: function (isLiveMode) {
+			if (isLiveMode) {
+				// Clear live mode account name
+				$('#woocommerce_' + this.id + '_account_name').val('').trigger('change');
+				var liveDropdown = $('#woocommerce_' + this.id + '_account_name_dropdown');
+				if (liveDropdown.length > 0) {
+					// Clear all options
+					liveDropdown.empty();
+				}
+			} else {
+				// Clear sandbox mode account name
+				$('#woocommerce_' + this.id + '_sandbox_account_name').val('').trigger('change');
+				var sandboxDropdown = $('#woocommerce_' + this.id + '_sandbox_account_name_dropdown');
+				if (sandboxDropdown.length > 0) {
+					// Clear all options
+					sandboxDropdown.empty();
+				}
+			}
 		},
 	};
 	new GlobalPaymentsAdmin( globalpayments_admin_params, globalpayments_admin_txn_params, globalpayments_admin_credentials_params );
