@@ -453,6 +453,7 @@ class GpApiGateway extends AbstractGateway {
 		if ( wc_string_to_bool( $settings['is_production'] ) ) {
 			if ( empty( $settings['app_id'] ) || empty( $settings['app_key'] ) ) {
 				add_action( 'admin_notices', function () {
+					// esc_html__ is used here to sanitize user input and prevent XSS vulnerabilities
 					echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' .
 					     esc_html__( 'Please provide Live Credentials.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
 				} );
@@ -462,6 +463,7 @@ class GpApiGateway extends AbstractGateway {
 		}
 		if ( empty( $settings['sandbox_app_id'] ) || empty( $settings['sandbox_app_key'] ) ) {
 			add_action( 'admin_notices', function () {
+				// esc_html__ is used here to sanitize user input and prevent XSS vulnerabilities
 				echo '<div id="message" class="notice notice-error is-dismissible"><p><strong>' .
 				     esc_html__( 'Please provide Sandbox Credentials.', 'globalpayments-gateway-provider-for-woocommerce' ) . '</strong></p></div>';
 			} );
@@ -758,8 +760,7 @@ class GpApiGateway extends AbstractGateway {
 		return parent::process_payment( $order_id );
 	}
 
-	/**
-	 * Used for handling AVS/CVN response codes
+	 /* Used for handling AVS/CVN response codes
 	 *
 	 * @param Transaction $response
 	 *

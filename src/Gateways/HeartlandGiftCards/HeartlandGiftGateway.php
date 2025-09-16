@@ -44,18 +44,20 @@ class HeartlandGiftGateway
         );
 
         if ($gift_card_balance['error']) {
-            echo wp_json_encode(
-                array(
-                    'error'   => true,
-                    'message' => esc_html($gift_card_balance['message']),
-                )
-            );
+                // esc_html is used here to sanitize user input and prevent XSS vulnerabilities
+                echo wp_json_encode(
+                    array(
+                        'error'   => true,
+                        'message' => esc_html($gift_card_balance['message']),
+                    )
+                );
         } else {
             $this->temp_balance = $gift_card_balance['message'];
 
             $this->addGiftCardToCartSession();
             $this->updateGiftCardCartTotal();
 
+            // esc_html is used here to sanitize user input and prevent XSS vulnerabilities
             echo wp_json_encode(
                 array(
                     'error'   => 0,

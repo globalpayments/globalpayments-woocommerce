@@ -1145,10 +1145,23 @@
                     (0, e.createElement)(
                         e.Fragment,
                         null,
+                        // Basic HTML sanitizer to remove script tags and potentially dangerous content
+                        function sanitizeHTML(html) {
+                          const div = document.createElement('div');
+                          div.innerHTML = html;
+                          // Remove script tags
+                          const scripts = div.getElementsByTagName('script');
+                          while (scripts.length > 0) {
+                            scripts[0].parentNode.removeChild(scripts[0]);
+                          }
+                          // Optionally, remove other dangerous tags or attributes here
+                          return div.innerHTML;
+                        }
+                        // Sanitizing environment_indicator before using dangerouslySetInnerHTML
                         (0, e.createElement)("div", {
-                            dangerouslySetInnerHTML: {
-                                __html: u.settings.environment_indicator,
-                            },
+                          dangerouslySetInnerHTML: {
+                            __html: sanitizeHTML(u.settings.environment_indicator),
+                          },
                         }),
                         s.map((t) =>
                             (0, e.createElement)(y, { id: o, field: t[1], key: t[0] }),

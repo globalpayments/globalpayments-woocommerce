@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.14.5 (09/11/25) =
+* Various security remediations
+
 = 1.14.4 (09/09/25) =
 * Google Pay misaligned button issue
 
