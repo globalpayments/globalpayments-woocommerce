@@ -243,6 +243,12 @@ class HeartlandGiftGateway
 
     public function addGiftCards()
     {
+        static $already_output = false;
+        if ($already_output) {
+            return;
+        }
+        $already_output = true;
+
         // TODO: Add warnings and success messages
         // $gift_cards_allowed = $this->giftCardsAllowed();
         $gift_cards_allowed = true;
@@ -292,7 +298,7 @@ class HeartlandGiftGateway
                 $order_total_html .= '<td data-title="' . esc_attr($message) . '">' . wc_price($original_total) . '</td>';
                 $order_total_html .= '</tr>';
 
-                echo esc_html(apply_filters('securesubmit_before_gift_cards_order_total', $order_total_html, $original_total, $message));
+                echo apply_filters('securesubmit_before_gift_cards_order_total', $order_total_html, $original_total, $message);
 
                 foreach ($gift_card_object_applied as $applied_gift_card) {
                     $remove_link = '<a href="#" id="' . $applied_gift_card->gift_card_id . '" class="securesubmit-remove-gift-card">(Remove)</a>';
@@ -302,7 +308,7 @@ class HeartlandGiftGateway
                     $gift_card_html .= '<td data-title="' . esc_attr($applied_gift_card->gift_card_name) . '">' . wc_price($applied_gift_card->used_amount) . '</td>';
                     $gift_card_html .= '</tr>';
 
-                    echo esc_html(apply_filters('securesubmit_gift_card_used_total', $gift_card_html, $applied_gift_card->gift_card_name, $remove_link, $applied_gift_card->used_amount));
+                    echo apply_filters('securesubmit_gift_card_used_total', $gift_card_html, $applied_gift_card->gift_card_name, $remove_link, $applied_gift_card->used_amount);
                 }
             }
         } else {

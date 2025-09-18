@@ -52,6 +52,11 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.14.6 (09/18/25) =
+* Gift card script is visible on checkout page issue
+* Fixed - Payment fields not loading issue
+* Fixed - Google Pay content issue, which was displaying HTML tags
+
 = 1.14.5 (09/11/25) =
 * Various security remediations
 

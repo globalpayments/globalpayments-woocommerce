@@ -122,11 +122,13 @@ class GooglePay extends AbstractDigitalWallet {
 				'title'       => __( 'Allowed Card Auth Methods*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'multiselectcheckbox',
 				'class'       => 'aca_methods required',
-				'description' => __('PAN_ONLY: This authentication method is associated with payment cards stored on file with the user\'s Google Account.
-		CRYPTOGRAM_3DS: This authentication method is associated with cards stored as Android device tokens.
-
-		PAN_ONLY can expose the FPAN, which requires an additional SCA step up to a 3DS check. Currently, Global Payments does not support the Google Pay SCA challenge with an FPAN. For the best acceptance, we recommend that you provide only the CRYPTOGRAM_3DS option.','globalpayments-gateway-provider-for-woocommerce'),
-				'desc_tip'    => true,
+				'description' => __(
+					'<strong>PAN_ONLY:</strong> This authentication method is associated with payment cards stored on file with the user\'s Google Account.<br>' .
+					'<strong>CRYPTOGRAM_3DS:</strong> This authentication method is associated with cards stored as Android device tokens.<br><br>' .
+					'PAN_ONLY can expose the FPAN, which requires an additional SCA step up to a 3DS check. Currently, Global Payments does not support the Google Pay SCA challenge with an FPAN. For the best acceptance, we recommend that you provide only the CRYPTOGRAM_3DS option.',
+					'globalpayments-gateway-provider-for-woocommerce'
+				),
+				'desc_tip'    => false,
 				'css'         => 'width: 450px; height: 110px',
 				'options'     => array(
 					'PAN_ONLY'       => 'PAN_ONLY',

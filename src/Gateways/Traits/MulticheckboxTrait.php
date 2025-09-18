@@ -48,7 +48,7 @@ trait MulticheckboxTrait {
 							</li>
 						<?php endforeach; ?>
 					</ul>
-					<?php echo esc_html( $this->get_description_html( $data ) ); // WPCS: XSS ok. ?>
+					<?php echo wp_kses_post( $this->get_description_html( $data ) ); // WPCS: XSS ok. ?>
 					<?php if ( $data['select_buttons'] ) : ?>
 						<br/><a class="select_all button" href="#"><?php esc_html_e( 'Select all', 'globalpayments-gateway-provider-for-woocommerce' ); ?></a> <a class="select_none button" href="#"><?php esc_html_e( 'Select none', 'globalpayments-gateway-provider-for-woocommerce' ); ?></a>
 					<?php endif; ?>
