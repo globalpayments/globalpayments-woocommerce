@@ -3,7 +3,7 @@
  * Plugin Name: GlobalPayments Gateway Provider for WooCommerce
  * Plugin URI: https://github.com/globalpayments/globalpayments-woocommerce
  * Description: This extension allows WooCommerce to use the available Global Payments payment gateways. All card data is tokenized using the respective gateway's tokenization service.
- * Version: 1.14.6
+ * Version: 1.14.7
  * Requires PHP: 8.0
  * Requires Plugins: woocommerce
  * WC tested up to: 9.0.2
@@ -65,8 +65,12 @@ if ( is_readable( $autoloader ) ) {
 }
 
 function globalpayments_update_v110_v111( WP_Upgrader $wp_upgrader, $hook_extra ) {
-	if ( empty( $hook_extra ) || empty( $hook_extra[ 'type' ] ) || 'plugin' !== $hook_extra[ 'type' ] ||
-		empty( $hook_extra[ 'plugins' ] ) || ! in_array( plugin_basename( __FILE__ ), $hook_extra[ 'plugins' ] )
+	if (
+		empty( $hook_extra ) ||
+		'plugin' !== ( $hook_extra['type'] ?? '' ) ||
+		!isset( $hook_extra['plugins'] ) ||
+		!is_array( $hook_extra['plugins'] ) ||
+		!in_array( plugin_basename( __FILE__ ), $hook_extra['plugins'], true )
 	) {
 		return;
 	}
@@ -120,8 +124,12 @@ function globalpayments_update_v110_v111( WP_Upgrader $wp_upgrader, $hook_extra 
 add_action( 'upgrader_process_complete', 'globalpayments_update_v110_v111', 9, 2 );
 
 function globalpayments_update_plugin_version( WP_Upgrader $wp_upgrader, $hook_extra ) {
-	if ( empty( $hook_extra ) || empty( $hook_extra[ 'type' ] ) || 'plugin' !== $hook_extra[ 'type' ] ||
-		empty( $hook_extra[ 'plugins' ] ) || ! in_array( plugin_basename( __FILE__ ), $hook_extra[ 'plugins' ] )
+	if (
+		empty( $hook_extra ) ||
+		'plugin' !== ( $hook_extra['type'] ?? '' ) ||
+		!isset( $hook_extra['plugins'] ) ||
+		!is_array( $hook_extra['plugins'] ) ||
+		!in_array( plugin_basename( __FILE__ ), $hook_extra['plugins'], true )
 	) {
 		return;
 	}

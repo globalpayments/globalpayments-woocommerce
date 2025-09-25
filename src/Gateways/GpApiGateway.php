@@ -297,6 +297,34 @@ class GpApiGateway extends AbstractGateway {
 		);
 	}
 
+	/**
+	 * Ensures the notification URL is valid and HTTPS, even in local/test environments.
+	 *
+	 * @param string $url
+	 * @return string
+	 */
+	private function get_valid_notification_url( string $url ) : string
+	{
+		// Replace localhost/127.0.0.1 with a sandbox placeholder for test environments
+		if ( !$this->is_production ) {
+			if (strpos( $url, 'localhost' ) !== false || strpos( $url, '127.0.0.1' ) !== false ) {
+				$url = str_replace( ['localhost', '127.0.0.1'], 'sandbox-webhook.example.com', $url ) ;
+				$url = str_replace( 'http://', 'https://', $url );
+			}
+		}
+		// Ensure HTTPS
+		if ( strpos( $url, 'http://' ) === 0 ) {
+			$url = 'https://' . substr( $url, 7 );
+		}
+		// Validate URL
+		if ( !filter_var( $url, FILTER_VALIDATE_URL ) ) {
+			// Fallback to a basic valid URL format
+			$site_url = get_site_url();
+			$url = $site_url . '/wc-api/' . basename( $url );
+		}
+		return $url;
+	}
+
 	public function get_backend_gateway_options() {
 		global $wp_version;
 
@@ -308,8 +336,12 @@ class GpApiGateway extends AbstractGateway {
 			'country'                  => wc_get_base_location()['country'],
 			'developerId'              => '',
 			'environment'              => $this->is_production ? Environment::PRODUCTION : Environment::TEST,
-			'methodNotificationUrl'    => WC()->api_request_url( 'globalpayments_threedsecure_methodnotification' ),
-			'challengeNotificationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
+			'methodNotificationUrl'    => $this->get_valid_notification_url(
+				WC()->api_request_url( 'globalpayments_threedsecure_methodnotification' )
+			),
+			'challengeNotificationUrl' => $this->get_valid_notification_url(
+				WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' )
+			),
 			'merchantContactUrl'       => $this->merchant_contact_url,
 			'dynamicHeaders'           => [
 				'x-gp-platform'  => 'wordpress;version=' . $wp_version . ';woocommerce;version=' . WC()->version,

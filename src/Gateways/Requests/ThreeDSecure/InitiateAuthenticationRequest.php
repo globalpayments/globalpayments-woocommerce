@@ -37,8 +37,7 @@ class InitiateAuthenticationRequest extends AbstractAuthenticationsRequest {
 
 			$threeDSecureData                      = new ThreeDSecure();
 			$threeDSecureData->serverTransactionId = $requestData->versionCheckData->serverTransactionId;
-			$methodUrlCompletion                   = ( $requestData->versionCheckData->methodData && $requestData->versionCheckData->methodUrl ) ?
-				MethodUrlCompletion::YES : MethodUrlCompletion::NO;
+			$methodUrlCompletion = MethodUrlCompletion::NO;
 
 			$threeDSecureData = Secure3dService::initiateAuthentication( $paymentMethod, $threeDSecureData )
 				->withAmount( $requestData->order->amount )
@@ -83,25 +82,39 @@ class InitiateAuthenticationRequest extends AbstractAuthenticationsRequest {
 	}
 
 	private function get_browser_data( $requestData ) {
-		$browserData                     = new BrowserData();
-		$browserData->acceptHeader       = isset( $_SERVER['HTTP_ACCEPT'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_ACCEPT'] ) ) : '';
-		$browserData->colorDepth         = $requestData->browserData->colorDepth;
-		$browserData->ipAddress          = isset( $_SERVER['REMOTE_ADDR'] ) ? wc_clean( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
-		$browserData->javaEnabled        = $requestData->browserData->javaEnabled ?? false;
-		$browserData->javaScriptEnabled  = $requestData->browserData->javascriptEnabled;
-		$browserData->language           = $requestData->browserData->language;
-		$browserData->screenHeight       = $requestData->browserData->screenHeight;
-		$browserData->screenWidth        = $requestData->browserData->screenWidth;
-		$browserData->challengWindowSize = $requestData->challengeWindow->windowSize;
-		$browserData->timeZone           = $requestData->browserData->timezoneOffset;
-		$browserData->userAgent          = $requestData->browserData->userAgent;
+		$browserDataRequest = $requestData->browserData ?? null;
+		$browserData = new BrowserData();
+		$browserData->acceptHeader = isset( $_SERVER['HTTP_ACCEPT'] )
+			? wc_clean( wp_unslash( $_SERVER['HTTP_ACCEPT'] ) )
+			: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';
+		$browserData->colorDepth = $browserDataRequest->colorDepth ?? 24;
+		$browserData->ipAddress = isset( $_SERVER['REMOTE_ADDR'] )
+			? wc_clean( wp_unslash( $_SERVER['REMOTE_ADDR'] ) )
+			: '127.0.0.1';
+		$browserData->javaEnabled = $browserDataRequest->javaEnabled ?? false;
+		$browserData->javaScriptEnabled = $browserDataRequest->javascriptEnabled ?? true;
+		$browserData->language = $browserDataRequest->language ?? 'en-US';
+		$browserData->screenHeight = $browserDataRequest->screenHeight ?? 1080;
+		$browserData->screenWidth = $browserDataRequest->screenWidth ?? 1920;
+		$browserData->challengWindowSize = $requestData->challengeWindow->windowSize ?? 'WINDOWED_500X600';
+		$browserData->timeZone = $browserDataRequest->timezoneOffset ?? 0;
+		$browserData->userAgent = $browserDataRequest->userAgent
+			?? ( $_SERVER['HTTP_USER_AGENT'] ?? 'Mozilla/5.0 (compatible)' );
 
 		return $browserData;
 	}
 
 	private function map_address( $addressData ) {
 		$address              = new Address();
-		$address->countryCode = CountryUtils::getNumericCodeByCountry( $addressData->country );
+		if ( empty( $addressData ) || !is_object( $addressData ) ) {
+            // Set minimal required fields for 3DS
+            $address->countryCode = 840; // Default to US
+            $address->streetAddress1 = 'N/A';
+            $address->city = 'N/A';
+            $address->postalCode = '00000';
+            return $address;
+        }
+        $address->countryCode = CountryUtils::getNumericCodeByCountry( $addressData->country ?? 'US' );
 
 		foreach ( $addressData as $key => $value ) {
 			if ( property_exists( $address, $key ) && ! empty( $value ) ) {

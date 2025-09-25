@@ -5,6 +5,7 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\DiUiApms;
 use Automattic\WooCommerce\Internal\DependencyManagement\ContainerException;
 use Exception;
 use Automattic\WooCommerce\Caching\CacheException;
+use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\GpApiGateway;
 use WC_Order;
 use WC_Order_Refund;
@@ -29,6 +30,8 @@ class AbstractApm{
      */
 	public static function handle_gpapi_apm_status_notification() : void
 	{
+		if ( !AbstractApm::validateRequestContents( new GpApiGateway() ) ) return;
+
 		// Get request data (could be GET or POST)
 		$request_data = array_merge( $_GET, $_POST );
 
@@ -178,6 +181,8 @@ class AbstractApm{
 	{
 		$gateway = new GpApiGateway();
 
+		if ( !AbstractApm::validateRequestContents( $gateway ) ) return;
+
 		if ( isset($_REQUEST["status"]) && in_array(strtoupper($_REQUEST["status"]), ["DECLINED", "CANCELLED"]) ) {
 			$order = wc_get_order(
 				str_replace( "WooCommerce_Order_", "", $_REQUEST["reference"] )
@@ -205,5 +210,24 @@ class AbstractApm{
 			
 			wp_safe_redirect( $gateway->get_return_url() );
 		}
+	}
+
+	/**
+	 * 
+	 * Validate that querry string hasn't been tamperred with. This requires us to take the querry string
+	 * minus the signature at the beginning, concatenating the merchant's app key to the end of that, and
+	 * calculating the SHA512 hash. That string should equal the request signature at the beginning of the
+	 * querry string.
+
+	 * @param GpApiGateway $gateway 
+	 * @return bool 
+	 */
+	private static function validateRequestContents( GpApiGateway $gateway )  : bool
+	{
+		$querryStringSubString = substr( $_SERVER["QUERY_STRING"], strpos( $_SERVER["QUERY_STRING"], '&id=' ) + 1 );
+
+		return hash(
+			ShaHashType::SHA512, $querryStringSubString . $gateway->get_backend_gateway_options()["appKey"]
+		) === $_REQUEST["X-GP-Signature"];
 	}
 }
