@@ -52,6 +52,10 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.14.8 (10/02/25) =
+* Fixed No COF flag in authorization message while card is being saved
+* Fixed single card was being saved multiple times during checkout
+
 = 1.14.7 (09/25/25) =
 * GPAPI gateway: enhancements to Polish APM validations
 * Fixed sandbox 3ds error issue

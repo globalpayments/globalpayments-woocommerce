@@ -233,8 +233,29 @@ class SdkClient implements ClientInterface {
 				$this->card_data->cardHolderName = $this->get_arg( RequestArg::CARD_HOLDER_NAME );
 			}
 
-			if ( null !== $token && $token->get_meta( PaymentTokenData::KEY_SHOULD_SAVE_TOKEN, true ) ) {
-				$this->builder_args['requestMultiUseToken'] = array( true );
+			if (
+				null !== $token &&
+				$token instanceof \WC_Payment_Token_CC &&
+				$token->get_meta( PaymentTokenData::KEY_SHOULD_SAVE_TOKEN, true )
+			) {
+				$user_id = get_current_user_id();
+				$existing_tokens = \WC_Payment_Tokens::get_customer_tokens( $user_id );
+				$already_saved = false;
+
+				foreach ( $existing_tokens as $existing_token ) {
+					if (
+						$existing_token instanceof \WC_Payment_Token_CC &&
+							$existing_token->get_last4() === $token->get_last4() &&
+							$existing_token->get_expiry_month() === $token->get_expiry_month() &&
+							$existing_token->get_expiry_year() === $token->get_expiry_year()
+					) {
+						$already_saved = true;
+						break;
+					}
+				}
+				if ( !$already_saved ) {
+					$this->builder_args['requestMultiUseToken'] = array( true );
+				}
 			}
 		}
 		// Checks if order contains a subscription and requests a muti-use token.
@@ -278,15 +299,21 @@ class SdkClient implements ClientInterface {
 			$this->builder_args['authAmount'] = array( $this->get_arg( RequestArg::AUTH_AMOUNT ) );
 		}
 
-		if ( $token !== null && ! empty( $token->get_meta( 'card_brand_txn_id' ) ) ) {
-			$this->prepare_stored_credential_data( $token->get_meta( 'card_brand_txn_id' ) );
+		if ( $token !== null ) {
+			$is_first = ( $token->get_id() === 0 );
+
+			$this->builder_args['storedCredential'] = array(
+				$this->prepare_stored_credential_data( $token->get_meta( 'card_brand_txn_id' ), $is_first )
+			);
 		}
 	}
 
-	protected function prepare_stored_credential_data( $card_brand_txn_id ) {
+	protected function prepare_stored_credential_data( $card_brand_txn_id, $is_first ) {
 		$storedCredsDetails                         = new StoredCredential();
 		$storedCredsDetails->initiator              = StoredCredentialInitiator::CARDHOLDER;
 		$storedCredsDetails->cardBrandTransactionId = $card_brand_txn_id;
+		$storedCredsDetails->type                   = 'UNSCHEDULED';
+		$storedCredsDetails->sequence               = $is_first ? 'FIRST' : 'SUBSEQUENT';
 
 		return $storedCredsDetails;
 	}
