@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.14.9 (10/09/25) =
+* Fixed bug causing transaction failures when using TransIT gateway
+
 = 1.14.8 (10/02/25) =
 * Fixed No COF flag in authorization message while card is being saved
 * Fixed single card was being saved multiple times during checkout
