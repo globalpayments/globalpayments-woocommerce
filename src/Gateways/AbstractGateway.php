@@ -71,6 +71,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	const TXN_TYPE_INITIATE_AUTHENTICATION = 'initiateAuthentication';
 
 	const TXN_TYPE_PAYPAL_INITIATE = 'initiatePayment';
+	//GpAPI HPP Requests
+	const TXN_TYPE_CREATE_HPP = 'hpp_initiate';
 	// Subscription
 	const TXN_TYPE_SUBSCRIPTION_PAYMENT = 'subscriptionPayment';
 
@@ -1198,7 +1200,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			self::TXN_TYPE_BNPL_AUTHORIZE          => Requests\BuyNowPayLater\InitiatePaymentRequest::class,
 			self::TXN_TYPE_OB_AUTHORIZATION        => Requests\OpenBanking\InitiatePaymentRequest::class,
 			self::TXN_TYPE_PAYPAL_INITIATE         => Requests\Apm\InitiatePaymentRequest::class,
-			self::TXN_TYPE_SUBSCRIPTION_PAYMENT    => Requests\Subscriptions\SubscriptionRequest::class
+			self::TXN_TYPE_SUBSCRIPTION_PAYMENT    => Requests\Subscriptions\SubscriptionRequest::class,
+			self::TXN_TYPE_CREATE_HPP              => Requests\HostedPaymentPages\InitiatePaymentRequest::class,
 		);
 
 		if ( ! isset( $map[ $txn_type ] ) ) {

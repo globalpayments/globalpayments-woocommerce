@@ -16,8 +16,11 @@ class GpApiGatewayBlock extends AbstractGatewayBlock {
 	{
 		$allow_pl_apms = ( WC()->countries->get_base_country() === 'PL' && get_woocommerce_currency() === 'PLN' ) ? true : false;
 
-		return array(
-			'secure_payment_fields' => $this->secure_payment_fields(),
+		// Check if gateway is in HPP mode
+		$is_hpp_mode = method_exists($this->gateway, 'is_hpp_mode') && $this->gateway->is_hpp_mode();
+
+		$data = array(
+			'secure_payment_fields' => $this->gateway->secure_payment_fields(),
 			'title'                 => $this->gateway->get_title(),
 			'supports'              => array_filter( $this->gateway->supports, [$this->gateway, 'supports'] ),
 			'id'                    => $this->gateway->id,
@@ -30,6 +33,15 @@ class GpApiGatewayBlock extends AbstractGatewayBlock {
 			'enable_blik'           => $allow_pl_apms ? $this->gateway->enable_blik : "no",
 			'enable_bank_select'    => $allow_pl_apms ? $this->gateway->enable_bank_select : "no",
 		);
+
+		if ( $is_hpp_mode ) {
+			$data['secure_payment_fields'] = array();
+			$data['gateway_options'] = array();
+			$data['field_styles'] = array();
+			$data['threedsecure'] = null;
+		}
+
+		return $data;
 	}
 
 	/**

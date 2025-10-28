@@ -13,6 +13,7 @@
 		this.addValueToCredentialsCheckButton();
 		this.toggleCredentialsSettings();
 		this.toggleValidations();
+		this.toggleHppSettings();
 		this.attachEventHandlers();
 		this.attachCredentialChangeHandlers();
 		this.validate_checkbox_fields('.accepted_cards.required');
@@ -32,6 +33,7 @@
 				$( document ).on( 'change', $( '.accepted_cards.required' ), this.validate_checkbox_fields.bind( this, '.accepted_cards.required' ) );
 				$( document ).on( 'change', $( '.aca_methods.required' ), this.validate_checkbox_fields.bind( this, '.aca_methods.required' ) );
 				$( document ).on( 'change', $( '.ob_currencies.required' ), this.validate_checkbox_fields.bind( this, '.ob_currencies.required' ) );
+				$( document ).on( 'change', this.getPaymentInterfaceSelector(), this.toggleHppSettings.bind( this ) );
 				$( document ).on( 'click', this.getCheckCredentialsButtonSelector(), this.checkApiCredentials.bind( this , 'account_name_dropdown', 'account_name' ) );
 				$( document ).on( 'load ', this.checkApiCredentials( 'account_name_dropdown', 'account_name', 'change' ));
 			}
@@ -359,6 +361,27 @@
 		},
 
 		/**
+		 * Toggle Hosted Payment Page settings
+		 * @returns {void}
+		 */
+		toggleHppSettings: function () {
+			//Note: this should also target the AVS / CVN as HPP does not return these values, update will be needed in future
+			let display = this.isHppSelected();
+			let hppSelector = `#woocommerce_${this.id}_section_hpp`;
+			let hppSectionTable = document.querySelector( hppSelector + '~ table.form-table' );
+			let hppSectionTitle = document.querySelector( hppSelector );
+			if ( display && hppSectionTable && hppSectionTitle ) {
+				hppSectionTable.style.display = 'block';
+				hppSectionTitle.style.display = 'block';
+			} else if ( hppSectionTable && hppSectionTitle ) {
+				hppSectionTable.style.display = 'none';
+				hppSectionTitle.style.display = 'none';
+			} else {
+				return;
+			}
+		},
+
+		/**
 		 * Convenience function to get CSS selector for the "Enabled" setting
 		 *
 		 * @returns {string}
@@ -374,6 +397,24 @@
 		 */
 		getCheckCredentialsButtonSelector: function () {
 			return '#woocommerce_globalpayments_gpapi_credentials_api_check';
+		},
+
+		/**
+		 * Convenience function to get CSS selector for the Payment Interface selector
+		 *
+		 * @returns {string}
+		 */
+		getPaymentInterfaceSelector: function () {
+			return 'select#woocommerce_' + this.id + '_payment_interface';
+		},
+
+		/*
+		 * Convenience function to check if Hosted Payment Page is selected
+		 *
+		 * @returns {boolean}
+		*/
+		isHppSelected: function () {
+			return "hpp" === document.querySelector( this.getPaymentInterfaceSelector() )?.value;
 		},
 
 		/**

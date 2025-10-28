@@ -10,7 +10,7 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\DiUiApms\{BankSele
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\Apm\Paypal;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Affirm;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure\CheckEnrollmentRequest;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\PayOrderTrait;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\{PayOrderTrait, HppTrait};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\{ApplePay, ClickToPay, GooglePay};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\{Clearpay, Klarna};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\OpenBanking;
@@ -19,7 +19,7 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 defined( 'ABSPATH' ) || exit;
 
 class GpApiGateway extends AbstractGateway {
-	use PayOrderTrait;
+	use PayOrderTrait, HppTrait;
 	/**
 	 * Gateway ID
 	 */
@@ -120,11 +120,59 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $enable_three_d_secure;
 
+	/**
+	 * Payment Interface Mode
+	 *
+	 * @var string
+	 */
+	public $payment_interface;
+
+	/**
+	 * Enable BLIK for HPP
+	 *
+	 * @var string
+	 */
+	public $enable_blik_hpp;
+
+	/**
+	 * Enable PayU for HPP
+	 *
+	 * @var string
+	 */
+	public $enable_payu_hpp;
+
+	/**
+	 * Enable Google Pay for HPP
+	 *
+	 * @var string
+	 */
+	public $enable_gpay_hpp;
+
+	/**
+	 * Enable Apple Pay for HPP
+	 *
+	 * @var string
+	 */
+	public $enable_applepay_hpp;
+
+	/**
+	 * Custom text for HPP payment method display
+	 *
+	 * @var string
+	 */
+	public $hpp_text;
+
 	protected static string $js_lib_version = '4.1.11';
 
 	public function __construct( $is_provider = false ) {
 		parent::__construct( $is_provider );
+		
 		array_push( $this->supports, 'globalpayments_hosted_fields', 'globalpayments_three_d_secure' );
+		
+		// Start HPP functionality if configured for HPP mode
+		if ( ! $is_provider && $this->is_hpp_mode() ) {
+			$this->init_hpp();
+		}
 	}
 
 	public function configure_method_settings() {
@@ -179,14 +227,14 @@ class GpApiGateway extends AbstractGateway {
 				'default'     => '',
 				'class'       => 'live-toggle',
 			),
-            'account_name_dropdown'         => array(
-                'title'       => __( 'Live Account Name*', 'globalpayments-gateway-provider-for-woocommerce' ),
-                'type'        => 'select',
-                'default'     => '',
-                'default'     => '',
-                'class'       => 'required live-toggle',
-                'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" arget="_blank">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
-            ),
+			'account_name_dropdown'         => array(
+				'title'       => __( 'Live Account Name*', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'select',
+				'default'     => '',
+				'default'     => '',
+				'class'       => 'required live-toggle',
+				'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" arget="_blank">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
+			),
 			'sandbox_app_id'       => array(
 				'title'   => __( 'Sandbox App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'text',
@@ -210,23 +258,23 @@ class GpApiGateway extends AbstractGateway {
 				'default'     => '',
 				'class'       => 'sandbox-toggle',
 			),
-            'sandbox_account_name_dropdown'  => array(
-                'title'       => __( 'Sandbox Account Name*', 'globalpayments-gateway-provider-for-woocommerce' ),
-                'type'        => 'select',
-                'default'     => '',
-                'default'     => '',
-                'class'       => 'required sandbox-toggle',
-                'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" arget="_blank">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
-            ),
-            'credentials_api_check'	=> array(
-                'title'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
-                'label'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
-                'type'        => 'button',
-                'class'       => 'button-credentials-check button-primary',
-                'default'     => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
-                'description' => __( 'Note: The Payment Methods will not be displayed at checkout if the credentials are not correct.', 'globalpayments-gateway-provider-for-woocommerce' ),
-                'css'         => 'width: 200px',
-            ),
+			'sandbox_account_name_dropdown'  => array(
+				'title'       => __( 'Sandbox Account Name*', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'select',
+				'default'     => '',
+				'default'     => '',
+				'class'       => 'required sandbox-toggle',
+				'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" arget="_blank">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
+			),
+			'credentials_api_check'	=> array(
+				'title'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'button',
+				'class'       => 'button-credentials-check button-primary',
+				'default'     => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Note: The Payment Methods will not be displayed at checkout if the credentials are not correct.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'css'         => 'width: 200px',
+			),
 			'allow_card_saving'    => array(
 				'title'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -236,6 +284,56 @@ class GpApiGateway extends AbstractGateway {
 					__( 'Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href="mailto:%s?Subject=WooCommerce%%20Card%%20Saving%%20Option">support</a> with any questions regarding this option.', 'globalpayments-gateway-provider-for-woocommerce' ),
 					$this->get_first_line_support_email()
 				),
+				'default'     => 'no',
+			),
+			'payment_interface' => array(
+				'title'       => __( 'Payment Interface', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'select',
+				'description' => __( 'Choose how customers will enter their payment details. Drop-in UI provides card fields directly on your checkout page. Hosted Payment Pages redirect customers to a secure payment form.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'drop_in',
+				'options'     => array(
+					'drop_in' => __( 'Drop-in UI', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'hpp'     => __( 'Hosted Payment Pages', 'globalpayments-gateway-provider-for-woocommerce' ),
+				),
+			),
+			'section_hpp'      => array(
+				'title' => __( 'Hosted Payment Settings', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'  => 'title',
+			),
+			'hpp_text' => array(
+				'title'       => __( 'Hosted Payment Pages Display Text', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'textarea',
+				'description' => __( 'Custom text to display on the checkout page when Hosted Payment Pages is selected. If left empty, a default message will be shown.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'Pay With Credit / Debit Card Via Globalpayments',
+				'css'         => 'width: 400px; height: 75px;',
+				'desc_tip'    => true,
+			),
+			'enable_gpay_hpp' => array(
+				'title'       => __( 'Enable Google Pay for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Enable Google Pay for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Enable Google Pay as a payment option on the Hosted Payment Page.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'no',
+			),
+			'enable_applepay_hpp' => array(
+				'title'       => __( 'Enable Apple Pay for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Enable Apple Pay for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Enable Apple Pay as a payment option on the Hosted Payment Page.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'no',
+			),
+			'enable_blik_hpp' => array(
+				'title'       => __( 'Enable BLIK for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Enable BLIK for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Enable BLIK as a payment option on the Hosted Payment Page.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'no',
+			),
+			'enable_payu_hpp' => array(
+				'title'       => __( 'Enable PayU for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Enable PayU for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Enable PayU as a payment option on the Hosted Payment Page.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'     => 'no',
 			),
 			'section_general'      => array(
@@ -284,7 +382,8 @@ class GpApiGateway extends AbstractGateway {
 	}
 
 	public function get_frontend_gateway_options() {
-		return array(
+		
+		$options = array(
 			'accessToken'           => $this->get_access_token(),
 			'apiVersion'            => GpApiConnector::GP_API_VERSION,
 			'env'                   => $this->is_production ? parent::ENVIRONMENT_PRODUCTION : parent::ENVIRONMENT_SANDBOX,
@@ -294,7 +393,21 @@ class GpApiGateway extends AbstractGateway {
 				'enabled' => true,
 			],
 			'language' => substr( get_user_locale(), 0, 2 ),
+			'payment_interface'     => $this->payment_interface,
 		);
+
+		// For HPP, add the nonce
+		if ( $this->is_hpp_mode() ) {
+			$options['hpp_nonce'] = wp_create_nonce( 'gp_hpp_nonce' );
+			$options['payment_interface'] = 'hpp';
+			$options['hpp_text'] = $this->get_option( 'hpp_text' );
+			// Remove drop-in UI specific options that might interfere
+			unset( $options['accessToken'] );
+			unset( $options['apiVersion'] );
+			unset( $options['fieldValidation'] );
+		}
+
+		return $options;
 	}
 
 	/**
@@ -374,7 +487,53 @@ class GpApiGateway extends AbstractGateway {
 		return $this->id . '_' . WC()->session->get_session_cookie()[0];
 	}
 
+	/**
+	 * Override perents payment fields method to handle HPP mode
+	 */
+	public function payment_fields() {
+
+		if ( isset( $this->payment_interface ) && $this->payment_interface === 'hpp' ) {
+
+			// For WooCommerce classic checkout mode, display custom text and add nonce field
+			echo '<div class="globalpayments-hpp-info globalpayments-hpp-mode">';
+			//Below doesn't work as the perent class has $this->id !== 'globalpayments_gpapi'
+			// echo $this->environment_indicator();
+			$hpp_text = $this->get_option( 'hpp_text' );
+			if ( ! empty( $hpp_text ) ) {
+				echo '<p>' . wp_kses_post( nl2br( esc_html( $hpp_text ) ) ) . '</p>';
+			} else {
+				echo '<p>' . esc_html__( 'Pay With Credit / Debit Card Via Globalpayments', 'globalpayments-gateway-provider-for-woocommerce' ) . '</p>';
+			}
+			
+			echo '</div>';
+
+			// Add hidden nonce field for HPP
+			echo '<input type="hidden" name="gp_hpp_nonce" value="' . wp_create_nonce( 'gp_hpp_payment' ) . '" />';
+
+			// Defult WooCommerce checkout validation will still occour
+			echo '<input type="hidden" name="' . esc_attr( $this->id ) . '[checkout_validated]" value="1" />';
+			
+			return;
+		}
+		
+		// Invoke Default behavior for drop-in UI
+		parent::payment_fields();
+	}
+
+	public function secure_payment_fields_config() {
+		// Only return secure payment fields config for drop-in UI mode
+		if ( $this->is_hpp_mode() ) {
+			return array();
+		}
+		return parent::secure_payment_fields_config();
+	}
+
 	public function secure_payment_fields() {
+		// Only return secure payment fields for drop-in UI
+		if ( $this->is_hpp_mode() ) {
+			return array();
+		}
+		
 		$fields = parent::secure_payment_fields();
 		$fields['card-holder-name-field'] = array(
 			'class'       => 'card-holder-name',
@@ -385,6 +544,23 @@ class GpApiGateway extends AbstractGateway {
 			),
 		);
 		return $fields;
+	}
+
+	public function secure_payment_fields_styles() {
+		// Only return secure payment fields styles for drop-in UI
+		if ( $this->is_hpp_mode() ) {
+			// No Styles needed for HPP
+			return array();
+		}
+		return parent::secure_payment_fields_styles();
+	}
+
+	public function getThreedsecureFields() {
+		if ( $this->is_hpp_mode() ) {
+			// No 3DS fields needed for HPP
+			return null;
+		}
+		return parent::getThreedsecureFields();
 	}
 
 	protected function add_hooks() {
@@ -505,13 +681,15 @@ class GpApiGateway extends AbstractGateway {
 	}
 
 	public function after_checkout_validation( $data, $errors ) {
+		if ( $this->id !== $data['payment_method'] ) {
+			return;
+		}
+
+
 		if ( ! empty( $errors->errors ) || !$this->enable_three_d_secure ) {
 			return;
 		}
 
-		if ( $this->id !== $data['payment_method'] ) {
-			return;
-		}
 		$post_data = $this->get_post_data();
 		if ( isset( $post_data[ $this->id ]['checkout_validated'] ) && 1 == $post_data[ $this->id ]['checkout_validated'] ) {
 			return;
@@ -789,7 +967,39 @@ class GpApiGateway extends AbstractGateway {
 		if ( !empty( $_POST["open_banking"] ) )
 			return BankSelect::process_bank_select_sale( $this, $order_id );
 
+		// Handle Hosted Payment Pages process payment using the HppTrait
+		if ( $this->is_hpp_mode() ) {
+			return $this->process_hpp_payment( $order_id );
+		}
+
 		return parent::process_payment( $order_id );
+	}
+
+	/**
+	 * Override helper params to provide payment interface data
+	 *
+	 * @return array
+	 */
+	public function get_helper_params() {
+		$params = parent::get_helper_params();
+
+		// Add payment interface
+		$params['payment_interface'] = $this->payment_interface ?? 'drop_in';
+
+		// Add HPP nonce and text
+		if ( $this->payment_interface === 'hpp' ) {
+			$params['hpp_nonce'] = wp_create_nonce( 'gp_hpp_payment' );
+			$params['hpp_text'] = $this->get_option( 'hpp_text' );
+		}
+
+		if ( $this->payment_interface === 'hpp' ) {
+			$toggle_array = array_filter( $params['toggle'], function( $gateway_id ) {
+				return $gateway_id !== $this->id;
+			} );
+			$params['toggle'] = array_values( $toggle_array ); // Re-index array
+		}
+
+		return $params;
 	}
 
 	 /* Used for handling AVS/CVN response codes
@@ -802,4 +1012,15 @@ class GpApiGateway extends AbstractGateway {
 		$response->avsResponseCode = $response->cardIssuerResponse->avsAddressResult;
 		$response->cvnResponseCode = $response->cardIssuerResponse->cvvResult;
 	}
+
+	/**
+	 * Check if the gateway payment_interface is HPP
+	 *
+	 * @return bool
+	 */
+	public function is_hpp_mode(): bool {
+		return isset( $this->payment_interface ) && $this->payment_interface === 'hpp';
+	}
+
+
 }
