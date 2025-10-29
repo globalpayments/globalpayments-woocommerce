@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ab9e56c04d249a5103aa421f66540d23",
+    "content-hash": "d812615ad63f78aa33a742b65adb2482",
     "packages": [
         {
             "name": "globalpayments/php-sdk",
-            "version": "13.3.7",
+            "version": "13.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/globalpayments/php-sdk.git",
-                "reference": "57f9e6dbc7af72bcae7796bad9654699abd123e6"
+                "reference": "9776d0267edff7898ee89ff04539e3303b4ef461"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/globalpayments/php-sdk/zipball/57f9e6dbc7af72bcae7796bad9654699abd123e6",
-                "reference": "57f9e6dbc7af72bcae7796bad9654699abd123e6",
+                "url": "https://api.github.com/repos/globalpayments/php-sdk/zipball/9776d0267edff7898ee89ff04539e3303b4ef461",
+                "reference": "9776d0267edff7898ee89ff04539e3303b4ef461",
                 "shasum": ""
             },
             "require": {
@@ -29,7 +29,8 @@
                 "ext-mbstring": "*",
                 "ext-openssl": "*",
                 "ext-zlib": "*",
-                "php": ">= 8.0"
+                "php": ">= 8.0",
+                "symfony/process": "7.1.8"
             },
             "require-dev": {
                 "phpstan/phpstan": "^0.12",
@@ -55,9 +56,9 @@
             "homepage": "https://developer.heartlandpaymentsystems.com/documentation",
             "support": {
                 "issues": "https://github.com/globalpayments/php-sdk/issues",
-                "source": "https://github.com/globalpayments/php-sdk/tree/13.3.7"
+                "source": "https://github.com/globalpayments/php-sdk/tree/13.4.0"
             },
-            "time": "2025-10-02T12:19:05+00:00"
+            "time": "2025-10-16T12:17:19+00:00"
         },
         {
             "name": "psr/log",
@@ -108,6 +109,67 @@
                 "source": "https://github.com/php-fig/log/tree/1.1.4"
             },
             "time": "2021-05-03T11:20:27+00:00"
+        },
+        {
+            "name": "symfony/process",
+            "version": "v7.1.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/process.git",
+                "reference": "42783370fda6e538771f7c7a36e9fa2ee3a84892"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/process/zipball/42783370fda6e538771f7c7a36e9fa2ee3a84892",
+                "reference": "42783370fda6e538771f7c7a36e9fa2ee3a84892",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Process\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Executes commands in sub-processes",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/process/tree/v7.1.8"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2024-11-06T14:23:19+00:00"
         }
     ],
     "packages-dev": [

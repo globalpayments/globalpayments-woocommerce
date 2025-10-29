@@ -14,7 +14,7 @@
         }
     },
     "require": {
-        "globalpayments/php-sdk": "13.3.7",
+        "globalpayments/php-sdk": "13.4.0",
         "psr/log": "^1.1"
     },
     "require-dev": {
