@@ -52,6 +52,12 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.15.4 (11/6/25) =
+* Enhancement: re-added HPP functionality after stability improments
+
+= 1.15.3 (10/30/25) =
+* Bug-fix: removed HPP functionality due to incompatibility with some environments
+
 = 1.15.2 (10/29/25) =
 * Enhanced compatibility with PHP8.4
 

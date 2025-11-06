@@ -31,7 +31,8 @@ abstract class AbstractGatewayBlock extends AbstractPaymentMethodType {
 	 * {@inheritDoc}
 	 */
 	public function get_payment_method_script_handles() {
-		$script_path       = 'assets/frontend/blocks/gateways.js';
+		$script_path = ( !empty( $this->gateway->payment_interface ) && $this->gateway->payment_interface === 'hpp' ) ?
+			'assets/frontend/blocks/gateways_hpp.js' : 'assets/frontend/blocks/gateways.js';
 		$script_asset_path = Plugin::get_url('/') . 'assets/frontend/blocks/gateways.asset.php';
 		$script_asset      = file_exists( $script_asset_path )
 			? require( $script_asset_path )

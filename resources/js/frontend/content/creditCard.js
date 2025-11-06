@@ -71,7 +71,9 @@ const PaymentField = ( props ) => {
 		</div>
 	);
 };
-
+var initRetryCount = 0;
+var isFormInitialized = false;
+const MAX_RETRY_COUNT = 20;
 const attachEventHandlers = () => {
 	// General
 	document.querySelector( '#order_review, #add_payment_method' )?.addEventListener( 'click', ( e ) => {
@@ -92,17 +94,77 @@ const attachEventHandlers = () => {
 		helper.showPaymentError( message );
 	} );
 
-	if ( helper.isFirstPaymentMethod( state.settings.id ) || helper.isOnlyGatewayMethodDisplayed( state.settings.id ) ) {
-		window.onload = () => {
-			renderPaymentFields();
-		};
-	}
+		// Initialize payment form when the payment method is first/only
+	// or when document is ready, unminified JS from the minified gateways.js taken from v1.4.6
+    const initializeForm = () => {
+        // Try immediate initialization first
+        renderPaymentFields();
 
-	// New Credit Card
-	document.querySelector( '#radio-control-wc-payment-method-options-globalpayments_gpapi' ).addEventListener( 'change', renderPaymentFields );
+        // If form isn't initialized yet, try again with delays
+        if (!isFormInitialized) {
+            setTimeout(() => {
+                if (!isFormInitialized) renderPaymentFields();
+            }, 500);
+
+            setTimeout(() => {
+                if (!isFormInitialized) renderPaymentFields();
+            }, 1000);
+        }
+    };
+
+    if ( helper.isFirstPaymentMethod( state.settings.id ) || helper.isOnlyGatewayMethodDisplayed( state.settings.id ) ) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeForm);
+            window.addEventListener('load', initializeForm);
+        } else if (document.readyState === 'interactive') {
+            setTimeout(initializeForm, 100);
+            window.addEventListener('load', initializeForm);
+        } else {
+            // Document is already complete
+            initializeForm();
+        }
+    } else {
+        // console.log('Not the first payment method, will wait for user selection');
+    }
+	// Add event listener for payment method change
+    const radioElement = document.querySelector(
+        "#radio-control-wc-payment-method-options-globalpayments_gpapi"
+    );
+	 const handlePaymentMethodChange = () => {
+        console.log('Payment method changed to GlobalPayments');
+        // Reset initialization state when payment method changes
+        isFormInitialized = false;
+        initRetryCount = 0;
+        renderPaymentFields();
+    };
+
+    if (radioElement) {
+        radioElement.addEventListener("change", handlePaymentMethodChange);
+    } else {
+        // If radio element doesn't exist yet, try again after a delay
+        setTimeout(() => {
+            const delayedRadioElement = document.querySelector(
+                "#radio-control-wc-payment-method-options-globalpayments_gpapi"
+            );
+            if (delayedRadioElement) {
+                delayedRadioElement.addEventListener("change", handlePaymentMethodChange);
+            }
+        }, 500);
+    }
 };
 
 const renderPaymentFields = () => {
+	if (isFormInitialized && state.cardForm) {
+        console.log('GlobalPayments form is already initialized, skipping...');
+        return;
+    }
+
+    // Check retry limit
+    if (initRetryCount >= MAX_RETRY_COUNT) {
+        console.error('Maximum retry attempts reached. GlobalPayments form initialization failed.');
+        dispatchError('Payment form could not be loaded. Please refresh the page and try again.');
+        return;
+    }
 	const gatewayConfig = state.settings.gateway_options;
 	if ( gatewayConfig.error ) {
 		dispatchError( gatewayConfig.message );

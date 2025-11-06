@@ -114,6 +114,18 @@ trait HppTrait
                 $logger->error( 'HPP Payment Processing: Exception occurred', $context );
             }
 
+            // Shows a more specific error if UK county validation fails, only applicable for UK stores
+            // useing the classic checkout
+            if ( str_ends_with( $e->getMessage(),' is not a valid UK county. Please enter a valid UK county name.' ) ) {
+                  if ( $this->debug ) {
+                    $logger->error( 'HPP Payment Processing: User entered Invalid UK county', $context );
+                  }
+                  wc_add_notice(
+                      __( $e->getMessage(), 'globalpayments-gateway-provider-for-woocommerce' ),
+                      'error'
+                  );
+            }
+
             wc_add_notice(
                 __( 'Unable to process payment. Please try again.', 'globalpayments-gateway-provider-for-woocommerce' ),
                 'error'

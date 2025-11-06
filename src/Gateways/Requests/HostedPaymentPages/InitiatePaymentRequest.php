@@ -233,11 +233,11 @@ class InitiatePaymentRequest extends AbstractRequest {
 	protected function get_digital_wallets(): array {
 		$enabled_wallets = [];
 
-		if ( isset( $this->config['enable_gpay_hpp'] ) && 1 == $this->config['enable_gpay_hpp'] ) {
+		if ( isset( $this->config['enable_gpay_hpp'] ) && 'yes' === $this->config['enable_gpay_hpp'] ) {
 			$enabled_wallets[] = 'googlepay';
 		}
 
-		if ( isset( $this->config['enable_applepay_hpp'] ) && 1 == $this->config['enable_applepay_hpp'] ) {
+		if ( isset( $this->config['enable_applepay_hpp'] ) && 'yes' === $this->config['enable_applepay_hpp'] ) {
 			$enabled_wallets[] = 'applepay';
 		}
 
@@ -252,11 +252,11 @@ class InitiatePaymentRequest extends AbstractRequest {
 	protected function get_alternative_payment_methods(): array {
 		$enabled_alternative_payments = [];
 
-		if ( isset( $this->config['enable_blik_hpp'] ) && 1 == $this->config['enable_blik_hpp'] ) {
+		if ( isset( $this->config['enable_blik_hpp'] ) && 'yes' === $this->config['enable_blik_hpp'] ) {
 			$enabled_alternative_payments[] = HPPAllowedPaymentMethods::BLIK;
 		}
 
-		if ( isset( $this->config['enable_payu_hpp'] ) && 1 == $this->config['enable_payu_hpp'] ) {
+		if ( isset( $this->config['enable_open_banking_hpp'] ) && 'yes' === $this->config['enable_open_banking_hpp'] ) {
 			$enabled_alternative_payments[] = HPPAllowedPaymentMethods::BANK_PAYMENT;
 		}
 

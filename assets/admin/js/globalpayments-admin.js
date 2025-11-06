@@ -370,6 +370,7 @@
 			let hppSelector = `#woocommerce_${this.id}_section_hpp`;
 			let hppSectionTable = document.querySelector( hppSelector + '~ table.form-table' );
 			let hppSectionTitle = document.querySelector( hppSelector );
+
 			if ( display && hppSectionTable && hppSectionTitle ) {
 				hppSectionTable.style.display = 'block';
 				hppSectionTitle.style.display = 'block';
@@ -378,6 +379,19 @@
 				hppSectionTitle.style.display = 'none';
 			} else {
 				return;
+			}
+
+			//toggle DiUI Polish APM fields visibility
+			if (document.getElementById('woocommerce_globalpayments_gpapi_enable_blik') !== null) {
+				let blikRow = document.getElementById('woocommerce_globalpayments_gpapi_enable_blik').parentElement.parentElement.parentElement.parentElement;
+				let obRow = document.getElementById('woocommerce_globalpayments_gpapi_enable_bank_select').parentElement.parentElement.parentElement.parentElement;
+				if (display) {
+					blikRow.style.display = 'none';
+					obRow.style.display = 'none';
+				} else {
+					blikRow.style.display = '';
+					obRow.style.display = '';
+				}
 			}
 		},
 

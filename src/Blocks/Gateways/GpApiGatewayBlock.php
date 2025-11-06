@@ -20,7 +20,7 @@ class GpApiGatewayBlock extends AbstractGatewayBlock {
 		$is_hpp_mode = method_exists($this->gateway, 'is_hpp_mode') && $this->gateway->is_hpp_mode();
 
 		$data = array(
-			'secure_payment_fields' => $this->gateway->secure_payment_fields(),
+			'secure_payment_fields' => $this->secure_payment_fields(),
 			'title'                 => $this->gateway->get_title(),
 			'supports'              => array_filter( $this->gateway->supports, [$this->gateway, 'supports'] ),
 			'id'                    => $this->gateway->id,
