@@ -11,12 +11,8 @@ use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\CheckApiCredentialsTrait;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\Apm\Paypal;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ApplePay;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\ClickToPay;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\GooglePay;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Affirm;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Clearpay;
-use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Klarna;
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\{ApplePay, ClickToPay, GooglePay};
+use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\{Affirm, Clearpay, Klarna};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\OpenBanking;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\Utils;
@@ -175,6 +171,13 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @var array
 	 */
 	public $cvn_reject_conditions;
+
+	/**
+	 * Should live payments be accepted
+	 *
+	 * @var bool
+	 */
+	public $is_production;
 
 	protected static string $js_lib_version = 'v1';
 
@@ -1182,7 +1185,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @return Requests\RequestInterface
 	 * @throws Exception
 	 */
-	public function prepare_request( $txn_type, WC_Order $order = null, $configData = null ) {
+	public function prepare_request( $txn_type, ?WC_Order $order = null, $configData = null ) {
 		$map = array(
 			self::TXN_TYPE_AUTHORIZE               => Requests\AuthorizationRequest::class,
 			self::TXN_TYPE_SALE                    => Requests\SaleRequest::class,
@@ -1300,8 +1303,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 			if ( ! empty( $response->avsResponseCode ) || ! empty( $response->cvnResponseCode ) ) {
 				//check admin selected decline condtions
-				if ( in_array( $response->avsResponseCode, $this->get_option( 'avs_reject_conditions' ) ) ||
-					 in_array( $response->cvnResponseCode, $this->get_option( 'cvn_reject_conditions' ) ) ) {
+				if (
+					in_array( $response->avsResponseCode, (array) $this->get_option( 'avs_reject_conditions' ) ) ||
+					in_array( $response->cvnResponseCode, (array) $this->get_option( 'cvn_reject_conditions' ) )
+				) {
 					$data = $request->order->get_data();
 
 					if ( ! is_array( $data ) ) {
@@ -1316,9 +1321,23 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 							->refund( $data['total'] )
 							->withCurrency( $data['currency'] )
 							->execute();
+
+						$note_text = sprintf(
+							esc_html__(
+								'Payment attempt was reveresed due to AVS reject. Transaction ID: %s',
+								'globalpayments-gateway-provider-for-woocommerce'
+							), esc_html($response->transactionReference->transactionId)
+						);
+
+						$request->order->add_order_note( $note_text );
+
+						throw new \Exception( esc_html(	__(
+								"The billing address you entered doesn't match the one on file with your card provider. Please check and try again.",
+								'globalpayments-gateway-provider-for-woocommerce'
+						) ) );
 					}
 
-					throw new \Exception( esc_html(Utils::map_response_code_to_friendly_message()) );
+					throw new \Exception( esc_html( Utils::map_response_code_to_friendly_message() ) );
 				}
 			}
 		}

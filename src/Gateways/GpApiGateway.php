@@ -1017,6 +1017,7 @@ class GpApiGateway extends AbstractGateway {
 		if ( $this->payment_interface === 'hpp' ) {
 			$params['hpp_nonce'] = wp_create_nonce( 'gp_hpp_payment' );
 			$params['hpp_text'] = $this->get_option( 'hpp_text' );
+			$params['enableThreeDSecure'] = $this->enable_three_d_secure;
 		}
 
 		if ( $this->payment_interface === 'hpp' ) {

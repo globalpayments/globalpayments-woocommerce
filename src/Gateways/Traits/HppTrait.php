@@ -4,6 +4,8 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits;
 
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HppApms\AbstractHppApm;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\HppResponseParser;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Services\InstallmentsService;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 
@@ -42,8 +44,12 @@ trait HppTrait
         add_action( 'woocommerce_api_globalpayments_hpp_status', [$this, 'process_hpp_status'] );
         add_action( 'woocommerce_api_globalpayments_hpp_cancel', [$this, 'process_hpp_cancel'] );
         add_action( 'woocommerce_api_globalpayments_hpp_final', [$this, 'process_hpp_final'] );
-    }
 
+        // Classic checkout hooks - Make fields required and adds additional validation
+        add_filter( 'woocommerce_checkout_fields' , [$this, 'hpp_three_d_secure_required_fields'], 1000, 1 );
+        add_action( 'woocommerce_after_checkout_validation', [$this, 'validate_hpp_required_fields'], 1000, 2 );
+        add_filter( "woocommerce_get_country_locale", [$this, 'hpp_uk_county_required_field'], 1000, 1 );
+    }
 
 
     /**
@@ -78,7 +84,29 @@ trait HppTrait
             );
             return ['result' => 'failure'];
         }
+        if ("YES" === strtoupper($this->enable_three_d_secure)) {
+            // Ensure phone number is provided for 3DS
+            $billing_phone = $order->get_billing_phone();
+            $shipping_phone = $order->get_shipping_phone();
 
+            if ( empty( trim( $billing_phone ) ) || empty( trim( $shipping_phone ) ) ) {
+                if ( $this->debug ) {
+                    $logger->error( 'HPP Payment Processing: Missing phone number for 3DS',  $context );
+                }
+                $failed_on = empty( trim( $billing_phone ) ) ? 'Billing' : (empty( trim( $shipping_phone ) ) ?
+                 'Shipping' :
+                 'Billing and Shipping');
+                wc_add_notice(
+                    sprintf(
+                        __( 'Phone number is required for 3D Secure transactions. Please provide a phone number for %s and try again.', 'globalpayments-gateway-provider-for-woocommerce' ),
+                        $failed_on
+                    ),
+                    'error'
+                );
+                return ['result' => 'failure'];
+            }
+
+        }
         try {
             // Use standard request-response pattern like other payment methods
             $request = $this->prepare_request( AbstractGateway::TXN_TYPE_CREATE_HPP, $order );
@@ -256,16 +284,34 @@ trait HppTrait
 
     /**
      * Process HPP status callback
-     * Not currently implemented
+     * Handles status updates for all HPP payment methods
      * @return void
      */
     public function process_hpp_status(): void
     {
         $logger = wc_get_logger();
-        $context = ['source' => 'globalpayments_hpp'];
+        $context = array( 'source' => 'globalpayments_hpp' );
         
-        // Handle webhook-style status updates
-        wp_die( 'OK', 200 );
+        
+        // Get signature from header and raw input
+        $signature = getallheaders()['X-GP-Signature'] ?? '';
+        $raw_input = file_get_contents( 'php://input' );
+                
+        // Validate signature for status URL callback (uses same validation as return URL)
+        if ( !$this->validate_hpp_return_signature( $raw_input, $signature ) ) {
+            if ( $this->debug ) {
+                $logger->error( 'HPP Status: Invalid request signature', $context );
+            }
+            wp_die( 'Invalid signature', 403 );
+            return;
+        }
+        
+        // if ( $this->debug ) {
+        //     $logger->info( 'HPP Status: Signature validated successfully', $context );
+        // }
+        
+        // Delegate to AbstractHppApm for handling status notifications
+        AbstractHppApm::handle_hpp_status_notification();
     }
 
     /**
@@ -322,7 +368,7 @@ trait HppTrait
         }
 
         // Extract order and process the result
-        $order_id = $this->extract_order_id_from_response( $gateway_data );
+        $order_id = HppResponseParser::extract_order_id( $gateway_data );
         $order_id = absint( $order_id );
         
         $order = wc_get_order( $order_id );
@@ -335,7 +381,7 @@ trait HppTrait
         }
 
         // Process the payment result directly (following AbstractApm pattern)
-        $is_successful = $this->is_successful_hpp_response( $gateway_data );
+        $is_successful = HppResponseParser::is_successful_payment( $gateway_data );
         
         if ( $is_successful ) {
             $transaction_id = $gateway_data['id'] ?? '';
@@ -355,7 +401,7 @@ trait HppTrait
 
             wp_redirect( $order->get_checkout_order_received_url() );
         } else {
-            $error_message = $this->get_error_message_from_response( $gateway_data );
+            $error_message = HppResponseParser::get_error_message( $gateway_data );
 
             if ( $this->debug ) {
                 $logger->error( 'HPP Callback Processing: Payment failed, updating order status', array_merge( $context, [
@@ -460,7 +506,7 @@ trait HppTrait
         // Calculate transaction outcome
         $transaction_outcome = 'FAILED'; // Default to failed
         if ( is_array( $parsed_input_data ) && ! empty( $parsed_input_data ) ) {
-            $transaction_outcome = $this->is_successful_hpp_response( $parsed_input_data ) ? 'SUCCESS' : 'FAILED';
+            $transaction_outcome = HppResponseParser::is_successful_payment( $parsed_input_data ) ? 'SUCCESS' : 'FAILED';
         }
         
         // Extract order ID
@@ -550,61 +596,6 @@ trait HppTrait
         </html>
         <?php
         exit;
-    }
-
-    /**
-     * Extract order ID from gateway response
-     *
-     * @param array $gateway_data
-     * @return int
-     */
-    protected function extract_order_id_from_response( array $gateway_data ): int
-    {
-        $logger = wc_get_logger();
-        $context = array( 'source' => 'globalpayments_hpp' );
-        
-        // Try to extract from reference field
-        $reference = $gateway_data['link_data']['reference'] ?? '';
-
-        if ( preg_match( '/Order #(\d+)/', $reference, $matches) ) {
-            $order_id = (int) $matches[1];
-            
-            return $order_id;
-        }
-
-        // Fallback, try to get from GET parameters
-        $fallback_order_id = (int) ($_GET['order_id'] ?? 0);
-        
-        return $fallback_order_id;
-    }
-
-    /**
-     * Determine if HPP payment was successful from gateway response
-     *
-     * @param array $gateway_data
-     * @return bool true if successful, false otherwise
-     */
-    protected function is_successful_hpp_response( array $gateway_data ): bool
-    {
-        $status = $gateway_data['status'] ?? '';
-        $result_code = $gateway_data['payment_method']['result'] ?? '';
-        $action_result = $gateway_data['action']['result_code'] ?? '';
-        
-        $is_successful = $status === 'CAPTURED' && $result_code === '00' && $action_result === 'SUCCESS';
-        
-        return $is_successful;
-    }
-
-    /**
-     * Get error message from gateway response
-     *
-     * @param array $gateway_data
-     * @return string containing error message
-     */
-    protected function get_error_message_from_response( array $gateway_data ): string
-    {
-        return $gateway_data['payment_method']['message'] ?? 
-               __('Payment failed. Please try again.', 'globalpayments-gateway-provider-for-woocommerce');
     }
 
     /**
@@ -733,6 +724,104 @@ trait HppTrait
                 InstallmentsService::render_installments_info_plaintext( $order );
             } else {
                 echo InstallmentsService::render_installments_email_info( $order );
+            }
+        }
+    }
+
+    /**
+     * Sets the phone number fields to required when 3ds is enabled
+     * 
+     * @param array $fields
+     * @return array
+     */
+    public function hpp_three_d_secure_required_fields( array $fields ): array
+    {
+        // Only apply on classic checkout and HPP mode
+        if ( ! $this->is_hpp_mode() ) {
+            return $fields;
+        }
+        // Make billing phone required if 3DS is enabled
+        if ( $this->enable_three_d_secure )  {
+            if ( isset( $fields['billing']['billing_phone'] ) ) {
+                $fields['billing']['billing_phone']['required'] = 1;
+                //For WooCommerce validation
+                $fields['billing']['billing_phone']['validate'] = 1;
+
+            }
+            if ( isset( $fields['shipping']['shipping_phone'] ) ) {
+                $fields['shipping']['shipping_phone']['required'] = 1;
+                //For WooCommerce validation
+                $fields['shipping']['shipping_phone']['validate'] = 1;
+
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Make county required for UK stores
+     * @param array $locale
+     * @return array
+     */
+    public function hpp_uk_county_required_field( array $locale ): array
+    {
+        if ( ! $this->is_hpp_mode() ) {
+            return $locale;
+        }
+
+        if ( isset( $locale['GB'] ) && "GB" === wc_get_base_location()['country'] ) {
+            $locale['GB']['state']['required'] = true;
+            $locale['GB']['state']['hidden'] = false;
+        }
+
+        return $locale;
+    }
+    
+    /**
+     * Further validation for required fields when payment_interface is HPP
+     * @param array $data
+     * @param \WP_Error $errors
+     * @return void
+     */
+    public function validate_hpp_required_fields( array $data, \WP_Error $errors ): void
+    {
+        if ( ! $this->is_hpp_mode() ) {
+            return;
+        }
+        $failed_on = '';
+
+        // Validate billing phone for 3DS
+        if ( "YES" === strtoupper( $this->enable_three_d_secure ) ) {
+            if ( empty( trim( $data['billing_phone'] ?? '' ) ) ) {
+                $failed_on = 'Billing ';
+            }
+            if ( empty( trim( $data['shipping_phone'] ?? '' ) ) ) {
+                ($failed_on !== '') ?  $failed_on .= 'and Shipping ' : $failed_on = 'Shipping ';
+            }
+            if ( $failed_on ) {
+                $errors->add( 'validation', sprintf(
+                    __( '%s phone number is required for 3D Secure transactions. Please provide a valid phone number', 'globalpayments-gateway-provider-for-woocommerce' ),
+                    $failed_on
+                ) ) ;
+            }
+        }
+
+        // Validate UK county for UK stores
+        if("GB" === wc_get_base_location()['country']) {
+            if ( empty( trim( $data['billing_state'] ?? '' ) ) ) {
+                $failed_on = 'Billing ';
+            }
+            if ( empty( trim( $data['shipping_state'] ?? '' ) ) ) {
+                ($failed_on !== '') ?  $failed_on .= 'and Shipping ' : $failed_on = 'Shipping ';
+            }
+            if ( $failed_on ) {
+                $errors->add('validation',
+                    sprintf(
+                        __( '%s county is required for UK orders. Please provide a valid UK county name', 'globalpayments-gateway-provider-for-woocommerce' ),
+                        $failed_on
+                    )
+                );
             }
         }
     }

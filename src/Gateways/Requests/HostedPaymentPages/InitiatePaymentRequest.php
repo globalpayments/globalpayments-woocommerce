@@ -69,7 +69,6 @@ class InitiatePaymentRequest extends AbstractRequest {
 						->withBillingAddress( $payer->billingAddress )
 						->withShippingAddress( $payer->shippingAddress )
 						->withAddressMatchIndicator( $payer->billingAddress == $payer->shippingAddress )
-						->withShippingPhone( $payer->shippingPhone )
 						->withAuthentication(
 							ChallengeRequestIndicator::CHALLENGE_PREFERRED,
 							ExemptStatus::LOW_VALUE,
@@ -95,7 +94,10 @@ class InitiatePaymentRequest extends AbstractRequest {
 			$hpp_payment_methods,
 			PaymentMethodUsageMode::SINGLE
 		);
-
+		// Add shipping phone if available. 
+		if(property_exists( $payer, "shippingPhone" ) && $payer->shippingPhone !== ""){
+			$hpp_builder->withShippingPhone( $payer->shippingPhone );
+		};
 		return $hpp_builder->execute();
 	}
 
@@ -116,16 +118,24 @@ class InitiatePaymentRequest extends AbstractRequest {
 	protected function create_payer_from_order(): PayerDetails {
 		$payer_country_info = CountryUtils::getCountryInfo( $this->order->get_billing_country() );
 
+		$billing_includes_phone_number = ( "" !== $this->order->get_billing_phone() );
+		$shipping_includes_phone_number = ( "" !== $this->order->get_shipping_phone() );
+
 		$payer              = new PayerDetails();
 		$payer->firstName   = $this->order->get_billing_first_name();
 		$payer->lastName    = $this->order->get_billing_last_name();
 		$payer->email       = $this->order->get_billing_email();
-		$payer->mobilePhone = new PhoneNumber(
-			$payer_country_info['phoneCode'][0],
-			$this->order->get_billing_phone(),
-			PhoneNumberType::MOBILE
-		);
+		if( $billing_includes_phone_number || $shipping_includes_phone_number ){
+			$payer->mobilePhone = new PhoneNumber(
+				$payer_country_info['phoneCode'][0],
+				$this->order->get_billing_phone() !== "" ? 
+				$this->order->get_billing_phone() : 
+				$this->order->get_shipping_phone() ,
+				PhoneNumberType::MOBILE
+			);
+		}
 		$payer->status = 'NEW';
+		$payer->language = strtoupper(substr( get_locale(), 0, 2 )) ?? "EN";
 
 		// Set billing address
 		$billing_address                    = new Address();
@@ -167,18 +177,27 @@ class InitiatePaymentRequest extends AbstractRequest {
 			$shipping_address->countryCode = $payer_country_info['alpha2'];
 			$shipping_address->country     = $payer_country_info['alpha2'];
 			$payer->shippingAddress        = $shipping_address;
-			$payer->shippingPhone          = new PhoneNumber(
-				$payer_country_info['phoneCode'][0],
-				$this->order->get_shipping_phone(),
-				PhoneNumberType::SHIPPING
-			);
+			if( $billing_includes_phone_number || $shipping_includes_phone_number ){
+				$payer->shippingPhone          = new PhoneNumber(
+					$payer_country_info['phoneCode'][0],
+					$this->order->get_shipping_phone() !== "" ? 
+					$this->order->get_shipping_phone() : 
+					$this->order->get_billing_phone(),
+					PhoneNumberType::SHIPPING
+				);
+			}
 		} else {
 			$payer->shippingAddress = $billing_address;
-			$payer->shippingPhone   = new PhoneNumber(
-				$payer_country_info['phoneCode'][0],
-				$this->order->get_billing_phone(),
-				PhoneNumberType::SHIPPING
-			);
+			if( $billing_includes_phone_number || $shipping_includes_phone_number ){
+
+				$payer->shippingPhone   = new PhoneNumber(
+					$payer_country_info['phoneCode'][0],
+					$this->order->get_billing_phone() !== "" ? 
+					$this->order->get_billing_phone() : 
+					$this->order->get_shipping_phone() ,
+					PhoneNumberType::SHIPPING
+				);
+			}
 		}
 
 		return $payer;

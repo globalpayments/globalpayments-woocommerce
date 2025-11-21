@@ -52,8 +52,16 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.15.5 (11/20/25) =
+Enhancements:
+* GPAPI gateway: Improvements to customer phone number and address handling
+* TransIt gateway: added user-friendly AVS reject messages
+= GPAPI gateway: Added dymanic language functionality for HPP
+
+Bug-fix: Fixed transaction status handling with some APMs
+
 = 1.15.4 (11/6/25) =
-* Enhancement: re-added HPP functionality after stability improments
+* Enhancement: re-added HPP functionality after stability improvements
 
 = 1.15.3 (10/30/25) =
 * Bug-fix: removed HPP functionality due to incompatibility with some environments
