@@ -95,7 +95,7 @@ class InitiatePaymentRequest extends AbstractRequest {
 			PaymentMethodUsageMode::SINGLE
 		);
 		// Add shipping phone if available. 
-		if(property_exists( $payer, "shippingPhone" ) && $payer->shippingPhone !== ""){
+		if(property_exists( $payer, "shippingPhone" ) && $payer->shippingPhone !== "" && $payer->shippingPhone !== null ){
 			$hpp_builder->withShippingPhone( $payer->shippingPhone );
 		};
 		return $hpp_builder->execute();

@@ -218,16 +218,22 @@ class AbstractApm{
 	 * minus the signature at the beginning, concatenating the merchant's app key to the end of that, and
 	 * calculating the SHA512 hash. That string should equal the request signature at the beginning of the
 	 * querry string.
-
+	 * 
 	 * @param GpApiGateway $gateway 
 	 * @return bool 
 	 */
 	private static function validateRequestContents( GpApiGateway $gateway )  : bool
 	{
 		$querryStringSubString = substr( $_SERVER["QUERY_STRING"], strpos( $_SERVER["QUERY_STRING"], '&id=' ) + 1 );
+		
+		if (!empty($_REQUEST["X-GP-Signature"])) {
+			$signature = $_REQUEST["X-GP-Signature"];
+		} else {
+			$signature = getallheaders()['X-GP-Signature'] ?? '';
+		}
 
 		return hash(
 			ShaHashType::SHA512, $querryStringSubString . $gateway->get_backend_gateway_options()["appKey"]
-		) === $_REQUEST["X-GP-Signature"];
+		) === $signature;
 	}
 }
