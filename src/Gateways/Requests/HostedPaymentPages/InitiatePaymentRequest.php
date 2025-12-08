@@ -48,8 +48,13 @@ class InitiatePaymentRequest extends AbstractRequest {
 
 		$store_country_code = wc_get_base_location()['country'] ?? 'US';
 		$ref_text           = get_bloginfo( 'name' ) ?: 'WooCommerce Store';
-		$ref_text          .= ' Order #' . $this->order->get_id();
 
+		//Check for non ASCII characters in the site title
+		if( preg_match( '/[^\x00-\x7F]/', $ref_text ) ){
+			$ref_text = $this->convertToASCII( $ref_text );
+		}
+		$ref_text          .= ' Order #' . $this->order->get_id();
+		
 		$payer               = $this->create_payer_from_order();
 		$hpp_payment_methods = [ HPPAllowedPaymentMethods::CARD ];
 
@@ -280,5 +285,16 @@ class InitiatePaymentRequest extends AbstractRequest {
 		}
 
 		return $enabled_alternative_payments;
+	}
+
+	/**
+	 * Removes accented characters from the site title
+	 * 
+	 * @param String $sitetitle containing the acccented characters
+	 * @return String $sitetitle without the acccented characters
+	 * 
+	 */
+	protected function convertToASCII( string $siteTitle ){
+		return preg_replace( '/[^A-Za-z0-9\s]/' , '' , iconv( 'UTF-8', 'ASCII//TRANSLIT//IGNORE', $siteTitle ) );
 	}
 }

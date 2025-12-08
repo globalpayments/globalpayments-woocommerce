@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.15.9 (12/08/25) =
+* Bug-fix: GPAPI gateway: Fixed compatibility with some store-name formats when HPP is used
+
 = 1.15.6 (12/04/25) =
 * Bug-fix: Fixed issue with APM status updates in some environments
 
