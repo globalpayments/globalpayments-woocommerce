@@ -255,11 +255,9 @@ trait HppTrait
         $logger = wc_get_logger();
         $context = ['source' => 'globalpayments_hpp'];
         
-
         // Get and validate the signature
-        $signature = getallheaders()['X-GP-Signature'] ?? '';
+        $signature = $this->obtainSignature();
         $raw_input = file_get_contents( 'php://input' );
-
 
         if ( !$this->validate_hpp_return_signature( $raw_input, $signature ) ) {
             if ( $this->debug ) {
@@ -292,9 +290,8 @@ trait HppTrait
         $logger = wc_get_logger();
         $context = array( 'source' => 'globalpayments_hpp' );
         
-        
         // Get signature from header and raw input
-        $signature = getallheaders()['X-GP-Signature'] ?? '';
+        $signature = $this->obtainSignature();
         $raw_input = file_get_contents( 'php://input' );
                 
         // Validate signature for status URL callback (uses same validation as return URL)
@@ -823,6 +820,19 @@ trait HppTrait
                     )
                 );
             }
+        }
+    }
+
+    /**
+     * 
+     * @return string 
+     */
+    private function obtainSignature(): string
+    {
+        if ( !empty( getallheaders()['X-GP-Signature'] ) ) {
+            return getallheaders()['X-GP-Signature'];
+        } else {
+            return !empty( ( $_SERVER['HTTP_X_GP_SIGNATURE'] ) ) ? $_SERVER['HTTP_X_GP_SIGNATURE'] : '';
         }
     }
 }

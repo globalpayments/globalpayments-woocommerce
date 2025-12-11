@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.16.1 (12/11/25) =
+* Bug-fix: GPAPI gateway: Fixed validation handling for HPP for some hosting environments
+
 = 1.16.0 (12/11/25) =
 * Bug-fix: GPAPI gateway: Added PL Enable Localization for Title
 * Bug-fix: GPAPI gateway: Removed Global Payments Logo from the success/decline modal for HPP
