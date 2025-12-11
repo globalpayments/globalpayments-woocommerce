@@ -304,7 +304,7 @@ class GpApiGateway extends AbstractGateway {
 				'title'       => __( 'Hosted Payment Pages Display Text', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'textarea',
 				'description' => __( 'Custom text to display on the checkout page when Hosted Payment Pages is selected. If left empty, a default message will be shown.', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'default'     => 'Pay With Credit / Debit Card Via Globalpayments',
+				'default'     => __( 'Select Place Order to view available payment methods.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'css'         => 'width: 400px; height: 75px;',
 				'desc_tip'    => true,
 			),

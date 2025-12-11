@@ -120,9 +120,6 @@ class InstallmentsService {
         if ( empty( $terms_data['count'] ) ) {
             return '';
         }
-
-        // Get Global Payments logo URL
-        $gp_logo_url = \GlobalPayments\WooCommercePaymentGatewayProvider\Plugin::get_url( '/assets/frontend/img/globalpayments-logo.png' );
         
         ob_start();
         ?>
@@ -137,9 +134,6 @@ class InstallmentsService {
         <div id="gp-installments-modal" class="gp-modal-overlay">
             <div class="gp-modal-container">
                 <div class="gp-modal-header">
-                    <?php if ( ! empty( $gp_logo_url ) ): ?>
-                        <img src="<?php echo esc_url( $gp_logo_url ); ?>" alt="GlobalPayments" class="gp-modal-logo">
-                    <?php endif; ?>
                     <h3><?php esc_html_e( 'Installment Plan Details', 'globalpayments-gateway-provider-for-woocommerce' ); ?></h3>
                     <button class="gp-modal-close" id="gp-modal-close" aria-label="Close modal">&times;</button>
                 </div>
@@ -305,11 +299,6 @@ class InstallmentsService {
                 align-items: center;
                 gap: 15px;
                 position: relative;
-            }
-            
-            .gp-modal-logo {
-                max-height: 40px;
-                width: auto;
             }
             
             .gp-modal-header h3 {

@@ -29,8 +29,6 @@ defined( 'ABSPATH' ) || exit;
 // Parse the JSON data for use in the template
 $payment_data = json_decode($gateway_response, true);
 
-// Global Payments logo URL
-$gp_logo_url = \GlobalPayments\WooCommercePaymentGatewayProvider\Plugin::get_url( '/assets/frontend/img/globalpayments-logo.png' ) ?? "";
 // Store name
 $store_name = get_bloginfo( 'name' );
 // Store logo URL
@@ -245,11 +243,8 @@ $store_logo_url = wp_get_attachment_image_src( $store_logo_id, 'full' )[0] ?? ''
             <!-- Store Logo and Name if available -->
             <?php if ( ! empty( $store_logo_url ) ): ?>
                 <img src="<?php echo esc_url( $store_logo_url ); ?>" alt="<?php echo esc_attr( $store_name ); ?>" class="logo">
-            <?php else: ?>
+            <?php elseif ( ! empty( $store_name ) ): ?>
                 <h1 class="store-name"><?php echo esc_html( $store_name ); ?></h1>
-            <?php endif; ?>
-            <?php if ( ! empty( $gp_logo_url ) ): ?>
-                <img src="<?php echo esc_url( $gp_logo_url ); ?>" alt="<?php esc_attr_e( 'GlobalPayments', 'globalpayments-gateway-provider-for-woocommerce' ); ?>" class="logo">
             <?php endif; ?>
         </div>
         
@@ -300,10 +295,6 @@ $store_logo_url = wp_get_attachment_image_src( $store_logo_id, 'full' )[0] ?? ''
                     <?php echo esc_html__('seconds...', 'globalpayments-gateway-provider-for-woocommerce'); ?>
                 </p>
             <?php endif; ?>
-        </div>
-        <!-- Footer Text -->
-        <div class="footer">
-            <div class="powered-by"><?php esc_html_e( 'Powered by GlobalPayments', 'globalpayments-gateway-provider-for-woocommerce' ); ?></div>
         </div>
     </div>
 
