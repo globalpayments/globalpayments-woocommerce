@@ -48,9 +48,7 @@ trait HppTrait
         // Classic checkout hooks - Make fields required and adds additional validation
         add_filter( 'woocommerce_checkout_fields' , [$this, 'hpp_three_d_secure_required_fields'], 1000, 1 );
         add_action( 'woocommerce_after_checkout_validation', [$this, 'validate_hpp_required_fields'], 1000, 2 );
-        add_filter( "woocommerce_get_country_locale", [$this, 'hpp_uk_county_required_field'], 1000, 1 );
     }
-
 
     /**
      * Process HPP payment, called from process_payment from GpApiGateway
@@ -140,18 +138,6 @@ trait HppTrait
         } catch ( \Exception $e ) {
             if ( $this->debug ) {
                 $logger->error( 'HPP Payment Processing: Exception occurred', $context );
-            }
-
-            // Shows a more specific error if UK county validation fails, only applicable for UK stores
-            // useing the classic checkout
-            if ( str_ends_with( $e->getMessage(),' is not a valid UK county. Please enter a valid UK county name.' ) ) {
-                  if ( $this->debug ) {
-                    $logger->error( 'HPP Payment Processing: User entered Invalid UK county', $context );
-                  }
-                  wc_add_notice(
-                      __( $e->getMessage(), 'globalpayments-gateway-provider-for-woocommerce' ),
-                      'error'
-                  );
             }
 
             wc_add_notice(
@@ -303,10 +289,6 @@ trait HppTrait
             return;
         }
         
-        // if ( $this->debug ) {
-        //     $logger->info( 'HPP Status: Signature validated successfully', $context );
-        // }
-        
         // Delegate to AbstractHppApm for handling status notifications
         AbstractHppApm::handle_hpp_status_notification();
     }
@@ -397,7 +379,22 @@ trait HppTrait
             );
 
             wp_redirect( $order->get_checkout_order_received_url() );
-        } else {
+        } else if( HppResponseParser::is_pending_payment( $gateway_data ) ) {
+
+        $transaction_id = $gateway_data['id'] ?? '';
+        $pending_note = sprintf(
+                    __( 'Payment is pending. Transaction ID: %s',
+                     'globalpayments-gateway-provider-for-woocommerce' ),
+                    $transaction_id );
+        if( "PENDING" === strtoupper( $order->get_status() ) ){
+            $order->add_order_note( $pending_note );
+        }else{
+            $order->update_status( "pending" , $pending_note );
+        }
+
+        wp_redirect( $order->get_checkout_order_received_url() );
+
+        }else {
             $error_message = HppResponseParser::get_error_message( $gateway_data );
 
             if ( $this->debug ) {
@@ -504,6 +501,7 @@ trait HppTrait
         $transaction_outcome = 'FAILED'; // Default to failed
         if ( is_array( $parsed_input_data ) && ! empty( $parsed_input_data ) ) {
             $transaction_outcome = HppResponseParser::is_successful_payment( $parsed_input_data ) ? 'SUCCESS' : 'FAILED';
+            $transaction_outcome = HppResponseParser::is_pending_payment( $parsed_input_data ) ? 'PENDING' : $transaction_outcome;
         }
         
         // Extract order ID
@@ -755,25 +753,6 @@ trait HppTrait
 
         return $fields;
     }
-
-    /**
-     * Make county required for UK stores
-     * @param array $locale
-     * @return array
-     */
-    public function hpp_uk_county_required_field( array $locale ): array
-    {
-        if ( ! $this->is_hpp_mode() ) {
-            return $locale;
-        }
-
-        if ( isset( $locale['GB'] ) && "GB" === wc_get_base_location()['country'] ) {
-            $locale['GB']['state']['required'] = true;
-            $locale['GB']['state']['hidden'] = false;
-        }
-
-        return $locale;
-    }
     
     /**
      * Further validation for required fields when payment_interface is HPP
@@ -804,23 +783,6 @@ trait HppTrait
             }
         }
 
-        // Validate UK county for UK stores
-        if("GB" === wc_get_base_location()['country']) {
-            if ( empty( trim( $data['billing_state'] ?? '' ) ) ) {
-                $failed_on = 'Billing ';
-            }
-            if ( empty( trim( $data['shipping_state'] ?? '' ) ) ) {
-                ($failed_on !== '') ?  $failed_on .= 'and Shipping ' : $failed_on = 'Shipping ';
-            }
-            if ( $failed_on ) {
-                $errors->add('validation',
-                    sprintf(
-                        __( '%s county is required for UK orders. Please provide a valid UK county name', 'globalpayments-gateway-provider-for-woocommerce' ),
-                        $failed_on
-                    )
-                );
-            }
-        }
     }
 
     /**

@@ -10,7 +10,7 @@
  * @var bool $signature_valid Signature validation result
  * @var string $gp_signature GlobalPayments signature to post to final endpoint
  * @var string $final_url Final processing URL
- * @var string $transaction_outcome 'SUCCESS' or 'FAILED'
+ * @var string $transaction_outcome 'SUCCESS', 'FAILED' or 'PENDING'
  * @var int $order_id WooCommerce order ID, added as GET param
  * @var string $transaction_id Transaction ID
  * @var string $error_message Error message (if any)
@@ -40,7 +40,10 @@ $store_logo_url = wp_get_attachment_image_src( $store_logo_id, 'full' )[0] ?? ''
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $transaction_outcome === 'SUCCESS' ? esc_html__( 'Payment Successful', 'globalpayments-gateway-provider-for-woocommerce' ) : esc_html__( 'Payment Error', 'globalpayments-gateway-provider-for-woocommerce' ); ?></title>
+    <title><?php echo ( $transaction_outcome === 'SUCCESS' ) ? 
+        esc_html__( 'Payment Successful', 'globalpayments-gateway-provider-for-woocommerce' ) : 
+            ( $transaction_outcome === "PENDING" ?  esc_html__( 'Payment Pending', 'globalpayments-gateway-provider-for-woocommerce' ) :   
+        esc_html__( 'Payment Error', 'globalpayments-gateway-provider-for-woocommerce' ) ); ?></title>
     <!-- Minimal CSS Styles -->
     <style>
         * {
@@ -249,11 +252,17 @@ $store_logo_url = wp_get_attachment_image_src( $store_logo_id, 'full' )[0] ?? ''
         </div>
         
         <div class="content">
-            <?php if ( $transaction_outcome === 'SUCCESS' && $signature_valid ): ?>
-                <!-- Successful payment message -->
-                <div class="status-icon success">&#x2714;</div>
-                <h2><?php esc_html_e( 'Payment Successful', 'globalpayments-gateway-provider-for-woocommerce' ); ?></h2>
-                <p><?php esc_html_e( 'Your payment has been processed successfully.', 'globalpayments-gateway-provider-for-woocommerce' ); ?></p>
+            <?php if ( ( $transaction_outcome === 'SUCCESS' || 'PENDING' === $transaction_outcome ) && $signature_valid ): ?>
+                <!-- Successful or pending payment message -->
+                 
+                 <?php
+                 $is_successfull = 'SUCCESS' === $transaction_outcome;
+                 $title = "Payment " . ( $is_successfull ? "Successful" : "Pending" );
+                 $subtitle = ( $is_successfull ) ? 'Your payment has been processed successfully.' : 'Your payment is pending.'
+                 ?>
+                <div class="status-icon success">&#x2714</div>
+                <h2><?php esc_html_e( $title, 'globalpayments-gateway-provider-for-woocommerce' ); ?></h2>
+                <p><?php esc_html_e( $subtitle, 'globalpayments-gateway-provider-for-woocommerce' ); ?></p>
                 <p class="countdown">
                     <?php echo esc_html__('Redirecting to order confirmation in', 'globalpayments-gateway-provider-for-woocommerce'); ?> 
                     <span id="countdown">5</span> 

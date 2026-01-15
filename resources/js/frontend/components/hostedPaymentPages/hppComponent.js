@@ -6,7 +6,6 @@ const { __ } = wp.i18n;
  * Hosted Payment Pages Component for WooCommerce Blocks
  * 
  * - Validates phone number for 3D Secure transactions
- * - Validates county for GB addresses
  * - Removes "(optional)" text from required fields
  * - Adds required indicators
  * - Reverts changes when payment method changes
@@ -81,15 +80,12 @@ const { __ } = wp.i18n;
 		}
 	}, [clearValidationErrors]);
 
-
-
 	useEffect(() => {
 		// Store original content for restoration
 		const originalContent = new Map();
 
 		// Input field selectors
 		const PHONE_SELECTOR = 'input[id*="phone"], input[name*="phone"]';
-		const STATE_SELECTOR = 'input[id*="state"], select[id*="state"], input[name*="state"], select[name*="state"]';
 		const PAYMENT_METHOD_SELECTOR = 'input[name="radio-control-wc-payment-method-options"]';
 
 		// Function to store original content
@@ -189,13 +185,6 @@ const { __ } = wp.i18n;
 					processInputField(input, true);
 				});
 			}
-			
-			// Process state/county fields for GB addresses
-			if (isGBAddress) {
-				document.querySelectorAll(STATE_SELECTOR).forEach(input => {
-					processInputField(input, true);
-				});
-			}
 		};
 		
 		// Revert all field modifications
@@ -213,7 +202,7 @@ const { __ } = wp.i18n;
 			originalContent.clear();
 			
 			// Remove required attributes using combined selector
-			document.querySelectorAll(`${PHONE_SELECTOR}, ${STATE_SELECTOR}`).forEach(input => {
+			document.querySelectorAll(`${PHONE_SELECTOR}`).forEach(input => {
 				input.removeAttribute('required');
 				input.removeAttribute('aria-required');
 			});
@@ -238,7 +227,7 @@ const { __ } = wp.i18n;
 					for (const node of mutation.addedNodes) {
 						if (node.nodeType === Node.ELEMENT_NODE && node.querySelector) {
 							// Check for relevant form fields in one query
-							if (node.querySelector(`${PHONE_SELECTOR}, ${STATE_SELECTOR}`)) {
+							if (node.querySelector(`${PHONE_SELECTOR}`)) {
 								shouldProcessFields = true;
 							}
 							
@@ -326,29 +315,6 @@ const { __ } = wp.i18n;
 				}
 			}
 
-			// Validate county for GB addresses
-			if (validationState.billingCountry === 'GB' && !(validationState.billingState || '').trim()) {
-				errors.push({
-					errorId: 'billing_state_required_gb',
-					message: __(
-						'County is required for UK billing addresses.',
-						'globalpayments-gateway-provider-for-woocommerce'
-					),
-					validationErrorId: 'billing_state'
-				});
-			}
-
-			if (validationState.shippingCountry === 'GB' && validationState.needsShipping && !(validationState.shippingState || '').trim()) {
-				errors.push({
-					errorId: 'shipping_state_required_gb',
-					message: __(
-						'County is required for UK shipping addresses.',
-						'globalpayments-gateway-provider-for-woocommerce'
-					),
-					validationErrorId: 'shipping_state'
-				});
-			}
-			
 			return errors.length > 0 ? errors : true;
 		};
 		

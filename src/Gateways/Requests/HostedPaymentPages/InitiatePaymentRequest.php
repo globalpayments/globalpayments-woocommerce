@@ -20,7 +20,6 @@ use GlobalPayments\Api\Entities\Enums\{
 use GlobalPayments\Api\Utils\CountryUtils;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\AbstractRequest;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\UkCountyValidator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -43,17 +42,24 @@ class InitiatePaymentRequest extends AbstractRequest {
 	public function do_request(): mixed {
 		$requestData = $this->data;
 
-		// Validate UK counties if needed
-		$this->validate_uk_counties();
-
 		$store_country_code = wc_get_base_location()['country'] ?? 'US';
 		$ref_text           = get_bloginfo( 'name' ) ?: 'WooCommerce Store';
 
 		//Check for non ASCII characters in the site title
 		if( preg_match( '/[^\x00-\x7F]/', $ref_text ) ){
 			$ref_text = $this->convertToASCII( $ref_text );
-		}
-		$ref_text          .= ' Order #' . $this->order->get_id();
+		};
+
+		$orderNumString = ' Order #' . $this->order->get_id();
+
+		// Some HPP-gateway fields don't accept strings longer than 50 characters,
+		// so this avoids exceeding that limit in cases where the store name is especially
+		// long and keeps the important order-number info intact.
+		$ref_text = substr_replace(
+			$ref_text,
+			$orderNumString,
+			50 - ( strlen( $orderNumString ) )
+		);		
 		
 		$payer               = $this->create_payer_from_order();
 		$hpp_payment_methods = [ HPPAllowedPaymentMethods::CARD ];
@@ -140,27 +146,24 @@ class InitiatePaymentRequest extends AbstractRequest {
 			);
 		}
 		$payer->status = 'NEW';
-		$payer->language = strtoupper(substr( get_locale(), 0, 2 )) ?? "EN";
+		$payer->language = strtoupper( substr( get_locale(), 0, 2 ) ) ?? "EN";
 
 		// Set billing address
 		$billing_address                    = new Address();
 		$billing_address->streetAddress1    = $this->order->get_billing_address_1();
 		$billing_address->streetAddress2    = $this->order->get_billing_address_2();
 		$billing_address->city              = $this->order->get_billing_city();
-
-		// Convert billing state/county to 3-digit code for British counties, 
-		// WordPress/WooCommerce does not store these codes, like it does for US states.
-		if ( $payer_country_info['alpha2'] === 'GB' ) {
-			$billing_state_code     = UkCountyValidator::get_county_code( $this->order->get_billing_state() );
-			$billing_address->state = $billing_state_code ?: '';
-		} else {
-			$billing_address->state = $this->order->get_billing_state();
-		}
-
 		$billing_address->postalCode   = $this->order->get_billing_postcode();
 		$billing_address->countryCode  = $payer_country_info['alpha2'];
 		$billing_address->country      = $payer_country_info['alpha2'];
-		$payer->billingAddress         = $billing_address;
+
+		$billing_state_code = $this->order->get_billing_state();
+
+		if ( !empty( $billing_state_code ) && strlen( $billing_state_code ) < 4 ) {
+			$billing_address->state = $billing_state_code;
+		}
+
+		$payer->billingAddress = $billing_address;
 
 		// Set shipping address if available
 		if ( $this->order->has_shipping_address() ) {
@@ -168,20 +171,18 @@ class InitiatePaymentRequest extends AbstractRequest {
 			$shipping_address->streetAddress1    = $this->order->get_shipping_address_1();
 			$shipping_address->streetAddress2    = $this->order->get_shipping_address_2();
 			$shipping_address->city              = $this->order->get_shipping_city();
-
-			// Convert shipping state/county to 3-digit code for British counties only
-			$shipping_country_code = $this->order->get_shipping_country();
-			if ( $shipping_country_code === 'GB' ) {
-				$shipping_state_code      = UkCountyValidator::get_county_code( $this->order->get_shipping_state() );
-				$shipping_address->state  = $shipping_state_code ?: '';
-			} else {
-				$shipping_address->state = $this->order->get_shipping_state();
-			}
-
 			$shipping_address->postalCode  = $this->order->get_shipping_postcode();
 			$shipping_address->countryCode = $payer_country_info['alpha2'];
 			$shipping_address->country     = $payer_country_info['alpha2'];
-			$payer->shippingAddress        = $shipping_address;
+
+			$shipping_state_code = $this->order->get_shipping_state();
+
+			if ( !empty( $shipping_state_code ) && strlen( $shipping_state_code ) < 4 ) {
+				$billing_address->state = $shipping_state_code;
+			}
+
+			$payer->shippingAddress = $shipping_address;
+
 			if( $billing_includes_phone_number || $shipping_includes_phone_number ){
 				$payer->shippingPhone          = new PhoneNumber(
 					$payer_country_info['phoneCode'][0],
@@ -206,47 +207,6 @@ class InitiatePaymentRequest extends AbstractRequest {
 		}
 
 		return $payer;
-	}
-
-	/**
-	 * Validate UK counties for billing and shipping addresses.
-	 *
-	 * @return void
-	 * @throws \Exception If validation fails.
-	 */
-	protected function validate_uk_counties(): void {
-		$billing_country  = $this->order->get_billing_country();
-		$shipping_country = $this->order->get_shipping_country();
-
-		// Only validate if billing address is UK
-		if ( $billing_country === 'GB' ) {
-			$billing_error = UkCountyValidator::validate_checkout_county(
-				[
-					'country' => $billing_country,
-					'state'   => $this->order->get_billing_state(),
-				],
-				'billing'
-			);
-
-			if ( $billing_error !== null ) {
-				throw new \Exception( $billing_error['message'] );
-			}
-		}
-
-		// Only validate shipping if UK and has shipping address
-		if ( $this->order->has_shipping_address() && $shipping_country === 'GB' ) {
-			$shipping_error = UkCountyValidator::validate_checkout_county(
-				[
-					'country' => $shipping_country,
-					'state'   => $this->order->get_shipping_state(),
-				],
-				'shipping'
-			);
-
-			if ( $shipping_error !== null ) {
-				throw new \Exception( $shipping_error['message'] );
-			}
-		}
 	}
 
 	/**

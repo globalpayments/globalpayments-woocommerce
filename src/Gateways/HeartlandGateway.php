@@ -84,8 +84,8 @@ class HeartlandGateway extends AbstractGateway {
 
 	public function configure_method_settings() {
 		$this->id                 = self::GATEWAY_ID;
-		$this->method_title       = __( 'Heartland', 'globalpayments-gateway-provider-for-woocommerce' );
-		$this->method_description = __( 'Connect to the Heartland Portico gateway', 'globalpayments-gateway-provider-for-woocommerce' );
+		$this->method_title       = __( 'Global Payments', 'globalpayments-gateway-provider-for-woocommerce' );
+		$this->method_description = __( 'Connect to the Global Payments Portico gateway.', 'globalpayments-gateway-provider-for-woocommerce' );
 	}
 
 	public function get_first_line_support_email() {
@@ -97,7 +97,7 @@ class HeartlandGateway extends AbstractGateway {
 			'is_production' => array(
 				'title'       => __( 'Live Mode', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Get your API keys from your Heartland Online Payments account.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Get your API keys from your Online Payments account.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'     => 'no',
 			),
 			'public_key' => array(

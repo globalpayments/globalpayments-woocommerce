@@ -224,16 +224,44 @@ class AbstractApm{
 	 */
 	private static function validateRequestContents( GpApiGateway $gateway )  : bool
 	{
-		$querryStringSubString = substr( $_SERVER["QUERY_STRING"], strpos( $_SERVER["QUERY_STRING"], '&id=' ) + 1 );
+		$queryStringSubString = "";
 		
-		if (!empty($_REQUEST["X-GP-Signature"])) {
-			$signature = $_REQUEST["X-GP-Signature"];
-		} else {
-			$signature = getallheaders()['X-GP-Signature'] ?? '';
+		if ( isset( $_SERVER["QUERY_STRING"] ) && !empty( trim( $_SERVER["QUERY_STRING"] ) ) ){
+			$queryStringSubString = $_SERVER["QUERY_STRING"];
+		} 
+
+		if ( strpos( $queryStringSubString, '&id=' ) !== false){
+			$queryStringSubString = substr( $queryStringSubString, strpos( $queryStringSubString, '&id=' ) + 1 );
 		}
 
-		return hash(
-			ShaHashType::SHA512, $querryStringSubString . $gateway->get_backend_gateway_options()["appKey"]
-		) === $signature;
+		if( "" === $queryStringSubString ){
+			$raw_input = file_get_contents( "php://input" );
+			if( !empty( $raw_input ) ){
+				$queryStringSubString = json_encode( json_decode( $raw_input , true ) );
+			}
+		}
+
+		$signature = "";
+		if ( !empty ( $_REQUEST['X-GP-Signature'] ) ) {
+			$signature = (string) $_REQUEST['X-GP-Signature'];
+		} else {
+			if( function_exists( 'getallheaders' ) ){
+				$headers = getallheaders();
+				$signature = ( isset( $headers['X-GP-Signature'] ) && !empty($headers['X-GP-Signature'] ) ) ? 
+					$headers['X-GP-Signature'] : '';
+			}
+			
+			//Final attempt to get the signature
+			if( "" === $signature && isset( $_SERVER['HTTP_X_GP_SIGNATURE'] ) && 
+			!empty( $_SERVER['HTTP_X_GP_SIGNATURE'] ) ){
+				$signature = (string) $_SERVER['HTTP_X_GP_SIGNATURE'];
+			}
+		}
+
+		$expectedSignature = hash(
+			'sha512', $queryStringSubString . $gateway->get_backend_gateway_options()["appKey"]
+		);
+
+		return hash_equals( $expectedSignature, $signature );
 	}
 }

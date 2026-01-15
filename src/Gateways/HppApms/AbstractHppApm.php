@@ -49,22 +49,15 @@ class AbstractHppApm {
             $logger->info( 'HPP Status: Starting notification processing', $context );
         }
         
-        // Get request data (could be GET or POST)
-        // P.M: not POST nor GET
-        $request_data = array_merge($_GET, $_POST);
+        // Get request data
+        $request_data = array_merge( $_GET, $_POST );
 
         // Parse JSON body if present
-        $raw_input = file_get_contents('php://input');
-        if (!empty($raw_input)) {
-            $json_data = json_decode($raw_input, true);
-            if ($json_data) {
-                $request_data = array_merge($request_data, $json_data);
-                
-                if ( $gateway->debug ) {
-                    $logger->info( 'HPP Status: Parsed JSON body', array_merge( $context, [
-                        'json_keys' => array_keys( $json_data )
-                    ] ) );
-                }
+        $raw_input = file_get_contents( 'php://input' );
+        if ( !empty( $raw_input )) {
+            $json_data = json_decode( $raw_input, true );
+            if ( $json_data ) {
+                $request_data = array_merge( $request_data, $json_data );
             }
         }
 
@@ -74,62 +67,41 @@ class AbstractHppApm {
         $order_id       = HppResponseParser::extract_order_id( $request_data );
         
 
-        if (empty($order_id)) {
+        if ( empty( $order_id ) ) {
             if ($gateway->debug) {
                 $logger->error('HPP Status: Order ID not found in request');
             }
-            wp_die('Order not found', 404);
+            wp_die( 'Order not found', 404 );
             return;
         }
         
-        if ( $gateway->debug ) {
-            $logger->info( 'HPP Status: Found order ID, attempting to load order', array_merge( $context, [
-                'order_id' => $order_id
-            ] ) );
-        }
 
         // Find the order
-        $order = wc_get_order($order_id);
+        $order = wc_get_order( $order_id );
         
-        if (!$order instanceof WC_Order) {
-            if ($gateway->debug) {
-                $logger->error('HPP Status: Invalid order');
+        if ( !$order instanceof WC_Order ) {
+            if ( $gateway->debug ) {
+                $logger->error( 'HPP Status: Invalid order' );
             }
-            wp_die('Invalid order', 404);
+            wp_die( 'Invalid order', 404 );
             return;
         }
         
 
         // Verify transaction ID matches 
-        if (!empty($order->get_transaction_id()) && $order->get_transaction_id() !== $transaction_id) {
-            if ($gateway->debug) {
-                $logger->warning('HPP Status: Transaction ID mismatch');
+        if ( !empty( $order->get_transaction_id() ) && $order->get_transaction_id() !== $transaction_id ) {
+            if ( $gateway->debug ) {
+                $logger->warning( 'HPP Status: Transaction ID mismatch' );
             }
             // Don't process if transaction IDs don't match 
-            wp_die('OK', 200);
+            wp_die( 'OK', 200 );
             return;
         }
         
-        // if ( $gateway->debug ) {
-        //     $logger->info( 'HPP Status: Updating order status', array_merge( $context, [
-        //         'order_id' => $order_id,
-        //         'payment_status' => $payment_status,
-        //         'transaction_id' => $transaction_id
-        //     ] ) );
-        // }
-
         // Update order status based on payment status
-        self::update_order_status_from_notification($order, $payment_status, $transaction_id, $request_data, $gateway);
+        self::update_order_status_from_notification( $order, $payment_status, $transaction_id, $request_data, $gateway );
 
-        // if ($gateway->debug) {
-        //     $logger->info('HPP Status: Successfully processed', array_merge($context, [
-        //         'order_id' => $order_id,
-        //         'transaction_id' => $transaction_id,
-        //         'status' => $payment_status
-        //     ]));
-        // }
-
-        wp_die('OK', 200);
+        wp_die( 'OK', 200 );
     }
 
     /**
@@ -152,17 +124,17 @@ class AbstractHppApm {
         $logger = wc_get_logger();
         $context = ['source' => 'globalpayments_hpp_status'];
         
-        $status_upper = strtoupper($payment_status);
+        $status_upper = strtoupper( $payment_status );
 
         // Create order note with callback details based
         $callback_summary = "Status: $payment_status";
-        if (!empty($transaction_id)) {
+        if ( !empty( $transaction_id ) ) {
             $callback_summary .= ", Transaction ID: $transaction_id";
         }
-        if (isset($callback_data['amount'])) {
+        if ( isset( $callback_data['amount'] ) ) {
             $callback_summary .= ", Amount: " . $callback_data['amount'];
         }
-        if (isset($callback_data['currency'])) {
+        if ( isset( $callback_data['currency'] ) ) {
             $callback_summary .= " " . $callback_data['currency'];
         }
 
@@ -182,106 +154,130 @@ class AbstractHppApm {
             $callback_summary .= ", Message: $payment_message";
         }
 
-        switch ($status_upper) {
+        switch ( $status_upper ) {
             case 'PREAUTHORIZED':
                 // Payment authorized but not yet captured
-                if (!in_array($order->get_status(), ['processing', 'completed'])) {
+                if ( !in_array( $order->get_status(), ['processing', 'completed'] ) ) {
                     $note_text = sprintf(
-                        __('Payment authorized via HPP. %s', 'globalpayments-gateway-provider-for-woocommerce'),
+                        __( 'Payment authorized via HPP. %s', 'globalpayments-gateway-provider-for-woocommerce' ),
                         $callback_summary
                     );
-                    $order->update_status('processing', $note_text);
+                    $order->update_status( 'processing', $note_text );
                     
                     // Set transaction ID if not already set
-                    if (empty($order->get_transaction_id())) {
-                        $order->set_transaction_id($transaction_id);
+                    if ( empty( $order->get_transaction_id() ) ) {
+                        $order->set_transaction_id( $transaction_id );
                     }
 
                     // Add metadata to track callback processing
-                    $order->update_meta_data('_globalpayments_hpp_callback_processed', date('Y-m-d H:i:s'));
-                    $order->update_meta_data('_globalpayments_hpp_payment_status', $payment_status);
-                    if (!empty($payment_method_type)) {
-                        $order->update_meta_data('_globalpayments_hpp_payment_method_type', $payment_method_type);
+                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', date( 'Y-m-d H:i:s' ) );
+                    $order->update_meta_data( '_globalpayments_hpp_payment_status', $payment_status );
+                    if ( !empty( $payment_method_type ) ) {
+                        $order->update_meta_data( '_globalpayments_hpp_payment_method_type', $payment_method_type );
                     }
                     $order->save();
 
-                    // if ($gateway->debug) {
-                    //     $logger->info('HPP Status: Order authorized', array_merge($context, [
-                    //         'order_id' => $order->get_id(),
-                    //         'transaction_id' => $transaction_id
-                    //     ]));
-                    // }
                 }
                 break;
 
             case 'CAPTURED':
                 // Payment successfully captured
-                if (!in_array($order->get_status(), ['processing', 'completed'])) {
+                if ( !in_array( $order->get_status(), ['processing', 'completed'] ) ) {
                     $note_text = sprintf(
-                        __('Payment completed via HPP. %s', 'globalpayments-gateway-provider-for-woocommerce'),
+                        __( 'Payment completed via HPP. %s', 'globalpayments-gateway-provider-for-woocommerce' ),
                         $callback_summary
                     );
-                    $order->add_order_note($note_text);
-                    $order->payment_complete($transaction_id);
+                    $order->add_order_note( $note_text );
+                    $order->payment_complete( $transaction_id );
 
                     // Add metadata to track callback processing
-                    $order->update_meta_data('_globalpayments_hpp_callback_processed', date('Y-m-d H:i:s'));
-                    $order->update_meta_data('_globalpayments_hpp_payment_status', $payment_status);
-                    $order->update_meta_data('_globalpayments_payment_captured', 'is_captured');
-                    if (!empty($payment_method_type)) {
-                        $order->update_meta_data('_globalpayments_hpp_payment_method_type', $payment_method_type);
+                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', date( 'Y-m-d H:i:s' ) );
+                    $order->update_meta_data( '_globalpayments_hpp_payment_status', $payment_status );
+                    $order->update_meta_data( '_globalpayments_payment_captured', 'is_captured' );
+                    if ( !empty( $payment_method_type ) ) {
+                        $order->update_meta_data( '_globalpayments_hpp_payment_method_type', $payment_method_type );
                     }
                     $order->save();
 
-                    if ($gateway->debug) {
-                        $logger->info('HPP Status: Payment completed', array_merge($context, [
+                    if ( $gateway->debug ) {
+                        $logger->info( 'HPP Status: Payment completed', array_merge($context, [
                             'order_id' => $order->get_id(),
                             'transaction_id' => $transaction_id
-                        ]));
+                        ] ) );
                     }
                 }
                 break;
+            case 'PENDING' : 
+                if ( in_array( $order->get_status(), ['on-hold', 'pending', 'cancelled', 'failed'] ) ) {
 
+                 $note_text = sprintf(
+                        __('Payment pending via HPP. %s', 'globalpayments-gateway-provider-for-woocommerce'),
+                        $callback_summary
+                    );
+                    if( "PENDING" ===  strtoupper( $order->get_status() ) ){
+                        $order->add_order_note( $note_text );
+                    }else{
+                        $order->update_status( "pending", $note_text );
+                    }
+
+
+                     // Add metadata to track callback processing
+                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', date( 'Y-m-d H:i:s' ) );
+                    $order->update_meta_data( '_globalpayments_hpp_payment_status', $payment_status );
+                    $order->update_meta_data( '_globalpayments_payment_captured', 'is_pending' );
+                    if ( !empty( $payment_method_type ) ) {
+                        $order->update_meta_data( '_globalpayments_hpp_payment_method_type', $payment_method_type );
+                    }
+                    $order->save();
+                       if ( $gateway->debug ) {
+                            $logger->info( 'HPP Status: Payment Pending', array_merge( $context, [
+                                'order_id' => $order->get_id(),
+                                'transaction_id' => $transaction_id
+                            ]
+                        ));
+                    }
+                }
+                break;
             case 'DECLINED':
             case 'CANCELLED':
             case 'FAILED':
                 // Payment failed, declined, or cancelled
-                if (in_array($order->get_status(), ['on-hold', 'pending', 'cancelled', 'failed'])) {
+                if ( in_array($order->get_status(), ['on-hold', 'pending', 'cancelled', 'failed'] ) ) {
                     $note_text = sprintf(
-                        __('Payment failed/declined via HPP status notification. %s', 'globalpayments-gateway-provider-for-woocommerce'),
+                        __( 'Payment failed/declined via HPP status notification. %s', 'globalpayments-gateway-provider-for-woocommerce' ),
                         $callback_summary
                     );
-                    $order->update_status('cancelled', $note_text);
+                    $order->update_status( 'cancelled', $note_text );
 
                     // Add metadata to track callback processing
-                    $order->update_meta_data('_globalpayments_hpp_callback_processed', date('Y-m-d H:i:s'));
-                    $order->update_meta_data('_globalpayments_hpp_payment_status', $payment_status);
-                    if (!empty($payment_method_type)) {
-                        $order->update_meta_data('_globalpayments_hpp_payment_method_type', $payment_method_type);
+                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', date('Y-m-d H:i:s') );
+                    $order->update_meta_data( '_globalpayments_hpp_payment_status', $payment_status );
+                    if ( !empty( $payment_method_type ) ) {
+                        $order->update_meta_data( '_globalpayments_hpp_payment_method_type', $payment_method_type );
                     }
                     $order->save();
 
-                    if ($gateway->debug) {
-                        $logger->info('HPP Status: Payment failed/cancelled', array_merge($context, [
+                    if ( $gateway->debug ) {
+                        $logger->info( 'HPP Status: Payment failed/cancelled', array_merge( $context, [
                             'order_id' => $order->get_id(),
                             'status' => $payment_status
-                        ]));
+                        ] ) );
                     }
                 }
                 break;
 
             default:
                 // Unknown status - log it
-                if ($gateway->debug) {
-                    $logger->warning('HPP Status: Unknown payment status', array_merge($context, [
+                if ( $gateway->debug ) {
+                    $logger->warning( 'HPP Status: Unknown payment status', array_merge( $context, [
                         'order_id' => $order->get_id(),
                         'status' => $payment_status,
                         'callback_data' => $callback_data
-                    ]));
+                    ] ) );
                 }
                 $order->add_order_note(
                     sprintf(
-                        __('HPP status notification received with unknown status: %s', 'globalpayments-gateway-provider-for-woocommerce'),
+                        __( 'HPP status notification received with unknown status: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
                         $callback_summary
                     )
                 );
@@ -300,11 +296,11 @@ class AbstractHppApm {
      * @param array $data 
      * @return string|null 
      */
-    protected static function extract_payment_method_type(array $data): ?string
+    protected static function extract_payment_method_type( array $data ): ?string
     {
         // Extract entry_mode which indicates the payment method type
-        if (!empty($data['payment_method']['entry_mode'])) {
-            return sanitize_text_field($data['payment_method']['entry_mode']);
+        if ( !empty( $data['payment_method']['entry_mode'] ) ) {
+            return sanitize_text_field( $data['payment_method']['entry_mode'] );
         }
 
         return null;
@@ -318,10 +314,10 @@ class AbstractHppApm {
      * @param array $data 
      * @return string|null 
      */
-    protected static function extract_payment_result_code(array $data): ?string
+    protected static function extract_payment_result_code( array $data ): ?string
     {
-        if (!empty($data['payment_method']['result'])) {
-            return sanitize_text_field($data['payment_method']['result']);
+        if ( !empty( $data['payment_method']['result'] ) ) {
+            return sanitize_text_field( $data['payment_method']['result'] );
         }
 
         return null;
@@ -336,10 +332,10 @@ class AbstractHppApm {
      * @param array $data 
      * @return string|null 
      */
-    protected static function extract_payment_message(array $data): ?string
+    protected static function extract_payment_message( array $data ): ?string
     {
-        if (!empty($data['payment_method']['message'])) {
-            return sanitize_text_field($data['payment_method']['message']);
+        if ( !empty($data['payment_method']['message'] ) ) {
+            return sanitize_text_field( $data['payment_method']['message'] );
         }
 
         return null;

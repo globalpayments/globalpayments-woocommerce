@@ -151,6 +151,25 @@ class HppResponseParser {
     }
 
     /**
+     * Determine if HPP payment is in a pending state from gateway response
+     *
+     * @param array $gatway_data
+     * @return bool true if order is in pending status
+     */
+
+    public static function is_pending_payment( array $gateway_data ): bool
+    {
+        $status = $gateway_data['status'] ?? '';
+        $result_code = $gateway_data['payment_method']['result'] ?? '';
+        $action_result = $gateway_data['action']['result_code'] ?? '';
+
+        $is_pending = $status === 'PENDING' && $result_code === '01' && $action_result === 'SUCCESS';
+        
+        return $is_pending;
+    }
+
+
+    /**
      * Get error message from gateway response
      *
      * @param array $gateway_data
