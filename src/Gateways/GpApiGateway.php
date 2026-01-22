@@ -162,7 +162,7 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $hpp_text;
 
-	protected static string $js_lib_version = '4.1.11';
+	protected static string $js_lib_version = '4.1.17';
 
 	public function __construct( $is_provider = false ) {
 		parent::__construct( $is_provider );

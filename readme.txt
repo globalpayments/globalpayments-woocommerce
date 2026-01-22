@@ -52,8 +52,13 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.16.3 (1/22/26) =
+* Updated globalpaymentsjs to v4.1.17
+
 = 1.16.2 (1/15/26) =
-* Enhancement: Gloabl payments rebranding
+* Gloabl Payments rebranding
+* Updated minimum PHP version to v8.2
+* Removed redundant address validations for UK addresses
 
 = 1.16.1 (12/11/25) =
 * Bug-fix: GPAPI gateway: Fixed validation handling for HPP for some hosting environments
