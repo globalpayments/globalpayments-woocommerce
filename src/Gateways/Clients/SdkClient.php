@@ -47,6 +47,13 @@ class SdkClient implements ClientInterface {
 	protected $args = array();
 
 	/**
+	 * Current request object
+	 *
+	 * @var RequestInterface
+	 */
+	protected $request;
+
+	/**
 	 * Prepared builder args
 	 *
 	 * @var array
@@ -192,6 +199,8 @@ class SdkClient implements ClientInterface {
 	}
 
 	protected function prepare_request_args( RequestInterface $request ) {
+
+		$this->request = $request;
 		$this->args = array_merge(
 			$request->get_default_args(),
 			$request->get_args()
@@ -300,11 +309,42 @@ class SdkClient implements ClientInterface {
 		}
 
 		if ( $token !== null ) {
-			$is_first = ( $token->get_id() === 0 );
+			// Find the current gateway and check if card saving is allowed
+			$gateways = WC()->payment_gateways->payment_gateways();
+			$current_gateway = null;
+			
+			foreach ($gateways as $gateway) {
+				if (
+					method_exists($gateway, 'get_option') 
+					&& $gateway->get_option('allow_card_saving') === 'yes'
+				) {
+					// Check if this gateway matches the current provider
+					if (isset($this->args['SERVICES_CONFIG']['gatewayProvider'])) {
+						$provider = $this->args['SERVICES_CONFIG']['gatewayProvider'];
+						if (
+							($provider === 'GP-API' && $gateway->id === 'globalpayments_gpapi') ||
+							($provider === 'PORTICO' && $gateway->id === 'globalpayments_heartland') ||
+							($provider === 'GENIUS' && $gateway->id === 'globalpayments_genius') ||
+							($provider === 'TRANSIT' && $gateway->id === 'globalpayments_transit')
+						) {
+							$current_gateway = $gateway;
+							break;
+						}
+					}
+				}
+			}
+			
+			if (
+				$current_gateway 
+				&& $current_gateway->allow_card_saving 
+				&& $this->should_apply_stored_credential( $token )
+			) {
+				$is_first = ( $token->get_id() === 0 );
 
-			$this->builder_args['storedCredential'] = array(
-				$this->prepare_stored_credential_data( $token->get_meta( 'card_brand_txn_id' ), $is_first )
-			);
+				$this->builder_args['storedCredential'] = array(
+					$this->prepare_stored_credential_data( $token->get_meta( 'card_brand_txn_id' ), $is_first )
+				);
+			}
 		}
 	}
 
@@ -318,7 +358,40 @@ class SdkClient implements ClientInterface {
 		return $storedCredsDetails;
 	}
 
-	protected function prepare_card_data( WC_Payment_Token_CC $token = null ) {
+	/**
+	 * Check if stored credential should be applied
+	 * 
+	 * @param \WC_Payment_Token_CC $token
+	 * @return bool
+	 */
+	protected function should_apply_stored_credential( \WC_Payment_Token_CC $token ): bool {
+		// Check if using an existing saved card (token ID > 0)
+		if ( $token->get_id() > 0 ) {
+			return true;
+		}
+
+		// Check if save for later checkbox is checked for new cards
+		if ( $this->request ) {
+			$gateway = $this->request->get_request_data( 'payment_method' );
+			$payment_data = $this->request->get_request_data( 'payment_data' );
+			
+			if ( ! empty( $payment_data ) ) {
+				$store_payment_method = Utils::get_data_from_payment_data( 
+					$payment_data, sprintf( 'wc-%s-new-payment-method', $gateway ) 
+					);
+			} else {
+				$store_payment_method = $this->request->get_request_data( 
+					sprintf( 'wc-%s-new-payment-method', $gateway ) 
+					) === 'true';
+			}
+
+			return $store_payment_method;
+		}
+
+		return false;
+	}
+
+	protected function prepare_card_data( WC_Payment_Token_CC $token ) {
 		if ( null === $token ) {
 			return;
 		}

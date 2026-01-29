@@ -191,7 +191,6 @@ class GpApiGateway extends AbstractGateway {
 				'title'       => __( 'Live Mode', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
 				'description' => sprintf(
-					/* translators: %s: Email address of support team */
 					esc_html__(
 						'Get your App ID and App Key from your %sGlobal Payments Developer Account%s. Please follow the instructions provided in the %splugin description%s. When you are ready to go Live, please contact %ssupport to get you live credentials.',
 						'globalpayments-gateway-provider-for-woocommerce'
@@ -200,7 +199,7 @@ class GpApiGateway extends AbstractGateway {
 					'</a>',
 					'<a href="https://wordpress.org/plugins/global-payments-woocommerce/" target="_blank">',
 					'</a>',
-					'<a href="mailto:' . $this->get_first_line_support_email() . '?Subject=WooCommerce Live Credentials">',
+					'<a href="https://developer.globalpay.com/support/integration-support" target="_blank" title="Contact Support">',
 					'</a>'
 				),
 				'default'     => 'no',
@@ -233,7 +232,7 @@ class GpApiGateway extends AbstractGateway {
                 'default'     => '',
                 'default'     => '',
                 'class'       => 'required live-toggle',
-                'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" arget="_blank">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" target="_blank" title="Contact Support">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
             ),
 			'sandbox_app_id'       => array(
 				'title'   => __( 'Sandbox App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -264,7 +263,7 @@ class GpApiGateway extends AbstractGateway {
                 'default'     => '',
                 'default'     => '',
                 'class'       => 'required sandbox-toggle',
-                'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" arget="_blank">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" target="_blank" title="Contact Support">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
             ),
             'credentials_api_check'	=> array(
                 'title'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -279,11 +278,8 @@ class GpApiGateway extends AbstractGateway {
 				'title'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'label'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
-				'description' => sprintf(
-				/* translators: %s: Email address of support team */
-					__( 'Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href="mailto:%s?Subject=WooCommerce%%20Card%%20Saving%%20Option">support</a> with any questions regarding this option.', 'globalpayments-gateway-provider-for-woocommerce' ),
-					$this->get_first_line_support_email()
-				),
+				'description' =>
+					__( 'Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href="https://developer.globalpay.com/support/integration-support" target="_blank" title="Contact Support">support</a> with any questions regarding this option.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'     => 'no',
 			),
 			'payment_interface' => array(

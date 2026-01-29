@@ -534,21 +534,15 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					'title'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'label'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'type'        => 'checkbox',
-					'description' => sprintf(
-					/* translators: %s: Email address of support team */
-						__( 'Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href="mailto:%s?Subject=WooCommerce%%20Card%%20Saving%%20Option">support</a> with any questions regarding this option.', 'globalpayments-gateway-provider-for-woocommerce' ),
-						$this->get_first_line_support_email()
-					),
+					'description' =>
+						__( 'Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href="https://developer.globalpay.com/support/integration-support" target="_blank" title="Contact Support">support</a> with any questions regarding this option.', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'default'     => 'no',
 				),
 				'txn_descriptor'        => array(
 					'title'             => __( 'Order Transaction Descriptor', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'type'              => 'text',
-					'description'       => sprintf(
-					/* translators: %s: Email address of support team */
-						__( 'During a Capture or Authorize payment action, this value will be passed along as the transaction-specific descriptor listed on the customer\'s bank account. Please contact <a href="mailto:%s?Subject=WooCommerce%%20Transaction%%20Descriptor%%20Option">support</a> with any questions regarding this option (maxLength: 25).', 'globalpayments-gateway-provider-for-woocommerce' ),
-						$this->get_first_line_support_email()
-					),
+					'description'       =>
+						__( 'During a Capture or Authorize payment action, this value will be passed along as the transaction-specific descriptor listed on the customer\'s bank account. Please contact <a href="https://developer.globalpay.com/support/integration-support" target="_blank" title="Contact Support">support</a> with any questions regarding this option (maxLength: 25).', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'default'           => '',
 					'class'             => 'txn_descriptor',
 					'custom_attributes' => array(

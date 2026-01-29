@@ -52,6 +52,11 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+
+= 1.16.4 (1/29/26) =
+* Bug-fix: Fixed issue with COF flag
+* Updated admin settings support links to redirect to developer portal support page instead of email
+
 = 1.16.3 (1/22/26) =
 * Updated globalpaymentsjs to v4.1.17
 
