@@ -226,6 +226,12 @@ class SdkClient implements ClientInterface {
 
 		if ( $this->has_arg( RequestArg::ORDER_ID ) ) {
 			$this->builder_args['orderId'] = array( $this->get_arg( RequestArg::ORDER_ID ) );
+			
+			// Since Merchantware v4.5 doesn't seem to support an order id field specifically,
+			// we're mapping the order id value to the invoice number gateway field for ease of
+			// merchant reconciliation
+			if ( $this->args['SERVICES_CONFIG']['gatewayProvider'] === GatewayProvider::GENIUS )
+				$this->builder_args['invoiceNumber'] = $this->builder_args['orderId'];
 		}
 
 		$token = null;
