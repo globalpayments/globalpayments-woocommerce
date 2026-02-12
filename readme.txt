@@ -12,8 +12,8 @@ This extension allows WooCommerce to use the available Global Payments payment g
 
 = Features =
 - Heartland Portico gateway
-- TSYS Genius gateway
-- TSYS TransIT gateway with TSEP
+- Global Payments Genius gateway
+- Global Payments TransIT gateway with TSEP
 - Unified Payments
 - Credit Cards
 - Integrates with Woocommerce
@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.16.6 (2/12/26) =
+- TSYS to Global payments rebranding
+
 = 1.16.5 (2/5/26) =
 * Enhancement: Genius Gateway: Mapped WC order number value to gateway's invoice number field
 
@@ -150,7 +153,7 @@ Bug-fix: Fixed transaction status handling with some APMs
 * Fixed gateway settings display bug
 
 = 1.13.3 (04/15/25) =
-* Add support for admin panel refunds w/TSYS Genius gateway
+* Add support for admin panel refunds w/Global Payments Genius gateway
 * Added support for Spanish Translations
 
 = 1.13.2 (03/27/25) =

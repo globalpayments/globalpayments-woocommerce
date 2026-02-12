@@ -366,12 +366,12 @@ msgid "3DS Authentication failed. Please try again."
 msgstr "Error de autenticación 3DS. Por favor inténtalo de nuevo."
 
 #: src/Gateways/GeniusGateway.php:88
-msgid "TSYS Genius"
-msgstr "TSYS Genius"
+msgid "Global Payments Genius"
+msgstr "Global Payments Genius"
 
 #: src/Gateways/GeniusGateway.php:89
-msgid "Connect to the TSYS Genius gateway"
-msgstr "Conectar al TSYS Genius gateway"
+msgid "Connect to the Global Payments Genius gateway"
+msgstr "Conectar a la puerta de enlace Global Payments Genius"
 
 #: src/Gateways/GeniusGateway.php:99
 #: src/Gateways/GpApiGateway.php:146
@@ -382,8 +382,8 @@ msgid "Live Mode"
 msgstr "Modo en vivo"
 
 #: src/Gateways/GeniusGateway.php:101
-msgid "Get your credentials from your TSYS Genius account."
-msgstr "Obtenga sus credenciales de su cuenta TSYS Genius."
+msgid "Get your credentials from your Global Payments Genius account."
+msgstr "Obtenga sus credenciales de su cuenta Global Payments Genius."
 
 #: src/Gateways/GeniusGateway.php:105
 msgid "Live Merchant Name"
@@ -654,16 +654,16 @@ msgid "Invalid transaction id."
 msgstr "ID de transacción no válido."
 
 #: src/Gateways/TransitGateway.php:144
-msgid "TSYS TransIT"
-msgstr "TSYS TransIT"
+msgid "Global Payments TransIT"
+msgstr "Global Payments TransIT"
 
 #: src/Gateways/TransitGateway.php:145
-msgid "Connect to the TSYS TransIT gateway with TSEP"
-msgstr "Conectar a la puerta de enlace TSYS TransIT con TSEP"
+msgid "Connect to the Global Payments TransIT gateway with TSEP"
+msgstr "Conectar a la puerta de enlace Global Payments TransIT"
 
 #: src/Gateways/TransitGateway.php:157
-msgid "Get your API keys from your TSYS TransIT account."
-msgstr "Obtenga sus claves API de su cuenta TSYS TransIT."
+msgid "Get your API keys from your Global Payments TransIT account."
+msgstr "Obtenga sus claves API de su cuenta Global Payments TransIT."
 
 #: src/Gateways/TransitGateway.php:161
 msgid "Live Merchant ID"

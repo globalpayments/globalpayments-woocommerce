@@ -87,8 +87,8 @@ class GeniusGateway extends AbstractGateway {
 
 	public function configure_method_settings() {
 		$this->id                 = self::GATEWAY_ID;
-		$this->method_title       = __( 'TSYS Genius', 'globalpayments-gateway-provider-for-woocommerce' );
-		$this->method_description = __( 'Connect to the TSYS Genius gateway', 'globalpayments-gateway-provider-for-woocommerce' );
+		$this->method_title       = __( 'Global Payments Genius', 'globalpayments-gateway-provider-for-woocommerce' );
+		$this->method_description = __( 'Connect to the Global Payments Genius gateway', 'globalpayments-gateway-provider-for-woocommerce' );
 	}
 
 	public function get_first_line_support_email() {
@@ -100,7 +100,7 @@ class GeniusGateway extends AbstractGateway {
 			'is_production'    => array(
 				'title'   => __( 'Live Mode', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'    => 'checkbox',
-				'description' => __( 'Get your credentials from your TSYS Genius account.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Get your credentials from your Global Payments Genius account.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default' => 'no',
 			),
 			'merchant_name'    => array(
