@@ -403,6 +403,12 @@ const useTokenToPlaceOrder = () => {
 		paymentMethodData.serverTransId = state.serverTransId
 	}
 
+	// Add installment data if present in tokenResponse
+	if ( state.tokenResponse && state.tokenResponse.installment ) {
+		paymentMethodData.installmentId = state.tokenResponse.installment.installmentId;
+		paymentMethodData.installmentReference = state.tokenResponse.installment.installmentReference;
+	}
+
 	helper.setPaymentMethodData( paymentMethodData );
 
 	helper.placeOrder();

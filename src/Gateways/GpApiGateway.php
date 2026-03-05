@@ -162,7 +162,14 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $hpp_text;
 
-	protected static string $js_lib_version = '4.1.17';
+	/**
+	 * Enable Installments
+	 *
+	 * @var bool
+	 */
+	public $enable_installments;
+
+	protected static string $js_lib_version = '4.1.18';
 
 	public function __construct( $is_provider = false ) {
 		parent::__construct( $is_provider );
@@ -320,6 +327,33 @@ class GpApiGateway extends AbstractGateway {
 			),
 		);
 
+		// Add installments field conditionally for Mexico (insert before HPP section)
+		if (
+			WC()->countries->get_base_country() === 'MX'
+			&& get_woocommerce_currency() === 'MXN'
+		) {
+			$installmentsField = array(
+				'enable_installments' => array(
+					'title'       => __( 'Enable Installments', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'label'       => __( 'Enable Installments', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'type'        => 'checkbox',
+					'description' => __(
+						'Enable installment payment option for customers. Only available for Drop-in UI payment interface.',
+						'globalpayments-gateway-provider-for-woocommerce'
+					),
+					'default'     => 'no',
+					'class'       => 'drop-in-toggle',
+				),
+			);
+			// Insert before section_hpp
+			$position = array_search('section_hpp', array_keys($theArray));
+			if ($position !== false) {
+				$theArray = array_slice($theArray, 0, $position, true) +
+							$installmentsField +
+							array_slice($theArray, $position, null, true);
+			}
+		}
+
 		// Create these configuration options only if proper country and currency are configured
 		if (
 			WC()->countries->get_base_country() === 'PL'
@@ -410,6 +444,7 @@ class GpApiGateway extends AbstractGateway {
 			],
 			'language' => substr( get_user_locale(), 0, 2 ),
 			'payment_interface'     => $this->payment_interface,
+			'enable_installments' => $this->enable_installments,
 		);
 
 		// For HPP, add the nonce
@@ -1008,6 +1043,9 @@ class GpApiGateway extends AbstractGateway {
 
 		// Add payment interface
 		$params['payment_interface'] = $this->payment_interface ?? 'drop_in';
+
+		// Add account name for installments
+		$params['account_name'] = $this->get_credential_setting( 'account_name' );
 
 		// Add HPP nonce and text
 		if ( $this->payment_interface === 'hpp' ) {

@@ -429,12 +429,42 @@
       try {
         const t = GlobalPayments;
         const ee = Object.assign(e, x);
+
+        // Add installments configuration if enabled and payment_interface is drop_in
+        if (e.payment_interface === "drop_in" && e.enable_installments === true) {
+          // Get country from billing address or use MX as fallback
+          const billingCountry = document.querySelector("#billing-country input")?.value;
+          const orderCountry = u.settings.helper_params?.order?.country;
+
+          const accountName = u.settings.helper_params?.account_name;
+
+          ee.installments = {
+            country: orderCountry || billingCountry || "MX",
+            currency: u.settings.helper_params?.order?.currency || "MXN",
+            contract_reference: u.settings.helper_params?.order?.id || "ORDER_" + Date.now()
+          }
+
+          if (accountName) {
+            ee.installments.accountName = accountName;
+          }
+        }
+
+        // Handle two-decimal currencies (MXN) as minor units
+        const twoDecimalCurrencies = ['MXN'];
+        const orderCurrency = u.settings.helper_params?.order?.currency || 'USD';
+        let formAmount = u.settings.helper_params.order.amount;
+
+        if (twoDecimalCurrencies.includes(orderCurrency)) {
+          // Convert to minor units (e.g., 871.40 -> 87140)
+          formAmount = Math.round(parseFloat(formAmount) * 100).toString();
+        }
+
         t.configure(ee),
           t.on("error", f),
           (u.cardForm = t.creditCard.form(
             "#" + u.settings.id + "-" + u.fieldOptions["payment-form"].class,
             {
-              amount: u.settings.helper_params.order.amount,
+              amount: formAmount,
               style: "gp-default",
               apms: apmArray,
             },
@@ -678,6 +708,13 @@
     },
     B = () => {
       const e = { token_response: JSON.stringify(u.tokenResponse) };
+
+      // Add installment data if present in tokenResponse
+      if (u.tokenResponse && u.tokenResponse.installment) {
+        e.installmentId = u.tokenResponse.installment.installmentId;
+        e.installmentReference = u.tokenResponse.installment.installmentReference;
+      }
+
       u.serverTransId && (e.serverTransId = u.serverTransId),
         g.setPaymentMethodData(e),
         g.placeOrder();

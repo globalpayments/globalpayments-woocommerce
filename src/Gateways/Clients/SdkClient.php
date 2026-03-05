@@ -6,6 +6,7 @@ use GlobalPayments\Api\Builders\TransactionBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\InstallmentData;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\CardType;
@@ -153,6 +154,15 @@ class SdkClient implements ClientInterface {
 
 	protected function prepare_builder( TransactionBuilder $builder ) {
 		foreach ( $this->builder_args as $name => $args ) {
+			// Handle installment specially - set property directly instead of using withInstallment
+			if ( $name === 'installment' ) {
+				$installmentData = new InstallmentData();
+				$installmentData->id = $args[0]['id'] ?? null;
+				$installmentData->reference = $args[0]['reference'] ?? null;
+				$builder->installment = $installmentData;
+				continue;
+			}
+
 			$method = 'with' . ucfirst( $name );
 
 			if ( ! method_exists( $builder, $method ) ) {
@@ -314,11 +324,61 @@ class SdkClient implements ClientInterface {
 			$this->builder_args['authAmount'] = array( $this->get_arg( RequestArg::AUTH_AMOUNT ) );
 		}
 
+		if ( $this->has_arg( RequestArg::ORDER_DETAILS ) ) {
+			$this->builder_args['orderDetails'] = array( $this->get_arg( RequestArg::ORDER_DETAILS ) );
+		}
+
+		if ( $this->has_arg( RequestArg::INSTALLMENT_DATA ) ) {
+			$installment_data = $this->get_arg( RequestArg::INSTALLMENT_DATA );
+			if ( !empty( $installment_data ) ) {
+				$this->builder_args['installment'] = array( $installment_data );
+
+			// Get gateway settings to check if card saving is enabled
+			$gateway_settings = get_option(
+				'woocommerce_globalpayments_gpapi_settings',
+				array()
+			);
+				$allow_card_saving =
+				isset( $gateway_settings['allow_card_saving'] )
+				&& $gateway_settings['allow_card_saving'] === 'yes';
+
+			// Check if save payment checkbox is checked
+			$save_payment_method = false;
+			if ( $this->request ) {
+				$gateway = $this->request->get_request_data( 'payment_method' );
+				$payment_data = $this->request->get_request_data( 'payment_data' );
+
+				if ( ! empty( $payment_data ) ) {
+					$save_payment_method = Utils::get_data_from_payment_data(
+						$payment_data,
+						sprintf( 'wc-%s-new-payment-method', $gateway )
+					);
+				} else {
+					$save_payment_method = $this->request->get_request_data(
+						sprintf( 'wc-%s-new-payment-method', $gateway )
+					) === 'true';
+				}
+			}
+
+			if ( empty( $this->builder_args['storedCredential'] ) && $allow_card_saving && $save_payment_method ) {
+					$storedCredsDetails = new StoredCredential();
+					$storedCredsDetails->initiator = StoredCredentialInitiator::PAYER;
+					$storedCredsDetails->type = 'INSTALLMENT';
+					$storedCredsDetails->sequence = 'FIRST';
+					if ( $this->has_arg( RequestArg::ORDER_ID ) ) {
+						$storedCredsDetails->contract_reference = 'CART#' . $this->get_arg( RequestArg::ORDER_ID );
+					}
+
+					$this->builder_args['storedCredential'] = array( $storedCredsDetails );
+				}
+			}
+		}
+
 		if ( $token !== null ) {
 			// Find the current gateway and check if card saving is allowed
 			$gateways = WC()->payment_gateways->payment_gateways();
 			$current_gateway = null;
-			
+
 			foreach ($gateways as $gateway) {
 				if (
 					method_exists($gateway, 'get_option') 
@@ -339,7 +399,7 @@ class SdkClient implements ClientInterface {
 					}
 				}
 			}
-			
+
 			if (
 				$current_gateway 
 				&& $current_gateway->allow_card_saving 
@@ -347,9 +407,11 @@ class SdkClient implements ClientInterface {
 			) {
 				$is_first = ( $token->get_id() === 0 );
 
-				$this->builder_args['storedCredential'] = array(
-					$this->prepare_stored_credential_data( $token->get_meta( 'card_brand_txn_id' ), $is_first )
-				);
+				if ( empty( $this->builder_args['storedCredential'] ) ) {
+					$this->builder_args['storedCredential'] = array(
+						$this->prepare_stored_credential_data( $token->get_meta( 'card_brand_txn_id' ), $is_first )
+					);
+				}
 			}
 		}
 	}
@@ -360,6 +422,10 @@ class SdkClient implements ClientInterface {
 		$storedCredsDetails->cardBrandTransactionId = $card_brand_txn_id;
 		$storedCredsDetails->type                   = 'UNSCHEDULED';
 		$storedCredsDetails->sequence               = $is_first ? 'FIRST' : 'SUBSEQUENT';
+
+		if ( $this->has_arg( RequestArg::ORDER_ID ) ) {
+			$storedCredsDetails->contract_reference = 'CART#' . $this->get_arg( RequestArg::ORDER_ID );
+		}
 
 		return $storedCredsDetails;
 	}

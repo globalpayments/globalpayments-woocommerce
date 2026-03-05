@@ -59,6 +59,30 @@ abstract class AbstractGatewayBlock extends AbstractPaymentMethodType {
 			Plugin::VERSION
 		);
 
+		// Hide saved payment tokens if card saving is disabled
+		if ( ! $this->gateway->allow_card_saving ) {
+			wp_add_inline_style(
+				'globalpayments-secure-payment-fields-gateways-blocks',
+				'.wc-block-components-radio-control:has(input[name="radio-control-wc-payment-method-saved-tokens"]) { display: none !important; }'
+			);
+		}
+
+		// Enqueue saved cards tooltip script only if installments are enabled
+		if ( $this->gateway instanceof GpApiGateway && ! empty( $this->gateway->enable_installments ) ) {
+			wp_enqueue_script(
+				'globalpayments-saved-cards-tooltip',
+				Plugin::get_url( '/assets/frontend/js/saved-cards-tooltip.js' ),
+				array( 'wp-i18n' ),
+				Plugin::VERSION,
+				true
+			);
+			wp_set_script_translations(
+				'globalpayments-saved-cards-tooltip',
+				'globalpayments-gateway-provider-for-woocommerce',
+				WP_PLUGIN_DIR . '/' . basename( dirname( __FILE__ , 4 ) ) . '/languages'
+			);
+		}
+
 		$handles = [ 'globalpayments-secure-payment-fields-gateways-blocks' ];
 
 		if ( $this->gateway->supports( 'globalpayments_three_d_secure' ) ) {

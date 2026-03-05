@@ -1121,6 +1121,10 @@ msgstr ""
 "\t\tPAN_ONLY puede exponer el FPAN, lo que requiere un paso SCA adicional hasta una verificación 3DS.\n"
 " Actualmente, Global Payments no admite el desafío SCA de Google Pay con una FPAN. Para una mejor aceptación, le recomendamos que proporcione únicamente la opción CRYPTOGRAM_3DS."
 
+#: assets/frontend/js/saved-cards-tooltip.js:8
+msgid "For card-based installment payment options, please enter your card information below."
+msgstr "Para opciones de pago a Meses sin Intereses por favor ingresa abajo la información de la tarjeta."
+
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:247
 msgid ""
 "Allows you to input a COUNTRY or string of COUNTRIES to limit what is shown to the customer. Including a country overrides your default account configuration. <br/><br/>\n"

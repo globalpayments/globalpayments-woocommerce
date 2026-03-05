@@ -47,6 +47,46 @@ class PaymentActionHandler extends AbstractHandler {
 		) {
 			$this->request->order->payment_complete( $this->response->transactionId );
 
+			if (
+				AbstractGateway::TXN_TYPE_SALE === $txn_type
+				&& ! empty( $this->response->installment )
+			) {
+				$installment_data = json_decode( wp_json_encode( $this->response->installment ), true );
+				if ( ! empty( $installment_data ) ) {
+					$this->request->order->update_meta_data( '_globalpayments_installment_data', $installment_data );
+					$this->request->order->update_meta_data( '_gp_has_installments', 'yes' );
+				}
+
+				$installment_count = $installment_data['count'] ?? $installment_data['terms']['count'] ?? null;
+				$auth_code = $this->response->transactionReference->authCode ?? null;
+
+				$note_lines = array(
+					sprintf(
+						__( 'Order id: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+						 $installment_data['id'] ?? null
+					),
+					sprintf(
+						__( 'Response: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+						__( $this->response->responseCode, 'globalpayments-gateway-provider-for-woocommerce' )
+					),
+					sprintf(
+						__( 'Auth code: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+						$auth_code ? $auth_code : __( 'N/A', 'globalpayments-gateway-provider-for-woocommerce' )
+					),
+					sprintf(
+						__(
+							'Installments number: %s installments',
+							'globalpayments-gateway-provider-for-woocommerce'
+						),
+						$installment_count
+							? $installment_count
+							: __( 'N/A', 'globalpayments-gateway-provider-for-woocommerce' )
+					),
+				);
+
+				$this->request->order->add_order_note( implode( "\n", $note_lines ) );
+			}
+
 			return;
 		}
 

@@ -393,6 +393,18 @@
 					obRow.style.display = '';
 				}
 			}
+
+			//toggle Installments field visibility (only for Drop-in UI)
+			if (document.getElementById('woocommerce_globalpayments_gpapi_enable_installments') !== null) {
+			let installmentsRow = document
+				.getElementById('woocommerce_globalpayments_gpapi_enable_installments')
+				.closest('tr');
+				if (display) {
+					installmentsRow.style.display = 'none';
+				} else {
+					installmentsRow.style.display = '';
+				}
+			}
 		},
 
 		/**

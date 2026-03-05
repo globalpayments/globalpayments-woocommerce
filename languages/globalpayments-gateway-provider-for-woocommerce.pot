@@ -1182,6 +1182,10 @@ msgstr "Une erreur est survenue. Veuillez nous contacter pour de l'assistance."
 msgid "We're not able to process this payment. Please refresh the page and try again."
 msgstr "Nous ne pouvons pas traiter ce paiement. Veuillez réactualiser cette page et réessayer."
 
+#: assets/frontend/js/saved-cards-tooltip.js:8
+msgid "For card-based installment payment options, please enter your card information below."
+msgstr ""
+
 #: src/Gateways/GpApiGateway.php:180
 #: src/Gateways/GpApiGateway.php:205
 msgid "Specify which account to use when processing a transaction. Default account will be used if this is not specified."

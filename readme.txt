@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.17.0 (3/5/26) =
+* Enhancements: Add Support for Installment Payment Plans for LATAM Market
+
 = 1.16.6 (2/12/26) =
 - TSYS to Global payments rebranding
 
