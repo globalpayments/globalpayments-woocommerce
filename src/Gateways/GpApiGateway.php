@@ -10,7 +10,7 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\DiUiApms\{BankSele
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\Apm\Paypal;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\Affirm;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\ThreeDSecure\CheckEnrollmentRequest;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\{PayOrderTrait, HppTrait};
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\{CheckApiCredentialsTrait, PayOrderTrait, HppTrait};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\{ApplePay, ClickToPay, GooglePay};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\{Clearpay, Klarna};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\OpenBanking;
@@ -19,7 +19,7 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 defined( 'ABSPATH' ) || exit;
 
 class GpApiGateway extends AbstractGateway {
-	use PayOrderTrait, HppTrait;
+	use PayOrderTrait, HppTrait, CheckApiCredentialsTrait;
 	/**
 	 * Gateway ID
 	 */
@@ -620,6 +620,12 @@ class GpApiGateway extends AbstractGateway {
 
 	protected function add_hooks() {
 		parent::add_hooks();
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'check_api_credentials' ), 10, 0 );
+		add_action( 'woocommerce_api_globalpayments_check_api_credentials_handler', array(
+			$this,
+			'check_api_credentials_handler'
+		) );
 
 		if ( is_admin() && current_user_can( 'edit_shop_orders' ) ) {
 			// Admin Pay for Order hooks

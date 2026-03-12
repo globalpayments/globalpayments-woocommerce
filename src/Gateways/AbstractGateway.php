@@ -9,7 +9,6 @@ use Exception;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\CheckApiCredentialsTrait;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\Apm\Paypal;
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWallets\{ApplePay, ClickToPay, GooglePay};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\{Affirm, Clearpay, Klarna};
@@ -24,7 +23,6 @@ use GlobalPayments\Api\Entities\Transaction;
  * Shared gateway method implementations
  */
 abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
-	use CheckApiCredentialsTrait;
 	/**
 	 * Defines production environment
 	 */
@@ -884,14 +882,6 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		add_action( 'woocommerce_api_globalpayments_order_info', array(
 			$this,
 			'get_order_info'
-		) );
-		add_action( 'admin_enqueue_scripts', array(
-			$this,
-			'check_api_credentials'
-		) );
-		add_action( 'woocommerce_api_globalpayments_check_api_credentials_handler', array(
-			$this,
-			'check_api_credentials_handler'
 		) );
 
 		if ( 'no' === $this->enabled ) {
