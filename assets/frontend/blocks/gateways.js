@@ -429,6 +429,7 @@
       try {
         const t = GlobalPayments;
         const ee = Object.assign(e, x);
+        if (e.transaction_region === 'europe' && !ee.dataResidency) { ee.dataResidency = 'EU'; }
 
         // Add installments configuration if enabled and payment_interface is drop_in
         if (e.payment_interface === "drop_in" && e.enable_installments === true) {

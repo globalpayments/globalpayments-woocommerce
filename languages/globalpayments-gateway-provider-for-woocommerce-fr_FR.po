@@ -878,6 +878,22 @@ msgstr "Connectez-vous à Klarna via la passerelle Unified Payments"
 msgid "Pay with Apple Pay"
 msgstr "Payer avec Apple Pay"
 
+#: src/Gateways/GpApiGateway.php:391
+msgid "Transaction Region"
+msgstr "Région de transaction"
+
+#: src/Gateways/GpApiGateway.php:393
+msgid "Select where transactions are processed. This controls the GP API host for sandbox and live transactions."
+msgstr "Sélectionnez l'endroit où les transactions sont traitées. Ceci contrôle l'hôte GP API pour sandbox et live."
+
+#: src/Gateways/GpApiGateway.php:402
+msgid "Global (default)"
+msgstr "Global (par défaut)"
+
+#: src/Gateways/GpApiGateway.php:403
+msgid "Europe"
+msgstr "Europe"
+
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:86
 msgid "GlobalPayments - Apple Pay"
 msgstr "GlobalPayments - Apple Pay"

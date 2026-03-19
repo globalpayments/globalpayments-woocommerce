@@ -89,6 +89,8 @@
 			}
 			var self = this;
 
+			var region = $( '#woocommerce_globalpayments_gpapi_transaction_region' ).val() || 'global';
+
 			$.ajax({
 				url: globalpayments_admin_credentials_params.check_api_credentials_url,
 				method: 'POST',
@@ -97,6 +99,7 @@
 					app_id: gateway_app_id,
 					app_key: gateway_app_key,
 					environment: environment,
+					region: region,
 				}
 			}).done( function ( response ) {
 				if ( response.error ) {

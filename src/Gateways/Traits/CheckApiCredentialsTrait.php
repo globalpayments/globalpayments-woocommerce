@@ -7,6 +7,7 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\GpApiGateway;
 
 defined( 'ABSPATH' ) || exit;
@@ -43,9 +44,14 @@ trait CheckApiCredentialsTrait {
 				$environment = Environment::PRODUCTION;
 			}
 
-			$ajaxData['appId'] = $app_id;
-			$ajaxData['appKey'] = $app_key;
+			$region = sanitize_text_field( wc_get_var( $_REQUEST['region'], 'global' ) );
+
+			$service_url = GpApiGateway::get_service_url_for_region( $region, $environment_value );
+
+			$ajaxData['appId']       = $app_id;
+			$ajaxData['appKey']      = $app_key;
 			$ajaxData['environment'] = $environment;
+			$ajaxData['serviceUrl']  = $service_url;
 
 			$this->gateway_provider = GatewayProvider::GP_API;
 			$request = $this->prepare_request( GpApiGateway::TXN_TYPE_GET_ACCESS_TOKEN, null, $ajaxData );

@@ -177,7 +177,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 */
 	public $is_production;
 
-	protected static string $js_lib_version = 'v1';
+	protected static string $js_lib_version = '4.1.19';
 
 	public function __construct( $is_provider = false ) {
 		$this->client     = new Clients\SdkClient();

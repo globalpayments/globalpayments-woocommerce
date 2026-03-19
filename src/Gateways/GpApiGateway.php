@@ -3,7 +3,7 @@
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 
 use Automattic\WooCommerce\Utilities\OrderUtil;
-use GlobalPayments\Api\Entities\Enums\{Environment, GatewayProvider, Channel};
+use GlobalPayments\Api\Entities\Enums\{Environment, GatewayProvider, Channel, ServiceEndpoints};
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\DiUiApms\{BankSelect, Blik};
@@ -169,7 +169,7 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $enable_installments;
 
-	protected static string $js_lib_version = '4.1.18';
+	protected static string $js_lib_version = '4.1.19';
 
 	public function __construct( $is_provider = false ) {
 		parent::__construct( $is_provider );
@@ -387,6 +387,22 @@ class GpApiGateway extends AbstractGateway {
 					'title' => __( 'General Settings', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'type'  => 'title',
 				),
+				'transaction_region'   => array(
+					'title'       => __( 'Transaction Region', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'type'        => 'select',
+					'desc_tip'    => __(
+						'Select where transactions are processed. This controls the GP API host for sandbox and live transactions.',
+						'globalpayments-gateway-provider-for-woocommerce'
+					),
+					'description' => '<span id="gp-region-api-url"><em>'
+						. esc_html( $this->get_region_api_url() )
+						. '</em></span>',
+					'default'     => 'global',
+					'options'     => array(
+						'global' => __( 'Global (default)', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'europe' => __( 'Europe', 'globalpayments-gateway-provider-for-woocommerce' ),
+					),
+				),
 				'debug'                => array(
 					'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'label'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -433,10 +449,16 @@ class GpApiGateway extends AbstractGateway {
 
 	public function get_frontend_gateway_options() {
 		
+		$serviceURL = $this->get_frontend_api_base_url();
+		$region     = $this->get_option( 'transaction_region', 'global' );
+
 		$options = array(
 			'accessToken'           => $this->get_access_token(),
 			'apiVersion'            => GpApiConnector::GP_API_VERSION,
 			'env'                   => $this->is_production ? parent::ENVIRONMENT_PRODUCTION : parent::ENVIRONMENT_SANDBOX,
+			'serviceURL'            => $serviceURL,
+			'dataResidency'         => ( 'europe' === $region ) ? 'EU' : '',
+			'transaction_region'    => $region,
 			'requireCardHolderName' => true,
 			'enableThreeDSecure'    => $this->enable_three_d_secure,
 			'fieldValidation' => [
@@ -512,6 +534,8 @@ class GpApiGateway extends AbstractGateway {
 				'x-gp-extension' => 'globalpayments-woocommerce;version=' . Plugin::VERSION,
 			],
 			'debug'                    => $this->debug,
+			'transaction_region'       => $this->get_option( 'transaction_region', 'global' ),
+			'serviceUrl'               => $this->get_region_service_url(),
 			'enable_gpay_hpp'		   => $this->get_option('enable_gpay_hpp'),
 			'enable_applepay_hpp'	   => $this->get_option('enable_applepay_hpp'),
 			'enable_blik_hpp'		   => $this->get_option('enable_blik_hpp'),
@@ -631,6 +655,9 @@ class GpApiGateway extends AbstractGateway {
 			// Admin Pay for Order hooks
 			add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'pay_order_modal' ), 99 );
 			add_filter( 'globalpayments_secure_payment_fields_styles', array( $this, 'pay_order_modal_secure_payment_fields_styles' ) );
+		}
+		if ( is_admin() ) {
+			add_action( 'admin_footer', array( $this, 'transaction_region_toggle_script' ) );
 		}
 		add_action( 'woocommerce_api_globalpayments_pay_order', array( $this, 'pay_order_modal_process_payment' ), 99 );
 		add_action( 'woocommerce_api_globalpayments_get_payment_methods', array( $this, 'pay_order_modal_get_payment_methods' ) );
@@ -1079,6 +1106,129 @@ class GpApiGateway extends AbstractGateway {
 	protected function handle_avs_cvn_response_codes( Transaction $response ) {
 		$response->avsResponseCode = $response->cardIssuerResponse->avsAddressResult;
 		$response->cvnResponseCode = $response->cardIssuerResponse->cvvResult;
+	}
+
+	/**
+	 * Returns the service URL for a given region and environment.
+	 * Centralizes endpoint selection logic to avoid duplication.
+	 *
+	 * @param string $region The region ('europe' or 'global')
+	 * @param bool $is_production Whether production environment is used
+	 * @return string Full URL e.g. https://apis.eu.globalpay.com/ucp
+	 */
+	public static function get_service_url_for_region( string $region, bool $is_production ): string {
+		if ( 'europe' === $region ) {
+			return $is_production
+				? ServiceEndpoints::GP_API_PRODUCTION_EU
+				: ServiceEndpoints::GP_API_TEST_EU;
+		}
+
+		return $is_production
+			? ServiceEndpoints::GP_API_PRODUCTION
+			: ServiceEndpoints::GP_API_TEST;
+	}
+
+	/**
+	 * Returns the full regional service URL from ServiceEndpoints constants.
+	 * Used by the backend SDK (serviceUrl) and the frontend JS drop-in (apiUrl).
+	 *
+	 * @return string Full URL e.g. https://apis.eu.globalpay.com/ucp
+	 */
+	public function get_region_service_url(): string {
+		$region  = $this->get_option( 'transaction_region', 'global' );
+		$is_prod = (bool) $this->is_production;
+
+		return self::get_service_url_for_region( $region, $is_prod );
+	}
+
+	/**
+	 * Returns the API endpoint hostname for display purposes only.
+	 * Uses get_region_service_url() as the single source of truth.
+	 *
+	 * @return string Hostname only e.g. apis.eu.globalpay.com
+	 */
+	private function get_region_api_url(): string {
+		$host = (string) parse_url( $this->get_region_service_url(), PHP_URL_HOST );
+
+		return $host ?: $this->get_region_service_url();
+	}
+
+	/**
+	 * Returns the base URL (scheme + host) for the JS library's apiUrl config.
+	 * The v4+ JS library appends its own path segments (/ucp/payment-methods),
+	 * so we must NOT include /ucp here.
+	 *
+	 * @return string e.g. https://apis.sandbox.eu.globalpay.com
+	 */
+	public function get_frontend_api_base_url(): string {
+		$full = $this->get_region_service_url(); // e.g. https://apis.sandbox.eu.globalpay.com/ucp
+		$scheme = parse_url( $full, PHP_URL_SCHEME );
+		$host   = parse_url( $full, PHP_URL_HOST );
+
+		if ( $scheme && $host ) {
+			return $scheme . '://' . $host;
+		}
+
+		return $full; // fallback: return as-is
+	}
+
+	/**
+	 * Outputs JavaScript that updates the Transaction Region API URL description
+	 * in real time when the region dropdown or live-mode checkbox changes.
+	 * URL values are sourced from ServiceEndpoints constants via PHP.
+	 */
+	public function transaction_region_toggle_script(): void {
+		$page    = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : '';
+		$section = isset( $_GET['section'] ) ? sanitize_key( $_GET['section'] ) : '';
+
+		if ( 'wc-settings' !== $page || self::GATEWAY_ID !== $section ) {
+			return;
+		}
+
+		// Build the URL map from ServiceEndpoints constants — single source of truth.
+		$urls = wp_json_encode(
+			array(
+				'global' => array(
+					'prod'    => (string) parse_url( ServiceEndpoints::GP_API_PRODUCTION, PHP_URL_HOST ),
+					'sandbox' => (string) parse_url( ServiceEndpoints::GP_API_TEST, PHP_URL_HOST ),
+				),
+				'europe' => array(
+					'prod'    => (string) parse_url( ServiceEndpoints::GP_API_PRODUCTION_EU, PHP_URL_HOST ),
+					'sandbox' => (string) parse_url( ServiceEndpoints::GP_API_TEST_EU, PHP_URL_HOST ),
+				),
+			)
+		);
+		?>
+		<script type="text/javascript">
+		(function ($) {
+			var urls = <?php echo $urls; // phpcs:ignore WordPress.Security.EscapeOutput ?>;
+
+			function updateRegionDesc() {
+				var region = $( '#woocommerce_globalpayments_gpapi_transaction_region' ).val() || 'global';
+				var isProd = $( '#woocommerce_globalpayments_gpapi_is_production' ).is( ':checked' );
+				var entry  = urls[ region ] || urls.global;
+				var url    = isProd ? entry.prod : entry.sandbox;
+				$( '#gp-region-api-url' ).html( '<em>' + url + '</em>' );
+			}
+
+			function clearAccountNames() {
+				$( '#woocommerce_globalpayments_gpapi_account_name' ).val( '' );
+				$( '#woocommerce_globalpayments_gpapi_sandbox_account_name' ).val( '' );
+				$( '#woocommerce_globalpayments_gpapi_account_name_dropdown' ).val( '' ).trigger( 'change' );
+				$( '#woocommerce_globalpayments_gpapi_sandbox_account_name_dropdown' ).val( '' ).trigger( 'change' );
+			}
+
+			$( document ).ready( function () {
+				updateRegionDesc();
+				$( '#woocommerce_globalpayments_gpapi_transaction_region' ).on( 'change', function() {
+					updateRegionDesc();
+					clearAccountNames();
+				} );
+				$( '#woocommerce_globalpayments_gpapi_is_production' ).on( 'change', updateRegionDesc );
+			} );
+		}( jQuery ));
+		</script>
+		<?php
 	}
 
 	/**
