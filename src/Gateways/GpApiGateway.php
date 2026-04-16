@@ -426,9 +426,8 @@ class GpApiGateway extends AbstractGateway {
 					'title'   => __( 'Enable 3D Secure', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'label'   => __( 'Enable 3D Secure', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'type'    => 'checkbox',
-					'default' => 'yes',
+					'default' => $this->three_d_secure_required() ? 'yes': "no",
 					'description'       => __($this->get_three_d_secure_display_text(), 'globalpayments-gateway-provider-for-woocommerce'),
-					'custom_attributes' => $this->three_d_secure_required() ? ["disabled" => true] : []
 				),
 			)
 		);
@@ -980,7 +979,6 @@ class GpApiGateway extends AbstractGateway {
      */
     private function three_d_secure_required()
     {
-        //Note: cannot access class varables from get_gateway_form_fields method.
         if ( isset( $this->is_production ) && false == $this->is_production ) {
             return false;
         } else {

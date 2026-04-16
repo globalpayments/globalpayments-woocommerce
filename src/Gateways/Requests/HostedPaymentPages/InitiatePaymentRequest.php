@@ -44,7 +44,7 @@ class InitiatePaymentRequest extends AbstractRequest {
 
 		$store_country_code = wc_get_base_location()['country'] ?? 'US';
 		$ref_text           = get_bloginfo( 'name' ) ?: 'WooCommerce Store';
-
+		$ref_text           = html_entity_decode( $ref_text, ENT_QUOTES, 'UTF-8' );
 		//Check for non ASCII characters in the site title
 		if( preg_match( '/[^\x00-\x7F]/', $ref_text ) ){
 			$ref_text = $this->convertToASCII( $ref_text );
