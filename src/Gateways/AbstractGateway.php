@@ -429,12 +429,73 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		}
 	}
 
+	/**
+	 * Get the client IP address for security token binding.
+	 *
+	 * @return string Client IP address.
+	 */
+	protected function get_client_ip_for_token(): string {
+		$ip_headers = array(
+			'HTTP_CF_CONNECTING_IP', // Cloudflare
+			'HTTP_X_FORWARDED_FOR',
+			'HTTP_X_REAL_IP',
+			'REMOTE_ADDR',
+		);
+
+		foreach ( $ip_headers as $header ) {
+			if ( ! empty( $_SERVER[ $header ] ) ) {
+				$ip = sanitize_text_field( wp_unslash( $_SERVER[ $header ] ) );
+				if ( strpos( $ip, ',' ) !== false ) {
+					$ips = explode( ',', $ip );
+					$ip = trim( $ips[0] );
+				}
+				if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+					return $ip;
+				}
+			}
+		}
+
+		return '0.0.0.0';
+	}
+
+	/**
+	 * Generate a signed security token for 3DS requests.
+	 * 
+	 * The token contains timestamp and IP hash, signed with HMAC.
+	 * This binds the token to the requesting IP address.
+	 *
+	 * @return string The signed token (timestamp:ip_hash:signature)
+	 */
+	protected function generate_3ds_security_token(): string {
+		$timestamp = time();
+		$client_ip = $this->get_client_ip_for_token();
+		$ip_hash = substr( md5( $client_ip . wp_salt( 'secure_auth' ) ), 0, 16 );
+		$data = 'gp3ds_' . $timestamp . '_' . $ip_hash;
+		$signature = hash_hmac( 'sha256', $data, wp_salt( 'auth' ) );
+		return $timestamp . ':' . $ip_hash . ':' . $signature;
+	}
+
+	/**
+	 * Add security token to 3DS endpoint URL.
+	 *
+	 * @param string $endpoint The WC-API endpoint name
+	 * @param string $token The security token
+	 * @return string URL with token parameter
+	 */
+	protected function get_secured_3ds_url( string $endpoint, string $token ): string {
+		$url = WC()->api_request_url( $endpoint );
+		return add_query_arg( 'gp3ds_token', $token, $url );
+	}
+
 	public function getThreedsecureFields() {
+		// Generate a cryptographically signed token bound to this IP
+		$security_token = $this->generate_3ds_security_token();
+
 		return array(
 				'methodNotificationUrl'     => WC()->api_request_url( 'globalpayments_threedsecure_methodnotification' ),
 				'challengeNotificationUrl'  => WC()->api_request_url( 'globalpayments_threedsecure_challengenotification' ),
-				'checkEnrollmentUrl'        => WC()->api_request_url( 'globalpayments_threedsecure_checkenrollment' ),
-				'initiateAuthenticationUrl' => WC()->api_request_url( 'globalpayments_threedsecure_initiateauthentication' ),
+				'checkEnrollmentUrl'        => $this->get_secured_3ds_url( 'globalpayments_threedsecure_checkenrollment', $security_token ),
+				'initiateAuthenticationUrl' => $this->get_secured_3ds_url( 'globalpayments_threedsecure_initiateauthentication', $security_token ),
 				'ajaxCheckoutUrl'           => \WC_AJAX::get_endpoint( 'checkout' ),
 		);
 	}

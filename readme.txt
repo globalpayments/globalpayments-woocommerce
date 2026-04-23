@@ -52,6 +52,13 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.18.3 (4/23/26) =
+* Enhancements: Security updates to 3DS handling
+= Bug Fix: Removed problematic payment_method.usage_mode
+
+= 1.18.2 (4/16/26) =
+* Bug-fix: Correction to GPAPI HPP gateway response header handling
+
 = 1.18.1 (4/16/26) =
 * Bug-fix: Updated the JS version for TransIT
 * Enhancements: GPAPI Gateway: 3DS admin option is allways changeable

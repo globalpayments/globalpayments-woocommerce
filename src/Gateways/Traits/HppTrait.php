@@ -787,7 +787,7 @@ trait HppTrait {
 	 */
 	private function obtainSignature(): string {
 		if ( ! empty( array_change_key_case( getallheaders() )['x-gp-signature'] ) ) {
-			return getallheaders()['x-gp-signature'];
+			return array_change_key_case( getallheaders() )['x-gp-signature'];
 		} else {
 			return ! empty( ( $_SERVER['HTTP_X_GP_SIGNATURE'] ) ) ? $_SERVER['HTTP_X_GP_SIGNATURE'] : '';
 		}

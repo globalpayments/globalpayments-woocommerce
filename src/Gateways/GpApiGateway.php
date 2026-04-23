@@ -15,6 +15,7 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\DigitalWalle
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\BuyNowPayLater\{Clearpay, Klarna};
 use GlobalPayments\WooCommercePaymentGatewayProvider\PaymentMethods\OpenBanking\OpenBanking;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
+use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -785,7 +786,123 @@ class GpApiGateway extends AbstractGateway {
 		wc_add_notice( $this->id . '_checkout_validated', 'error', array( 'id' => $this->id ) );
 	}
 
+	/**
+	 * Verify 3DS request security to prevent carding attacks.
+	 *
+	 * Security measures:
+	 * 1. Validates cryptographically signed token (can't be forged)
+	 * 2. Token is bound to the IP that generated it
+	 * 3. Token expires after 5 minutes
+	 * 4. Each token can only be used 2 times
+	 * 5. Rate limiting: 2 requests per minute per IP
+	 * 6. Hourly limit: 10 requests per hour per IP
+	 *
+	 * @return bool|WP_Error True if valid, WP_Error with message if not.
+	 */
+	private function verify_threedsecure_request_security(): WP_Error|bool {
+		// Get token from URL query parameter
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Custom HMAC verification used
+		$token = isset( $_GET['gp3ds_token'] ) ? sanitize_text_field( wp_unslash( $_GET['gp3ds_token'] ) ) : '';
+
+		if ( empty( $token ) ) {
+			return new \WP_Error( 'missing_token', __( 'Security token missing. Please refresh the page and try again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+		}
+
+		// Parse and validate the token format (timestamp:ip_hash:signature)
+		$parts = explode( ':', $token );
+		if ( count( $parts ) !== 3 ) {
+			return new \WP_Error( 'invalid_token', __( 'Invalid security token. Please refresh the page and try again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+		}
+
+		$timestamp = (int) $parts[0];
+		$token_ip_hash = $parts[1];
+		$provided_signature = $parts[2];
+
+		// Verify the request comes from the same IP that generated the token
+		$client_ip = $this->get_client_ip();
+		$current_ip_hash = substr( md5( $client_ip . wp_salt( 'secure_auth' ) ), 0, 16 );
+
+		if ( ! hash_equals( $token_ip_hash, $current_ip_hash ) ) {
+			return new \WP_Error( 'ip_mismatch', __( 'Security verification failed. Please refresh the page and try again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+		}
+
+		// Verify the HMAC signature (proves token wasn't forged)
+		$expected_data = 'gp3ds_' . $timestamp . '_' . $token_ip_hash;
+		$expected_signature = hash_hmac( 'sha256', $expected_data, wp_salt( 'auth' ) );
+
+		if ( ! hash_equals( $expected_signature, $provided_signature ) ) {
+			return new \WP_Error( 'invalid_signature', __( 'Security verification failed. Please refresh the page and try again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+		}
+
+		// Check token expiration (5 minutes)
+		$token_age = time() - $timestamp;
+		if ( $token_age > 300 || $token_age < 0 ) {
+			return new \WP_Error(
+				'token_expired',
+				__(
+					'Security token expired. Please refresh the page and try again.',
+					'globalpayments-gateway-provider-for-woocommerce'
+				)
+			);
+		}
+
+		// Track token usage - max 2 uses per token
+		$token_hash = md5( $token );
+		$usage_key = 'gp_3ds_usage_' . $token_hash;
+		$usage_count = (int) get_transient( $usage_key );
+
+		if ( $usage_count >= 2 ) {
+			return new \WP_Error( 'token_exhausted', __( 'Security token exhausted. Please refresh the page and try again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+		}
+
+		// Rate limiting: Allow max 2 requests per minute per IP
+		$rate_limit_key = 'gp_3ds_rate_' . md5( $client_ip );
+		$rate_limit_count = (int) get_transient( $rate_limit_key );
+
+		if ( $rate_limit_count >= 2 ) {
+			return new \WP_Error( 'rate_limited', __( 'Too many requests. Please wait a moment before trying again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+		}
+
+		set_transient( $rate_limit_key, $rate_limit_count + 1, MINUTE_IN_SECONDS );
+
+		// Hourly limit: Max 10 requests per hour per IP
+		$hourly_key = 'gp_3ds_hourly_' . md5( $client_ip );
+		$hourly_count = (int) get_transient( $hourly_key );
+
+		if ( $hourly_count >= 10 ) {
+			return new \WP_Error( 'hourly_limit', __( 'Request limit reached. Please try again later.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+		}
+
+		set_transient( $hourly_key, $hourly_count + 1, HOUR_IN_SECONDS );
+
+		// Increment token usage counter
+		$remaining_ttl = max( 1, 300 - $token_age );
+		set_transient( $usage_key, $usage_count + 1, $remaining_ttl );
+
+		return true;
+	}
+
+	/**
+	 * Get the client IP address.
+	 *
+	 * @return string Client IP address.
+	 */
+	private function get_client_ip(): string {
+		return $this->get_client_ip_for_token();
+	}
+
 	public function process_threeDSecure_checkEnrollment() {
+		// Security verification
+		$security_check = $this->verify_threedsecure_request_security();
+		if ( is_wp_error( $security_check ) ) {
+			wp_send_json( [
+				'error'    => true,
+				'message'  => $security_check->get_error_message(),
+				'enrolled' => CheckEnrollmentRequest::NO_RESPONSE,
+			] );
+			return;
+		}
+
 		try {
 			$request = $this->prepare_request( parent::TXN_TYPE_CHECK_ENROLLMENT );
 			$this->client->submit_request( $request );
@@ -799,6 +916,16 @@ class GpApiGateway extends AbstractGateway {
 	}
 
 	public function process_threeDSecure_initiateAuthentication() {
+		// Security verification
+		$security_check = $this->verify_threedsecure_request_security();
+		if ( is_wp_error( $security_check ) ) {
+			wp_send_json( [
+				'error'   => true,
+				'message' => $security_check->get_error_message(),
+			] );
+			return;
+		}
+
 		try {
 			$request = $this->prepare_request( parent::TXN_TYPE_INITIATE_AUTHENTICATION );
 			$this->client->submit_request( $request );
