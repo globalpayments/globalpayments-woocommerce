@@ -578,6 +578,9 @@ class SdkClient implements ClientInterface {
 				if ( $this->has_arg( RequestArg::SECONDS_TO_EXPIRE ) ) {
 					$gatewayConfig->secondsToExpire = $this->get_arg( RequestArg::SECONDS_TO_EXPIRE );
 				}
+				if ( $this->has_arg( RequestArg::RESTRICTED_TOKEN ) ) {
+					$gatewayConfig->restrictedToken = $this->get_arg( RequestArg::RESTRICTED_TOKEN );
+				}
 				$account_name = $this->get_arg( RequestArg::SERVICES_CONFIG )['accountName'] ?? null;
 				if ( ! empty( $account_name ) ) {
 					$access_token_info = new AccessTokenInfo();

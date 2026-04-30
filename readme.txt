@@ -52,6 +52,10 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+=  1.18.4 (4/30/26) =
+* Fixed a security vulnerability issues
+* Enhancements: GPAPI Gateway: Security enhancements to access token generation (use 'restricted_token' feature)
+
 = 1.18.3 (4/23/26) =
 * Enhancements: Security updates to 3DS handling
 = Bug Fix: Removed problematic payment_method.usage_mode

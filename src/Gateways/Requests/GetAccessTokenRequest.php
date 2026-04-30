@@ -40,6 +40,7 @@ class GetAccessTokenRequest extends AbstractRequest {
 
         return array(
             RequestArg::PERMISSIONS => $permissions,
+            RequestArg::RESTRICTED_TOKEN => true
         );
 	}
 }

@@ -228,7 +228,28 @@ class ApplePay extends AbstractDigitalWallet {
 		if ( empty( $responseValidationUrl ) ) {
 			return null;
 		}
-		$validationUrl = $responseValidationUrl->validationUrl;
+		$rawValidationUrl = $responseValidationUrl->validationUrl;
+
+		// Whitelist validation - strict URL format check
+		if ( ! is_string( $rawValidationUrl ) || 
+		     strpos( $rawValidationUrl, 'https://apple-pay-gateway' ) !== 0 ||
+		     ! preg_match( '/^https:\/\/apple-pay-gateway[a-z0-9\-]*\.apple\.com(\/[a-z0-9\-\/_\.]*)?(\?[a-z0-9=&]*)?$/i', $rawValidationUrl ) ) {
+			wp_send_json( [
+				'error'   => true,
+				'message' => 'Invalid validation URL',
+			] );
+			return null;
+		}
+
+		// Final validation with filter_var to ensure it's a valid URL
+		$validationUrl = filter_var( $rawValidationUrl, FILTER_VALIDATE_URL );
+		if ( ! $validationUrl ) {
+			wp_send_json( [
+				'error'   => true,
+				'message' => 'Invalid validation URL',
+			] );
+			return null;
+		}
 
 		if (
 			! $this->apple_merchant_id ||

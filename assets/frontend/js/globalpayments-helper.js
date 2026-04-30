@@ -39,7 +39,11 @@
 
 			$.get( self.helperOptions.orderInfoUrl )
 				.done( function( result ) {
-					self.order = result.message;
+					// Validate response from remote resource
+					if ( result && typeof result.message === 'string' ) {
+						// Store sanitized message only if it's a valid string
+						self.order = result.message;
+					}
 				})
 				.fail( function( jqXHR, textStatus, errorThrown ) {
 					console.log(errorThrown);
@@ -94,21 +98,31 @@
 		 */
 		toggleSubmitButtons: function () {
 			var selectedPaymentGatewayId = $( '.payment_methods input.input-radio:checked' ).val();
+			
+			// Validate payment gateway ID to prevent XSS - allow only alphanumeric, dashes, and underscores
+			if ( typeof selectedPaymentGatewayId !== 'string' || selectedPaymentGatewayId.length === 0 ) {
+				return;
+			}
+			var sanitizedId = String( selectedPaymentGatewayId ).replace( /[^a-zA-Z0-9_-]/g, '' );
+			if ( sanitizedId.length === 0 ) {
+				return;
+			}
+			
 			$( '.globalpayments.card-submit' ).hide();
-			if ( this.helperOptions.hide.includes( selectedPaymentGatewayId ) ) {
+			if ( this.helperOptions.hide.includes( sanitizedId ) ) {
 				this.hidePlaceOrderButton();
 				return;
 			}
-			if ( ! this.helperOptions.toggle.includes( selectedPaymentGatewayId ) ) {
+			if ( ! this.helperOptions.toggle.includes( sanitizedId ) ) {
 				this.showPlaceOrderButton();
 				return;
 			}
 
-			var submitButtonTarget = $( this.getSubmitButtonTargetSelector( selectedPaymentGatewayId ) );
+			var submitButtonTarget = $( this.getSubmitButtonTargetSelector( sanitizedId ) );
 			// stored Cards available (registered user selects stored card as payment method)
-			var savedCardsAvailable    = $( this.getStoredPaymentMethodsRadioSelector( selectedPaymentGatewayId ) + '[value!="new"]' ).length > 0;
+			var savedCardsAvailable    = $( this.getStoredPaymentMethodsRadioSelector( sanitizedId ) + '[value!="new"]' ).length > 0;
 			// user selects (new) card as payment method
-			var newSavedCardSelected   = 'new' === $( this.getStoredPaymentMethodsRadioSelector( selectedPaymentGatewayId ) + ':checked' ).val();
+			var newSavedCardSelected   = 'new' === $( this.getStoredPaymentMethodsRadioSelector( sanitizedId ) + ':checked' ).val();
 			// selected payment method is card or digital wallet
 			if ( ! savedCardsAvailable  || savedCardsAvailable && newSavedCardSelected ) {
 				submitButtonTarget.show();
@@ -175,12 +189,27 @@
 		 * @returns
 		 */
 		createSubmitButtonTarget: function ( id ) {
+			// Validate input type and length to prevent XSS attacks
+			if ( typeof id !== 'string' || id.length === 0 ) {
+				console.error( 'Invalid payment method ID: input must be a non-empty string' );
+				return;
+			}
+
+			// Sanitize id - allow only alphanumeric characters, dashes, and underscores
+			var sanitizedId = String( id ).replace( /[^a-zA-Z0-9_-]/g, '' );
+			
+			// Verify sanitization produced a valid result
+			if ( sanitizedId.length === 0 ) {
+				console.error( 'Invalid payment method ID: no valid characters after sanitization' );
+				return;
+			}
+			
 			var el = document.createElement( 'div' );
-			el.id = this.getSubmitButtonTargetSelector( id ).replace( '#', '' );
-			el.className = 'globalpayments ' + id + ' card-submit';
+			el.id = this.getSubmitButtonTargetSelector( sanitizedId ).replace( '#', '' );
+			el.className = 'globalpayments ' + sanitizedId + ' card-submit';
 			$( this.getPlaceOrderButtonSelector() ).after( el );
 			// match the visibility of our payment form
-			this.toggleSubmitButtons( id );
+			this.toggleSubmitButtons( sanitizedId );
 		},
 
 		/**
@@ -219,10 +248,14 @@
 			// Remove notices from all sources
 			$( '.woocommerce-NoticeGroup, .woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-globalpayments-checkout-error' ).remove();
 
-			if ( -1 === message.indexOf( 'woocommerce-error' ) ) {
-				message = '<ul class="woocommerce-error"><li>' + message + '</li></ul>';
+			// Sanitize message using jQuery's text() to prevent XSS
+			var sanitizedMessage = typeof message === 'string' ? message : '';
+			if ( -1 === sanitizedMessage.indexOf( 'woocommerce-error' ) ) {
+				// Escape HTML entities in the message to prevent XSS
+				var escapedMessage = $( '<div/>' ).text( sanitizedMessage ).html();
+				sanitizedMessage = '<ul class="woocommerce-error"><li>' + escapedMessage + '</li></ul>';
 			}
-			$form.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout woocommerce-globalpayments-checkout-error">' + message + '</div>' );
+			$form.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout woocommerce-globalpayments-checkout-error">' + sanitizedMessage + '</div>' );
 
 			$( 'html, body' ).animate( {
 				scrollTop: ( $form.offset().top - 100 )
@@ -267,7 +300,13 @@
 		},
 
 		hidePaymentMethod: function ( id ) {
-			$( '.payment_method_' + id ).hide();
+			// Sanitize id to prevent injection attacks in selector - allow only alphanumeric, dashes, and underscores
+			var sanitizedId = String( id ).replace( /[^a-zA-Z0-9_-]/g, '' );
+			if ( sanitizedId.length === 0 ) {
+				console.error( 'Invalid payment method ID for hiding' );
+				return;
+			}
+			$( '.payment_method_' + sanitizedId ).hide();
 		}
 	};
 
