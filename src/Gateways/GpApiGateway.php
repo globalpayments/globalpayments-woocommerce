@@ -170,6 +170,13 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $enable_installments;
 
+	/**
+	 * Enable Dynamic Currency Conversion (DCC)
+	 *
+	 * @var bool
+	 */
+	public $enable_dcc;
+
 	protected static string $js_lib_version = '4.1.19';
 
 	public function __construct( $is_provider = false ) {
@@ -211,6 +218,22 @@ class GpApiGateway extends AbstractGateway {
 					'</a>'
 				),
 				'default'     => 'no',
+			),
+			'transaction_region'   => array(
+				'title'       => __( 'Transaction Region', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'select',
+				'desc_tip'    => __(
+					'Select where transactions are processed. This controls the GP API host for sandbox and live transactions.',
+					'globalpayments-gateway-provider-for-woocommerce'
+				),
+				'description' => '<span id="gp-region-api-url"><em>'
+					. esc_html( $this->get_region_api_url() )
+					. '</em></span>',
+				'default'     => 'global',
+				'options'     => array(
+					'global' => __( 'Global (default)', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'europe' => __( 'Europe', 'globalpayments-gateway-provider-for-woocommerce' ),
+				),
 			),
 			'app_id'               => array(
 				'title' => __( 'Live App Id*', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -300,6 +323,17 @@ class GpApiGateway extends AbstractGateway {
 					'hpp'     => __( 'Hosted Payment Pages', 'globalpayments-gateway-provider-for-woocommerce' ),
 				),
 			),
+			'enable_dcc' => array(
+				'title'       => __( 'Dynamic Currency Conversion', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Enable Dynamic Currency Conversion (DCC)', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'desc_tip'    => __(
+					'Applies to Unified Payments transactions in both Sandbox and Live Mode. Only available when Payment Interface is set to Hosted Payment Pages.',
+					'globalpayments-gateway-provider-for-woocommerce'
+				),
+				'default'     => 'no',
+				'class'       => 'hpp-toggle',
+			),
 			'section_hpp'      => array(
 				'title' => __( 'Hosted Payment Settings', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'  => 'title',
@@ -388,22 +422,6 @@ class GpApiGateway extends AbstractGateway {
 					'title' => __( 'General Settings', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'type'  => 'title',
 				),
-				'transaction_region'   => array(
-					'title'       => __( 'Transaction Region', 'globalpayments-gateway-provider-for-woocommerce' ),
-					'type'        => 'select',
-					'desc_tip'    => __(
-						'Select where transactions are processed. This controls the GP API host for sandbox and live transactions.',
-						'globalpayments-gateway-provider-for-woocommerce'
-					),
-					'description' => '<span id="gp-region-api-url"><em>'
-						. esc_html( $this->get_region_api_url() )
-						. '</em></span>',
-					'default'     => 'global',
-					'options'     => array(
-						'global' => __( 'Global (default)', 'globalpayments-gateway-provider-for-woocommerce' ),
-						'europe' => __( 'Europe', 'globalpayments-gateway-provider-for-woocommerce' ),
-					),
-				),
 				'debug'                => array(
 					'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
 					'label'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -474,6 +492,7 @@ class GpApiGateway extends AbstractGateway {
 			$options['hpp_nonce'] = wp_create_nonce( 'gp_hpp_nonce' );
 			$options['payment_interface'] = 'hpp';
 			$options['hpp_text'] = $this->get_option( 'hpp_text' );
+
 			// Remove drop-in UI specific options that might interfere
 			unset( $options['accessToken'] );
 			unset( $options['apiVersion'] );
@@ -493,7 +512,7 @@ class GpApiGateway extends AbstractGateway {
 	{
 		// Replace localhost/127.0.0.1 with a sandbox placeholder for test environments
 		if ( !$this->is_production ) {
-			if (strpos( $url, 'localhost' ) !== false || strpos( $url, '127.0.0.1' ) !== false ) {
+			if ( strpos( $url, 'localhost' ) !== false || strpos( $url, '127.0.0.1' ) !== false ) {
 				$url = str_replace( ['localhost', '127.0.0.1'], 'sandbox-webhook.example.com', $url ) ;
 				$url = str_replace( 'http://', 'https://', $url );
 			}
@@ -534,12 +553,13 @@ class GpApiGateway extends AbstractGateway {
 				'x-gp-extension' => 'globalpayments-woocommerce;version=' . Plugin::VERSION,
 			],
 			'debug'                    => $this->debug,
+			'enable_dcc'               => $this->get_option( 'enable_dcc', 'no' ),
 			'transaction_region'       => $this->get_option( 'transaction_region', 'global' ),
 			'serviceUrl'               => $this->get_region_service_url(),
-			'enable_gpay_hpp'		   => $this->get_option('enable_gpay_hpp'),
-			'enable_applepay_hpp'	   => $this->get_option('enable_applepay_hpp'),
-			'enable_blik_hpp'		   => $this->get_option('enable_blik_hpp'),
-			'enable_open_banking_hpp'  => $this->get_option('enable_open_banking_hpp'),
+			'enable_gpay_hpp'		   => $this->get_option( 'enable_gpay_hpp' ),
+			'enable_applepay_hpp'	   => $this->get_option( 'enable_applepay_hpp' ),
+			'enable_blik_hpp'		   => $this->get_option( 'enable_blik_hpp' ),
+			'enable_open_banking_hpp'  => $this->get_option( 'enable_open_banking_hpp' ),
 		);
 	}
 

@@ -105,6 +105,14 @@ class InitiatePaymentRequest extends AbstractRequest {
 			$hpp_payment_methods,
 			PaymentMethodUsageMode::SINGLE
 		);
+
+		// Add currency conversion mode in order.transaction_configuration when DCC is enabled.
+		if ( isset( $this->config['enable_dcc'] ) && 'yes' === $this->config['enable_dcc'] ) {
+			$hpp_builder->withCurrencyConversionMode( true );
+		}
+		else {
+			$hpp_builder->withCurrencyConversionMode( false );
+		}
 		// Add shipping phone if available. 
 		if(property_exists( $payer, "shippingPhone" ) && $payer->shippingPhone !== "" && $payer->shippingPhone !== null ){
 			$hpp_builder->withShippingPhone( $payer->shippingPhone );

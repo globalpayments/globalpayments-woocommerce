@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+=  1.19.0 (5/14/26) =
+* Enhancements: Added support for DCC(Dynamic currency conversion)
+
 =  1.18.4 (4/30/26) =
 * Fixed a security vulnerability issues
 * Enhancements: GPAPI Gateway: Security enhancements to access token generation (use 'restricted_token' feature)

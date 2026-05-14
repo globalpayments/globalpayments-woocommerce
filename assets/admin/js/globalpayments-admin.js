@@ -408,6 +408,18 @@
 					installmentsRow.style.display = '';
 				}
 			}
+
+			//toggle DCC field visibility (only for HPP)
+			if (document.getElementById('woocommerce_globalpayments_gpapi_enable_dcc') !== null) {
+				let dccRow = document
+					.getElementById('woocommerce_globalpayments_gpapi_enable_dcc')
+					.closest('tr');
+				if (display) {
+					dccRow.style.display = '';
+				} else {
+					dccRow.style.display = 'none';
+				}
+			}
 		},
 
 		/**
