@@ -145,7 +145,7 @@ class SdkClient implements ClientInterface {
 			&& $this->args['SERVICES_CONFIG']['gatewayProvider'] === $gatewayProvider;
 	}
 
-	public function submit_request( RequestInterface $request ) {
+	public function submit_request( RequestInterface $request ): mixed {
 		$this->prepare_request_args( $request );
 		$this->configure_sdk();
 

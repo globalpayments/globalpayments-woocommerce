@@ -32,10 +32,18 @@ class SubscriptionRequest extends AbstractRequest {
 		$response = $tokenizedCard->charge( $this->order->get_total() )
 			->withCurrency( $this->order->get_currency() )
 			->withOrderId( (string) $this->order->get_id() )
+			// Required by Genius for duplicate detection; harmless metadata for other gateways.
+			->withInvoiceNumber( substr( (string) $this->order->get_id(), -8 ) )
 			->withAddress( $this->get_shipping_details(), AddressType::SHIPPING )
 			->withAddress( $this->get_billing_address(), AddressType::BILLING )
 			->withCustomerData( $customer_details )
-			->withDynamicDescriptor( sprintf( __( "Subscription payment for order: %s", "globalpayments-gateway-provider-for-woocommerce" ), $this->order->get_id() ) )
+			->withDynamicDescriptor(
+				sprintf(
+					/* translators: %s: WooCommerce order ID */
+					__( 'Subscription payment for order: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$this->order->get_id()
+				)
+			)
 			->execute();
 
 		return $response;

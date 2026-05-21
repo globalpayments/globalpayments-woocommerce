@@ -52,6 +52,12 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+=  1.19.1 (05/21/26)
+* Bug fix: Prevented Greek characters from getting misinterpreted
+* Updated PHP SDK to v14.1.15
+* Enhancements: Genius - Subscriptions Recurring Payment Failure
+* Enhancements: 3DS setting option is locked in required regions
+
 =  1.19.0 (5/14/26) =
 * Enhancements: Added support for DCC(Dynamic currency conversion)
 

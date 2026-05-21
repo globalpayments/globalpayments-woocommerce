@@ -28,7 +28,7 @@ class Plugin {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.19.0';
+	const VERSION = '1.19.1';
 
 	/**
 	 * Init the package.

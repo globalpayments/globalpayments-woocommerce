@@ -138,6 +138,7 @@ $store_logo_url = wp_get_attachment_image_src( $store_logo_id, 'full' )[0] ?? ''
         
         .order-row {
             display: flex;
+            flex-direction: column;
             justify-content: space-between;
             margin-bottom: 0.5rem;
             padding: 0.25rem 0;
@@ -296,7 +297,7 @@ $store_logo_url = wp_get_attachment_image_src( $store_logo_id, 'full' )[0] ?? ''
                 <?php if ( ! $signature_valid ): ?>
                     <p><?php esc_html_e( 'Payment verification failed. Please try again.', 'globalpayments-gateway-provider-for-woocommerce' ); ?></p>
                 <?php else: ?>
-                    <p><?php echo esc_html( $error_message ); ?></p>
+                    <p><?php echo mb_convert_encoding( wp_kses_post( $error_message ), 'HTML-ENTITIES', 'UTF-8' ); ?></p>
                 <?php endif; ?>
                 <p class="countdown">
                     <?php echo esc_html__('Redirecting to checkout in', 'globalpayments-gateway-provider-for-woocommerce'); ?> 

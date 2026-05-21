@@ -22,4 +22,11 @@ interface ClientInterface {
 	 * @return Transaction
 	 */
 	public function execute();
+
+	/**
+	 * 
+	 * @param RequestInterface $request 
+	 * @return mixed 
+	 */
+	public function submit_request( RequestInterface $request ): mixed;
 }
