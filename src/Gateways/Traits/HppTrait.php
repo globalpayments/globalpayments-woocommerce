@@ -84,22 +84,20 @@ trait HppTrait {
 		if ( 'YES' === strtoupper( $this->enable_three_d_secure ) ) {
 			// Ensure phone number is provided for 3DS
 			$billing_phone  = $order->get_billing_phone();
-			$shipping_phone = $order->get_shipping_phone();
 
-			if ( empty( trim( $billing_phone ) ) || empty( trim( $shipping_phone ) ) ) {
+			if ( empty( trim( $billing_phone ) ) ) {
 				if ( $this->debug ) {
 					$logger->error( 'HPP Payment Processing: Missing phone number for 3DS', $context );
 				}
-				$failed_on = empty( trim( $billing_phone ) ) ? 'Billing' : ( empty( trim( $shipping_phone ) ) ?
-				'Shipping' :
-				'Billing and Shipping' );
+
 				wc_add_notice(
-					sprintf(
-						__( 'Phone number is required for 3D Secure transactions. Please provide a phone number for %s and try again.', 'globalpayments-gateway-provider-for-woocommerce' ),
-						$failed_on
+					__(
+						'Phone number is required for 3D Secure transactions. Please provide a phone number for Billing and try again.',
+						'globalpayments-gateway-provider-for-woocommerce'
 					),
 					'error'
 				);
+
 				return array( 'result' => 'failure' );
 			}
 		}
@@ -759,22 +757,15 @@ trait HppTrait {
 		if ( ! $this->is_hpp_mode() ) {
 			return;
 		}
-		$failed_on = '';
 
 		// Validate billing phone for 3DS
 		if ( 'YES' === strtoupper( $this->enable_three_d_secure ) ) {
 			if ( empty( trim( $data['billing_phone'] ?? '' ) ) ) {
-				$failed_on = 'Billing ';
-			}
-			if ( empty( trim( $data['shipping_phone'] ?? '' ) ) ) {
-				( $failed_on !== '' ) ? $failed_on .= 'and Shipping ' : $failed_on = 'Shipping ';
-			}
-			if ( $failed_on ) {
 				$errors->add(
 					'validation',
-					sprintf(
-						__( '%s phone number is required for 3D Secure transactions. Please provide a valid phone number', 'globalpayments-gateway-provider-for-woocommerce' ),
-						$failed_on
+					__(
+						'Billing phone number is required for 3D Secure transactions. Please provide a valid phone number',
+						'globalpayments-gateway-provider-for-woocommerce'
 					)
 				);
 			}

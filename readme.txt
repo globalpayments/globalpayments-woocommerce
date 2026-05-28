@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+=  1.19.2 (05/28/26)
+* Bug fix: GPAPI: Fixed 3DS issue with Woo Classic Checkout w/HPP checkout related to shipping phone number missing
+
 =  1.19.1 (05/21/26)
 * Bug fix: Prevented Greek characters from getting misinterpreted
 * Updated PHP SDK to v14.1.15
