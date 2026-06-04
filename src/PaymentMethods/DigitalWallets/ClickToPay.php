@@ -97,10 +97,10 @@ class ClickToPay extends AbstractDigitalWallet {
 				'class'   => 'accepted_cards required',
 				'css'     => 'width: 450px; height: 110px',
 				'options' => array(
-					CardType::VISA       => 'Visa',
-					CardType::MASTERCARD => 'MasterCard',
-					CardType::AMEX       => 'AMEX',
-					CardType::DISCOVER   => 'Discover',
+					CardType::VISA       => __( 'Visa', 'globalpayments-gateway-provider-for-woocommerce' ),
+					CardType::MASTERCARD => __( 'MasterCard', 'globalpayments-gateway-provider-for-woocommerce' ),
+					CardType::AMEX       => __( 'AMEX', 'globalpayments-gateway-provider-for-woocommerce' ),
+					CardType::DISCOVER   => __( 'Discover', 'globalpayments-gateway-provider-for-woocommerce' ),
 				),
 				'default' => array(
 					CardType::VISA,

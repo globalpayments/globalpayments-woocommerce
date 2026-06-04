@@ -1202,9 +1202,10 @@ class GpApiGateway extends AbstractGateway {
 	private function get_three_d_secure_display_text()
 	{
 		return sprintf(
-			"Based on the WooCommerce store location 3D Secure %s", ( $this->three_d_secure_required() ) ? 
-			"is required for all transactions, when in live mode" : 
-			"is not required"
+			__( 'Based on the WooCommerce store location 3D Secure %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+			( $this->three_d_secure_required() )
+				? __( 'is required for all transactions, when in live mode', 'globalpayments-gateway-provider-for-woocommerce' )
+				: __( 'is not required', 'globalpayments-gateway-provider-for-woocommerce' )
 		);
 	}
 

@@ -252,9 +252,10 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 			'countries'      => array(
 				'title'       => __( 'Countries', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
-				'description' => __( 'Allows you to input a COUNTRY or string of COUNTRIES to limit what is shown to the customer. Including a country overrides your default account configuration. <br/><br/>
-											     Format: List of ISO 3166-2 (two characters) codes separated by a | <br/><br/>
-											     Example: FR|GB|IE', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __(
+					"Allows you to input a COUNTRY or string of COUNTRIES to limit what is shown to the customer.\n Including a country overrides your default account configuration.\n <br/><br/>Format: List of ISO 3166-2 (two characters) codes separated by a |\n <br/><br/>Example: FR|GB|IE",
+					'globalpayments-gateway-provider-for-woocommerce'
+				),
 			),
 			'currencies'     => array(
 				'title'       => __( 'Currencies*', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -264,8 +265,8 @@ class OpenBanking extends AbstractAsyncPaymentMethod
 				'description' => __( 'Note: The payment method will be displayed at checkout only for the selected currencies.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'desc_tip'    => true,
 				'options'     => array(
-					'GBP' => 'GBP',
-					'EUR' => 'EUR',
+					'GBP' => __( 'GBP', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'EUR' => __( 'EUR', 'globalpayments-gateway-provider-for-woocommerce' ),
 				),
 				'default' => array(
 					'GBP',

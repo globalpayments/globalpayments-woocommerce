@@ -52,6 +52,12 @@ abstract class AbstractGatewayBlock extends AbstractPaymentMethodType {
 			true
 		);
 
+		wp_set_script_translations(
+			'globalpayments-secure-payment-fields-gateways-blocks',
+			'globalpayments-gateway-provider-for-woocommerce',
+			WP_PLUGIN_DIR . '/' . basename( dirname( __FILE__ , 4 ) ) . '/languages'
+		);
+
 		wp_enqueue_style(
 			'globalpayments-secure-payment-fields-gateways-blocks',
 			Plugin::get_url( '/assets/frontend/css/globalpayments-secure-payment-fields.css' ),

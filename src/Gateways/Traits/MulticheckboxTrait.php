@@ -33,7 +33,7 @@ trait MulticheckboxTrait {
 		?>
 		<tr valign="top">
 			<th scope="row" class="titledesc">
-				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo esc_html($this->get_tooltip_html( $data )); // WPCS: XSS ok. ?></label>
+				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo wp_kses_post( $this->get_tooltip_html( $data ) ); // WPCS: XSS ok. ?></label>
 			</th>
 			<td class="forminp">
 				<fieldset>

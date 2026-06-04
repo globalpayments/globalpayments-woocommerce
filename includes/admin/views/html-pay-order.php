@@ -10,7 +10,7 @@
                     <h1><?php esc_html_e( 'Pay for Order', 'globalpayments-gateway-provider-for-woocommerce' ); ?></h1>
                     <button
                             class="modal-close modal-close-link dashicons dashicons-no-alt">
-                        <span class="screen-reader-text">Close modal panel</span>
+                        <span class="screen-reader-text"><?php esc_html_e( 'Close modal panel', 'globalpayments-gateway-provider-for-woocommerce' ); ?></span>
                     </button>
                 </header>
                 <article>
@@ -63,9 +63,13 @@
                 </article>
                 <footer>
                     <div class="inner">
-                        <button type="submit" class="button button-primary button-large" id="place_order" value="Pay" data-value="<?php esc_html_e( 'Pay', 'globalpayments-gateway-provider-for-woocommerce' ); ?>">
-	                        <?php esc_html_e( 'Pay', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
-                        </button>
+                        <button type="submit" 
+                            class="button button-primary button-large" 
+                            id="place_order" 
+                            value="<?php echo esc_attr__( 'Pay', 'globalpayments-gateway-provider-for-woocommerce' ); ?>" 
+                            data-value="<?php esc_attr_e( 'Pay', 'globalpayments-gateway-provider-for-woocommerce' ); ?>">
+                            <?php esc_html_e( 'Pay', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
+                       </button>
                     </div>
                 </footer>
             </section>

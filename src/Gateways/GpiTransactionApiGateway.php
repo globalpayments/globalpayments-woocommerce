@@ -116,9 +116,9 @@ class GpiTransactionApiGateway extends AbstractGateway {
 				'title'     => __( 'Region', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'      => 'select',
 				'options'   => array(
-				'US'        => 'United States',
-				'CA'        => 'Canada',
-				)
+				'US'        => __( 'United States', 'globalpayments-gateway-provider-for-woocommerce' ),
+ 				'CA'        => __( 'Canada', 'globalpayments-gateway-provider-for-woocommerce' ),
+ 				),
 			),
 			'debug'                      => array(
 				'title'       => __( 'Enable Logging', 'globalpayments-gateway-provider-for-woocommerce' ),

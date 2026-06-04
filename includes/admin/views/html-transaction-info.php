@@ -13,7 +13,7 @@
                         <?php esc_html_e( 'View Transaction Info', 'globalpayments-gateway-provider-for-woocommerce' ); ?>
                     </h1>
                     <button class="modal-close modal-close-link dashicons dashicons-no-alt">
-                        <span class="screen-reader-text">Close modal panel</span>
+                        <span class="screen-reader-text"><?php esc_html_e( 'Close modal panel', 'globalpayments-gateway-provider-for-woocommerce' ); ?></span>
                     </button>
                 </header>
                 <article>

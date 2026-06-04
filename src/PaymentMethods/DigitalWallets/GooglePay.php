@@ -104,11 +104,11 @@ class GooglePay extends AbstractDigitalWallet {
 				'class'   => 'accepted_cards required',
 				'css'     => 'width: 450px; height: 110px',
 				'options' => array(
-					CardType::VISA       => 'Visa',
-					CardType::MASTERCARD => 'MasterCard',
-					CardType::AMEX       => 'AMEX',
-					CardType::DISCOVER   => 'Discover',
-					CardType::JCB        => 'JCB',
+					CardType::VISA       => __( 'Visa', 'globalpayments-gateway-provider-for-woocommerce' ),
+					CardType::MASTERCARD => __( 'MasterCard', 'globalpayments-gateway-provider-for-woocommerce' ),
+					CardType::AMEX       => __( 'AMEX', 'globalpayments-gateway-provider-for-woocommerce' ),
+					CardType::DISCOVER   => __( 'Discover', 'globalpayments-gateway-provider-for-woocommerce' ),
+					CardType::JCB        => __( 'JCB', 'globalpayments-gateway-provider-for-woocommerce' ),
 				),
 				'default' => array(
 					CardType::VISA,
@@ -131,8 +131,8 @@ class GooglePay extends AbstractDigitalWallet {
 				'desc_tip'    => false,
 				'css'         => 'width: 450px; height: 110px',
 				'options'     => array(
-					'PAN_ONLY'       => 'PAN_ONLY',
-					'CRYPTOGRAM_3DS' => 'CRYPTOGRAM_3DS',
+					'PAN_ONLY'       => __( 'PAN_ONLY', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'CRYPTOGRAM_3DS' => __( 'CRYPTOGRAM_3DS', 'globalpayments-gateway-provider-for-woocommerce' ),
 				),
 				'default'     => array(
 					'PAN_ONLY',

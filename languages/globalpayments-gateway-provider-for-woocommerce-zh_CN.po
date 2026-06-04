@@ -1,0 +1,1421 @@
+# Copyright (C) 2024 Global Payments
+# This file is distributed under the same license as the GlobalPayments WooCommerce plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: GlobalPayments WooCommerce 1.12.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/global-payments-woocommerce\n"
+"POT-Creation-Date: 2024-09-05T14:59:20+03:00\n"
+"PO-Revision-Date: 2024-09-05T14:59:20+03:00\n"
+"Last-Translator: Translation Team\n"
+"Language-Team: Simplified Chinese\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: WP-CLI 2.11.0\n"
+"X-Domain: globalpayments-gateway-provider-for-woocommerce\n"
+
+#. Plugin Name of the plugin
+#: globalpayments-gateway-provider-for-woocommerce.php
+msgid "GlobalPayments WooCommerce"
+msgstr "GlobalPayments WooCommerce"
+
+#. Plugin URI of the plugin
+#: globalpayments-gateway-provider-for-woocommerce.php
+msgid "https://github.com/globalpayments/globalpayments-woocommerce"
+msgstr "https://github.com/globalpayments/globalpayments-woocommerce"
+
+#. Description of the plugin
+#: globalpayments-gateway-provider-for-woocommerce.php
+msgid "This extension allows WooCommerce to use the available Global Payments payment gateways. All card data is tokenized using the respective gateway's tokenization service."
+msgstr "此扩展功能允许 WooCommerce 使用 Global Payments 提供的支付网关。所有卡片数据都将通过相应网关的代码化服务进行代码化处理。"
+
+#. Author of the plugin
+#: globalpayments-gateway-provider-for-woocommerce.php
+msgid "Global Payments"
+msgstr "全球支付"
+
+#: includes/admin/views/html-pay-order.php:2
+#: includes/admin/views/html-pay-order.php:10
+msgid "Pay for Order"
+msgstr "订单付款"
+
+#: includes/admin/views/html-pay-order.php:3
+msgid "Admins can process customer orders over the phone using this functionality."
+msgstr "管理员可以使用此功能通过电话处理客户订单。"
+
+#: includes/admin/views/html-pay-order.php:55
+msgid "This order has a transaction ID associated with it already. Click the checkbox to proceed."
+msgstr "此订单已关联交易 ID。勾选此核取方块以继续。"
+
+#: includes/admin/views/html-pay-order.php:59
+msgid "Ok to process order"
+msgstr "确认处理订单"
+
+#: includes/admin/views/html-pay-order.php:67
+#: includes/admin/views/html-pay-order.php:66
+msgid "Pay"
+msgstr "付款"
+
+#: includes/admin/views/html-transaction-info.php:3
+#: includes/admin/views/html-transaction-info.php:13
+msgid "View Transaction Info"
+msgstr "查看交易信息"
+
+#: includes/admin/views/html-transaction-info.php:5
+msgid "Admins can view transaction details using this functionality."
+msgstr "管理员可以使用此功能查看交易详细信息。"
+
+#: includes/admin/views/html-transaction-info.php:28
+msgid "General Info"
+msgstr "一般信息"
+
+#: includes/admin/views/html-transaction-info.php:34
+msgid "Transaction Id"
+msgstr "交易 ID"
+
+#: includes/admin/views/html-transaction-info.php:42
+msgid "Transaction Status"
+msgstr "交易状态"
+
+#: includes/admin/views/html-transaction-info.php:50
+msgid "Transaction Type"
+msgstr "交易类型"
+
+#: includes/admin/views/html-transaction-info.php:58
+msgid "Amount"
+msgstr "金额"
+
+#: includes/admin/views/html-transaction-info.php:66
+msgid "Currency"
+msgstr "货币"
+
+#: includes/admin/views/html-transaction-info.php:75
+msgid "Provider"
+msgstr "提供者"
+
+#: includes/admin/views/html-transaction-info.php:85
+msgid "Payment Type"
+msgstr "付款类型"
+
+#: src/Gateways/AbstractGateway.php:247
+msgid "This page is currently in sandbox/test mode. Do not use real/active card numbers."
+msgstr "此页面目前处于沙箱/测试模式。请勿使用真实/有效卡号。"
+
+#: src/Gateways/AbstractGateway.php:477
+#: src/PaymentMethods/AbstractPaymentMethod.php:130
+msgid "Enable/Disable"
+msgstr "启用/停用"
+
+#: src/Gateways/AbstractGateway.php:479
+msgid "Enable Gateway"
+msgstr "启用支付网关"
+
+#: src/Gateways/AbstractGateway.php:483
+#: src/PaymentMethods/AbstractPaymentMethod.php:136
+msgid "Title"
+msgstr "标题"
+
+#: src/Gateways/AbstractGateway.php:485
+#: src/PaymentMethods/AbstractPaymentMethod.php:138
+msgid "This controls the title which the user sees during checkout."
+msgstr "这控制使用者在结账时看到的标题。"
+
+#: src/Gateways/AbstractGateway.php:486
+msgid "Credit Card"
+msgstr "信用卡"
+
+#: src/Gateways/AbstractGateway.php:494
+#: src/PaymentMethods/AbstractPaymentMethod.php:147
+msgid "Payment Action"
+msgstr "付款动作"
+
+#: src/Gateways/AbstractGateway.php:496
+#: src/PaymentMethods/AbstractPaymentMethod.php:149
+msgid "Choose whether you wish to capture funds immediately or authorize payment only for a delayed capture."
+msgstr "选择是否要立即捕获资金或仅授权付款以供后续捕获。"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:120
+#: src/Gateways/AbstractGateway.php:500
+#: src/PaymentMethods/AbstractPaymentMethod.php:165
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:68
+msgid "Authorize + Capture"
+msgstr "授权 + 捕获"
+
+#: src/Gateways/AbstractGateway.php:501
+#: src/PaymentMethods/AbstractPaymentMethod.php:166
+msgid "Authorize only"
+msgstr "仅授权"
+
+#: src/Gateways/AbstractGateway.php:506
+#: src/Gateways/AbstractGateway.php:507
+#: src/Gateways/GpApiGateway.php:217
+#: src/Gateways/GpApiGateway.php:218
+msgid "Allow Card Saving"
+msgstr "允许保存卡片"
+
+#. translators: %s: Email address of support team
+#: src/Gateways/AbstractGateway.php:511
+#: src/Gateways/GpApiGateway.php:222
+msgid "Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href=\"mailto:%s?Subject=WooCommerce%%20Card%%20Saving%%20Option\">support</a> with any questions regarding this option."
+msgstr "注意：要使用保存卡片功能，您必须在账户上启用多用途代码支持。如对此选项有任何疑问，请联系<a href=\"mailto:%s?Subject=WooCommerce%%20Card%%20Saving%%20Option\">支持</a>。"
+
+#: src/Gateways/TransitGateway.php:145
+msgid "Connect to the Global Payments TransIT gateway with TSEP"
+msgstr "通过 TSEP 连接到 Global Payments TransIT 支付网关"
+
+#: src/Gateways/HeartlandGateway.php:88
+msgid "Connect to the Global Payments Portico gateway."
+msgstr "连接到 Global Payments Portico 支付网关。"
+
+#: src/Gateways/HeartlandGateway.php:100
+msgid "Get your API keys from your Online Payments account."
+msgstr "从您的 Online Payments 账户取得 API 密钥。"
+
+#: src/Gateways/AbstractGateway.php:517
+msgid "Order Transaction Descriptor"
+msgstr "订单交易描述符"
+
+#. translators: %s: Email address of support team
+#: src/Gateways/AbstractGateway.php:521
+msgid "During a Capture or Authorize payment action, this value will be passed along as the transaction-specific descriptor listed on the customer's bank account. Please contact <a href=\"mailto:%s?Subject=WooCommerce%%20Transaction%%20Descriptor%%20Option\">support</a> with any questions regarding this option (maxLength: 25)."
+msgstr "在捕获或授权付款时，此值将作为交易特定描述符传递，并在客户银行账户中列出。如对此选项有任何疑问，请联系<a href=\"mailto:%s?Subject=WooCommerce%%20Transaction%%20Descriptor%%20Option\">支持</a>（最大长度：25）。"
+
+#: src/Gateways/AbstractGateway.php:531
+msgid "Check AVS CVN"
+msgstr "检查 AVS CVN"
+
+#: src/Gateways/AbstractGateway.php:532
+msgid "Check AVS/CVN result codes and reverse transaction."
+msgstr "检查 AVS/CVN 结果代码并反向交易。"
+
+#: src/Gateways/AbstractGateway.php:535
+msgid "This will check AVS/CVN result codes and reverse transaction."
+msgstr "这将检查 AVS/CVN 结果代码并反向交易。"
+
+#: src/Gateways/AbstractGateway.php:540
+msgid "AVS Reject Conditions"
+msgstr "AVS 拒绝条件"
+
+#: src/Gateways/AbstractGateway.php:544
+msgid "Choose for which AVS result codes, the transaction must be auto reversed."
+msgstr "选择 AVS 结果代码，交易必须自动反向。"
+
+#: src/Gateways/AbstractGateway.php:549
+msgid "CVN Reject Conditions"
+msgstr "CVN 拒绝条件"
+
+#: src/Gateways/AbstractGateway.php:553
+msgid "Choose for which CVN result codes, the transaction must be auto reversed."
+msgstr "选择 CVN 结果代码，交易必须自动反向。"
+
+#: src/Gateways/AbstractGateway.php:599
+msgid "Credit Card Number"
+msgstr "信用卡号"
+
+#: src/Gateways/AbstractGateway.php:600
+msgid "•••• •••• •••• ••••"
+msgstr "•••• •••• •••• ••••"
+
+#: src/Gateways/AbstractGateway.php:602
+msgid "Please enter a valid Credit Card Number"
+msgstr "请输入有效的信用卡号"
+
+#: src/Gateways/AbstractGateway.php:607
+msgid "Credit Card Expiration Date"
+msgstr "信用卡到期日期"
+
+#: src/Gateways/AbstractGateway.php:608
+msgid "MM / YYYY"
+msgstr "MM / YYYY"
+
+#: src/Gateways/AbstractGateway.php:610
+msgid "Please enter a valid Credit Card Expiration Date"
+msgstr "请输入有效的信用卡到期日期"
+
+#: src/Gateways/AbstractGateway.php:615
+msgid "Credit Card Security Code"
+msgstr "信用卡安全代码"
+
+#: src/Gateways/AbstractGateway.php:616
+msgid "•••"
+msgstr "•••"
+
+#: src/Gateways/AbstractGateway.php:618
+msgid "Please enter a valid Credit Card Security Code"
+msgstr "请输入有效的信用卡安全代码"
+
+#: src/Gateways/AbstractGateway.php:914
+msgid "Order created with Transaction ID: %s"
+msgstr "已建立订单，交易 ID：%s"
+
+#: src/Gateways/AbstractGateway.php:941
+#: src/PaymentMethods/DigitalWallets/AbstractDigitalWallet.php:52
+msgid "authorized"
+msgstr "已授权"
+
+#: src/Gateways/AbstractGateway.php:943
+#: src/PaymentMethods/DigitalWallets/AbstractDigitalWallet.php:54
+msgid "charged"
+msgstr "已扣款"
+
+#: src/Gateways/AbstractGateway.php:1017
+msgid "Refund amount must be a valid number"
+msgstr "退款金额必须是有效数字"
+
+#: src/Gateways/AbstractGateway.php:1026
+msgid "Refund amount must be greater than zero."
+msgstr "退款金额必须大于零。"
+
+#: src/Gateways/AbstractGateway.php:1033
+msgid "%s%s was reversed or refunded. Transaction ID: %s "
+msgstr "%s%s 已反向或退款。交易 ID：%s"
+
+#: src/Gateways/AbstractGateway.php:1105
+msgid "Transaction captured. Transaction ID for the capture: %s"
+msgstr "交易已捕获。捕获的交易 ID：%s"
+
+#: src/Gateways/AbstractGateway.php:1347
+#: src/Gateways/GpApiGateway.php:548
+#: src/PaymentMethods/Apm/Paypal.php:99
+msgid "Capture credit card authorization"
+msgstr "捕获信用卡授权"
+
+#: src/Gateways/AbstractGateway.php:1398
+msgid "A - Address matches, zip No Match"
+msgstr "A - 地址相符，邮编不相符"
+
+#: src/Gateways/AbstractGateway.php:1399
+msgid "N - Neither address or zip code match"
+msgstr "N - 地址和邮编都不相符"
+
+#: src/Gateways/AbstractGateway.php:1400
+msgid "R - Retry - system unable to respond"
+msgstr "R - 重试 - 系统无法回应"
+
+#: src/Gateways/AbstractGateway.php:1401
+msgid "U - Visa / Discover card AVS not supported"
+msgstr "U - Visa / Discover 卡 AVS 不受支持"
+
+#: src/Gateways/AbstractGateway.php:1402
+msgid "S - Master / Amex card AVS not supported"
+msgstr "S - Master / Amex 卡 AVS 不受支持"
+
+#: src/Gateways/AbstractGateway.php:1403
+msgid "Z - Visa / Discover card 9-digit zip code match, address no match"
+msgstr "Z - Visa / Discover 卡 9 位数邮编相符，地址不相符"
+
+#: src/Gateways/AbstractGateway.php:1404
+msgid "W - Master / Amex card 9-digit zip code match, address no match"
+msgstr "W - Master / Amex 卡 9 位数邮编相符，地址不相符"
+
+#: src/Gateways/AbstractGateway.php:1405
+msgid "Y - Visa / Discover card 5-digit zip code and address match"
+msgstr "Y - Visa / Discover 卡 5 位数邮编和地址都相符"
+
+#: src/Gateways/AbstractGateway.php:1406
+msgid "X - Master / Amex card 5-digit zip code and address match"
+msgstr "X - Master / Amex 卡 5 位数邮编和地址都相符"
+
+#: src/Gateways/AbstractGateway.php:1407
+msgid "G - Address not verified for International transaction"
+msgstr "G - 国际交易地址未验证"
+
+#: src/Gateways/AbstractGateway.php:1408
+msgid "B - Address match, Zip not verified"
+msgstr "B - 地址相符，邮编未验证"
+
+#: src/Gateways/AbstractGateway.php:1409
+msgid "C - Address and zip mismatch"
+msgstr "C - 地址和邮编不相符"
+
+#: src/Gateways/AbstractGateway.php:1410
+msgid "D - Address and zip match"
+msgstr "D - 地址和邮编相符"
+
+#: src/Gateways/AbstractGateway.php:1411
+msgid "I - AVS not verified for International transaction"
+msgstr "I - 国际交易 AVS 未验证"
+
+#: src/Gateways/AbstractGateway.php:1412
+msgid "M - Street address and postal code matches"
+msgstr "M - 街道地址和邮递区号相符"
+
+#: src/Gateways/AbstractGateway.php:1413
+msgid "P - Address and Zip not verified"
+msgstr "P - 地址和邮编未验证"
+
+#: src/Gateways/AbstractGateway.php:1419
+msgid "N - Not Matching"
+msgstr "N - 不相符"
+
+#: src/Gateways/AbstractGateway.php:1420
+msgid "P - Not Processed"
+msgstr "P - 未处理"
+
+#: src/Gateways/AbstractGateway.php:1421
+msgid "S - Result not present"
+msgstr "S - 结果不存在"
+
+#: src/Gateways/AbstractGateway.php:1422
+msgid "U - Issuer not certified"
+msgstr "U - 发卡行未认证"
+
+#: src/Gateways/AbstractGateway.php:1423
+msgid "? - CVV unrecognized"
+msgstr "? - CVV 无法识别"
+
+#: src/Gateways/AbstractGateway.php:1449
+#: assets/admin/js/globalpayments-enforce-single-gateway.js:29
+msgid "You can enable only one GlobalPayments gateway at a time. Please disable %s first!"
+msgstr "一次只能启用一个 GlobalPayments 支付网关。请先停用 %s！"
+
+#: src/Gateways/Clients/SdkClient.php:105
+msgid "Unable to perform request."
+msgstr "无法执行请求。"
+
+#: src/Gateways/Clients/SdkClient.php:355
+#: src/Gateways/Clients/SdkClient.php:359
+msgid "3DS Authentication failed. Please try again."
+msgstr "3DS 认证失败。请重试。"
+
+#: src/Gateways/GeniusGateway.php:88
+msgid "Global Payments Genius"
+msgstr "全球支付 Genius"
+
+#: src/Gateways/GeniusGateway.php:89
+msgid "Connect to the Global Payments Genius gateway"
+msgstr "连接到 Global Payments Genius 支付网关"
+
+#: src/Gateways/GeniusGateway.php:99
+#: src/Gateways/GpApiGateway.php:146
+#: src/Gateways/GpiTransactionApiGateway.php:63
+#: src/Gateways/HeartlandGateway.php:98
+#: src/Gateways/TransitGateway.php:155
+msgid "Live Mode"
+msgstr "正式模式"
+
+#: src/Gateways/GeniusGateway.php:101
+msgid "Get your credentials from your Global Payments Genius account."
+msgstr "从您的 Global Payments Genius 账户取得认证凭证。"
+
+#: src/Gateways/GeniusGateway.php:105
+msgid "Live Merchant Name"
+msgstr "正式商家名称"
+
+#: src/Gateways/GeniusGateway.php:111
+msgid "Live Merchant Site ID"
+msgstr "正式商家网站 ID"
+
+#: src/Gateways/GeniusGateway.php:117
+msgid "Live Merchant Key"
+msgstr "正式商家密钥"
+
+#: src/Gateways/GeniusGateway.php:123
+msgid "Live Web API Key"
+msgstr "正式 Web API 密钥"
+
+#: src/Gateways/GeniusGateway.php:129
+msgid "Sandbox Merchant Name"
+msgstr "沙箱商家名称"
+
+#: src/Gateways/GeniusGateway.php:135
+msgid "Sandbox Merchant Site ID"
+msgstr "沙箱商家网站 ID"
+
+#: src/Gateways/GeniusGateway.php:141
+msgid "Sandbox Merchant Key"
+msgstr "沙箱商家密钥"
+
+#: src/Gateways/GeniusGateway.php:147
+msgid "Sandbox Web API Key"
+msgstr "沙箱 Web API 密钥"
+
+#: src/Gateways/GpApiGateway.php:135
+msgid "Unified Payments"
+msgstr "统一付款"
+
+#: src/Gateways/GpApiGateway.php:136
+msgid "Connect to the Unified Payments Gateway"
+msgstr "连接到统一付款支付网关"
+
+#. translators: %s: Email address of support team
+#: src/Gateways/GpApiGateway.php:150
+msgid "Get your App Id and App Key from your <a href=\"https://developer.globalpay.com/user/register\" target=\"_blank\">Global Payments Developer Account</a>. Please follow the instructions provided in the <a href=\"https://wordpress.org/plugins/global-payments-woocommerce/\" target=\"_blank\">plugin description</a>.<br/>When you are ready for Live, please contact <a href=\"mailto:%s?Subject=WooCommerce%%20Live%%20Credentials\">support</a> to get you live credentials."
+msgstr "从您的<a href=\"https://developer.globalpay.com/user/register\" target=\"_blank\">Global Payments 开发者账户</a>取得应用程序 ID 和应用程序密钥。请遵循<a href=\"https://wordpress.org/plugins/global-payments-woocommerce/\" target=\"_blank\">外挂程式说明</a>中提供的说明。<br/>当您准备好正式环境时，请联系<a href=\"mailto:%s?Subject=WooCommerce%%20Live%%20Credentials\">支持</a>以取得正式认证。"
+
+#: src/Gateways/GpApiGateway.php:160
+msgid "Live App Id*"
+msgstr "正式应用程序 ID*"
+
+#: src/Gateways/GpApiGateway.php:168
+msgid "Live App Key*"
+msgstr "正式应用程序密钥*"
+
+#: src/Gateways/GpApiGateway.php:183
+msgid "Sandbox App Id*"
+msgstr "沙箱应用程序 ID*"
+
+#: src/Gateways/GpApiGateway.php:192
+msgid "Sandbox App Key*"
+msgstr "沙箱应用程序密钥*"
+
+#: assets/admin/js/globalpayments-admin.js:84
+#: src/Gateways/GpApiGateway.php:208
+#: src/Gateways/GpApiGateway.php:209
+#: src/Gateways/GpApiGateway.php:212
+msgid "Credentials check"
+msgstr "凭证检查"
+
+#: src/Gateways/GpApiGateway.php:213
+msgid "Note: The Payment Methods will not be displayed at checkout if the credentials are not correct."
+msgstr "注意：如果认证不正确，付款方式将不会在结账时显示。"
+
+#: src/Gateways/GpApiGateway.php:228
+msgid "General Settings"
+msgstr "一般设置"
+
+#: src/Gateways/GpApiGateway.php:232
+#: src/Gateways/GpApiGateway.php:233
+#: src/Gateways/GpiTransactionApiGateway.php:124
+#: src/Gateways/GpiTransactionApiGateway.php:125
+#: src/Gateways/HeartlandGateway.php:128
+#: src/Gateways/HeartlandGateway.php:129
+#: src/Gateways/TransitGateway.php:233
+#: src/Gateways/TransitGateway.php:234
+msgid "Enable Logging"
+msgstr "启用记录"
+
+#: src/Gateways/GpApiGateway.php:235
+#: src/Gateways/GpiTransactionApiGateway.php:127
+#: src/Gateways/HeartlandGateway.php:131
+#: src/Gateways/TransitGateway.php:236
+msgid "Log all requests to and from the gateway. This can also log private data and should only be enabled in a development or stage environment."
+msgstr "记录所有至支付网关和来自支付网关的请求。这也可能记录私人数据，应仅在开发或预发布环境中启用。"
+
+#: src/Gateways/TransitGateway.php:265
+msgid "Invalid MultiPass User ID or Password. Please try again."
+msgstr "MultiPass 使用者 ID 或密码无效。请重试。"
+
+#: src/Gateways/GpApiGateway.php:240
+msgid "Contact Url*"
+msgstr "联络 URL*"
+
+#: src/Gateways/GpApiGateway.php:243
+msgid "A link to an About or Contact page on your website with customer care information (maxLength: 256)."
+msgstr "您网站上「关于」或「联系我们」页面的连结，包含客服信息（最大长度：256）。"
+
+#: src/Gateways/GpApiGateway.php:251
+#: src/Gateways/GpApiGateway.php:252
+msgid "Enable 3D Secure"
+msgstr "启用 3D Secure"
+
+#: src/Gateways/GpApiGateway.php:333
+msgid "Card Holder Name"
+msgstr "持卡人名称"
+
+#: src/Gateways/GpApiGateway.php:334
+msgid "Jane Smith"
+msgstr "Jane Smith"
+
+#: src/Gateways/GpApiGateway.php:336
+msgid "Please enter a valid Card Holder Name"
+msgstr "请输入有效的持卡人名称"
+
+#: src/Gateways/GpApiGateway.php:389
+msgid "Please provide Live Credentials."
+msgstr "请提供正式认证。"
+
+#: src/Gateways/GpApiGateway.php:398
+msgid "Please provide Sandbox Credentials."
+msgstr "请提供沙箱认证。"
+
+#: src/Gateways/GpiTransactionApiGateway.php:37
+msgid "Transaction API"
+msgstr "交易 API"
+
+#: src/Gateways/GpiTransactionApiGateway.php:38
+msgid "Connect to the Transaction API"
+msgstr "连接到交易 API"
+
+#: src/Gateways/GpiTransactionApiGateway.php:68
+#: src/Gateways/HeartlandGateway.php:104
+msgid "Live Public Key"
+msgstr "正式公开密钥"
+
+#: src/Gateways/GpiTransactionApiGateway.php:74
+msgid "Live API Key"
+msgstr "正式 API 密钥"
+
+#: src/Gateways/GpiTransactionApiGateway.php:80
+msgid "Live API Secret"
+msgstr "正式 API 秘密"
+
+#: src/Gateways/GpiTransactionApiGateway.php:86
+msgid "Live Account Credential"
+msgstr "正式账户认证"
+
+#: src/Gateways/GpiTransactionApiGateway.php:92
+#: src/Gateways/HeartlandGateway.php:116
+msgid "Sandbox Public Key"
+msgstr "沙箱公开密钥"
+
+#: src/Gateways/GpiTransactionApiGateway.php:98
+msgid "Sandbox API Key"
+msgstr "沙箱 API 密钥"
+
+#: src/Gateways/GpiTransactionApiGateway.php:104
+msgid "Sandbox API Secret"
+msgstr "沙箱 API 秘密"
+
+#: src/Gateways/GpiTransactionApiGateway.php:110
+msgid "Sandbox Account Credential"
+msgstr "沙箱账户认证"
+
+#: src/Gateways/GpiTransactionApiGateway.php:116
+msgid "Region"
+msgstr "地区"
+
+#: src/Gateways/HeartlandGateway.php:87
+msgid "Heartland"
+msgstr "哈特兰 (Heartland)"
+
+#: src/Gateways/HeartlandGateway.php:88
+msgid "Connect to the Heartland Portico gateway"
+msgstr "连接到 Heartland Portico 支付网关"
+
+#: src/Gateways/HeartlandGateway.php:100
+msgid "Get your API keys from your Heartland Online Payments account."
+msgstr "从您的 Heartland Online Payments 账户取得 API 密钥。"
+
+#: src/Gateways/HeartlandGateway.php:110
+msgid "Live Secret Key"
+msgstr "正式秘密密钥"
+
+#: src/Gateways/HeartlandGateway.php:122
+msgid "Sandbox Secret Key"
+msgstr "沙箱秘密密钥"
+
+#: src/Gateways/HeartlandGateway.php:136
+msgid "Enable Gift Cards"
+msgstr "启用礼品卡"
+
+#: src/Gateways/HeartlandGateway.php:137
+msgid "Allow customers to use gift cards to pay for purchases in full or in part."
+msgstr "允许客户使用礼品卡全额或部分支付购买费用。"
+
+#: src/Gateways/HeartlandGateway.php:140
+msgid "This will display a gift card entry field directly below the credit card entry area."
+msgstr "这将在信用卡输入区域正下方显示礼品卡输入字段。"
+
+#: src/Gateways/Requests/BuyNowPayLater/InitiatePaymentRequest.php:70
+msgid "Your order"
+msgstr "您的订单"
+
+#: src/Gateways/Requests/ThreeDSecure/AbstractAuthenticationsRequest.php:34
+#: src/Gateways/Requests/ThreeDSecure/AbstractAuthenticationsRequest.php:40
+#: src/Gateways/Requests/ThreeDSecure/AbstractAuthenticationsRequest.php:48
+msgid "Not enough data to perform 3DS. Unable to retrieve token."
+msgstr "数据不足以执行 3DS。无法检索代码。"
+
+#: src/Gateways/Requests/ThreeDSecure/CheckEnrollmentRequest.php:54
+#: src/Gateways/Requests/ThreeDSecure/CheckEnrollmentRequest.php:60
+#: assets/frontend/js/globalpayments-secure-payment-fields.js:349
+msgid "Please try again with another card."
+msgstr "请使用其他卡片重试。"
+
+#: src/Gateways/Traits/CheckApiCredentialsTrait.php:30
+msgid "Invalid check api credentials request."
+msgstr "无效的 API 认证检查请求。"
+
+#: src/Gateways/Traits/CheckApiCredentialsTrait.php:39
+msgid "App Id or App Key fields are invalid"
+msgstr "应用程序 ID 或应用程序密钥字段无效"
+
+#: src/Gateways/Traits/CheckApiCredentialsTrait.php:55
+msgid "Your credentials were successfully confirmed!"
+msgstr "您的认证已成功确认！"
+
+#: src/Gateways/Traits/CheckApiCredentialsTrait.php:58
+#: src/Gateways/Traits/CheckApiCredentialsTrait.php:66
+msgid "Unable to perform request. Invalid data."
+msgstr "无法执行请求。数据无效。"
+
+#: src/Gateways/Traits/PayOrderTrait.php:119
+#: src/Gateways/Traits/PayOrderTrait.php:126
+#: src/Gateways/Traits/PayOrderTrait.php:133
+msgid "Invalid payment request."
+msgstr "无效的付款请求。"
+
+#: src/Gateways/Traits/PayOrderTrait.php:138
+msgid "Invalid amount. Order total must be greater than zero."
+msgstr "金额无效。订单总额必须大于零。"
+
+#: src/Gateways/Traits/PayOrderTrait.php:141
+msgid "This order has a transaction ID associated with it already. Please click the checkbox to proceed with payment."
+msgstr "此订单已关联交易 ID。请勾选核取方块以继续付款。"
+
+#: src/Gateways/Traits/PayOrderTrait.php:155
+msgid "Something went wrong while processing the payment."
+msgstr "处理付款时出错。"
+
+#: src/Gateways/Traits/TransactionInfoTrait.php:79
+msgid "Invalid view transaction request."
+msgstr "无效的检视交易请求。"
+
+#: src/Gateways/Traits/TransactionInfoTrait.php:84
+msgid "Invalid transaction id."
+msgstr "无效的交易 ID。"
+
+#: src/Gateways/TransitGateway.php:144
+msgid "Global Payments TransIT"
+msgstr "全球支付 TransIT"
+
+#: src/Gateways/TransitGateway.php:145
+msgid "Connect to the Global Payments TransIT gateway"
+msgstr "连接到 Global Payments TransIT 支付网关"
+
+#: src/Gateways/TransitGateway.php:157
+msgid "Get your API keys from your Global Payments TransIT account."
+msgstr "从您的 Global Payments TransIT 账户取得 API 密钥。"
+
+#: src/Gateways/TransitGateway.php:161
+msgid "Live Merchant ID"
+msgstr "正式商家 ID"
+
+#: src/Gateways/TransitGateway.php:167
+msgid "Live MultiPass User ID"
+msgstr "正式 MultiPass 使用者 ID"
+
+#: src/Gateways/TransitGateway.php:173
+msgid "Live Password"
+msgstr "正式密码"
+
+#: src/Gateways/TransitGateway.php:179
+msgid "Live Device ID"
+msgstr "正式设备 ID"
+
+#: src/Gateways/TransitGateway.php:185
+msgid "Live TSEP Device ID"
+msgstr "正式 TSEP 设备 ID"
+
+#: src/Gateways/TransitGateway.php:191
+msgid "Live Transaction Key"
+msgstr "正式交易密钥"
+
+#: src/Gateways/TransitGateway.php:197
+msgid "Sandbox Merchant ID"
+msgstr "沙箱商家 ID"
+
+#: src/Gateways/TransitGateway.php:203
+msgid "Sandbox MultiPass User ID"
+msgstr "沙箱 MultiPass 使用者 ID"
+
+#: src/Gateways/TransitGateway.php:209
+msgid "Sandbox Password"
+msgstr "沙箱密码"
+
+#: src/Gateways/TransitGateway.php:215
+msgid "Sandbox Device ID"
+msgstr "沙箱设备 ID"
+
+#: src/Gateways/TransitGateway.php:221
+msgid "Sandbox TSEP Device ID"
+msgstr "沙箱 TSEP 设备 ID"
+
+#: src/Gateways/TransitGateway.php:227
+msgid "Sandbox Transaction Key"
+msgstr "沙箱交易密钥"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:102
+msgid "Order ID: %s. Order not found."
+msgstr "订单 ID：%s。找不到订单。"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:111
+msgid "Order ID: %s. Payment method code changed. Expected %s, but found %s"
+msgstr "订单 ID：%s。付款方式代码已变更。预期 %s，但找到 %s"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:122
+msgid "Order ID: %s. Transaction ID changed. Expected %s, but found %s"
+msgstr "订单 ID：%s。交易 ID 已变更。预期 %s，但找到 %s"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:156
+msgid "This request method is not supported."
+msgstr "不支持此请求方法。"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:161
+msgid "Invalid request signature."
+msgstr "无效的请求签名。"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:207
+#: src/PaymentMethods/Apm/Paypal.php:248
+msgid "Order ID: %s. Unexpected transaction status on returnUrl: %s"
+msgstr "订单 ID：%s。returnUrl 上的交易状态意外：%s"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:215
+#: src/PaymentMethods/Apm/Paypal.php:256
+msgid "Error completing order return with %s. %s %s"
+msgstr "完成 %s 订单退回时出错。%s %s"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:246
+#: src/PaymentMethods/Apm/Paypal.php:226
+msgid "Authorized"
+msgstr "已授权"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:260
+#: src/PaymentMethods/Apm/Paypal.php:218
+msgid "Captured"
+msgstr "已捕获"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:279
+msgid "Order ID: %s. Unexpected transaction status on statusUrl: %s"
+msgstr "订单 ID：%s。statusUrl 上的交易状态意外：%s"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:287
+msgid "Error completing order status with %s. %s %s"
+msgstr "完成 %s 订单状态时出错。%s %s"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:303
+msgid "Payment of %1$s declined/failed. Transaction ID: %2$s"
+msgstr "%1$s 的付款被拒绝/失败。交易 ID：%2$s"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:322
+msgid "%1$s payment canceled by customer. Transaction ID: %2$s."
+msgstr "%1$s 的付款被客户取消。交易 ID：%2$s。"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:329
+msgid "Error completing order cancel with %s. %s %s"
+msgstr "完成 %s 订单取消时出错。%s %s"
+
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:351
+msgid "Thank you. Your order has been received, but we have encountered an issue when redirecting back. Please contact us for assistance."
+msgstr "感谢您。我们已收到您的订单，但重定向时遇到问题。请联系我们以寻求协助。"
+
+#: src/PaymentMethods/AbstractPaymentMethod.php:132
+msgid "Enable payment method"
+msgstr "启用付款方式"
+
+#: src/PaymentMethods/Apm/Paypal.php:33
+msgid "Pay with PayPal"
+msgstr "使用 PayPal 付款"
+
+#: src/PaymentMethods/Apm/Paypal.php:35
+msgid "GlobalPayments - PayPal"
+msgstr "全球支付 - PayPal"
+
+#: src/PaymentMethods/Apm/Paypal.php:37
+msgid "Connect to PayPal via Unified Payments Gateway"
+msgstr "通过统一付款支付网关连接到 PayPal"
+
+#: src/PaymentMethods/BuyNowPayLater/AbstractBuyNowPayLater.php:107
+#: src/PaymentMethods/Apm/Paypal.php:118
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:160
+msgid "%1$s payment initiated with %3$s. Transaction ID: %2$s."
+msgstr "%1$s 的付款已通过 %3$s 启动。交易 ID：%2$s。"
+
+#: src/PaymentMethods/Apm/Paypal.php:230
+msgid "%1$s amount of %2$s. Transaction ID: %3$s."
+msgstr "%1$s 金额 %2$s。交易 ID：%3$s。"
+
+#: src/PaymentMethods/Apm/Paypal.php:245
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:246
+msgid "Authorized amount of %1$s. Transaction ID: %2$s."
+msgstr "已授权金额 %1$s。交易 ID：%2$s。"
+
+#: src/PaymentMethods/Apm/Paypal.php:258
+#: src/PaymentMethods/AbstractAsyncPaymentMethod.php:265
+msgid "Captured amount of %1$s. Transaction ID: %2$s."
+msgstr "已捕获金额 %1$s。交易 ID：%2$s。"
+
+#: src/PaymentMethods/BuyNowPayLater/AbstractBuyNowPayLater.php:70
+msgid "<strong>Billing ZIP Code</strong> is a required field for this payment method."
+msgstr "<strong>账单邮编</strong>是此付款方式的必填字段。"
+
+#: src/PaymentMethods/BuyNowPayLater/AbstractBuyNowPayLater.php:73
+msgid "<strong>Shipping ZIP Code</strong> is a required field for this payment method."
+msgstr "<strong>运送邮编</strong>是此付款方式的必填字段。"
+
+#: src/PaymentMethods/BuyNowPayLater/AbstractBuyNowPayLater.php:76
+#: assets/frontend/blocks/gateways.js:1
+#: resources/js/frontend/components/buyNowPayLater/affirmComponent.js:21
+#: resources/js/frontend/components/buyNowPayLater/klarnaComponent.js:21
+#: assets/frontend/blocks/gateways.js:30
+#: assets/frontend/blocks/gateways.js:63
+msgid "<strong>Phone</strong> is a required field for this payment method."
+msgstr "<strong>电话</strong>是此付款方式的必填字段。"
+
+#: src/PaymentMethods/BuyNowPayLater/Affirm.php:25
+msgid "Pay with Affirm"
+msgstr "使用 Affirm 付款"
+
+#: src/PaymentMethods/BuyNowPayLater/Affirm.php:27
+msgid "GlobalPayments - Affirm"
+msgstr "全球支付 - Affirm"
+
+#: src/PaymentMethods/BuyNowPayLater/Affirm.php:28
+msgid "Connect to Affirm via Unified Payments Gateway"
+msgstr "通过统一付款支付网关连接到 Affirm"
+
+#: src/PaymentMethods/BuyNowPayLater/Clearpay.php:23
+msgid "Pay with Clearpay"
+msgstr "使用 Clearpay 付款"
+
+#: src/PaymentMethods/BuyNowPayLater/Clearpay.php:25
+msgid "GlobalPayments - Clearpay"
+msgstr "全球支付 - Clearpay"
+
+#: src/PaymentMethods/BuyNowPayLater/Clearpay.php:27
+msgid "Connect to Clearpay via Unified Payments Gateway"
+msgstr "通过统一付款支付网关连接到 Clearpay"
+
+#: src/PaymentMethods/BuyNowPayLater/Klarna.php:23
+msgid "Pay with Klarna"
+msgstr "使用 Klarna 付款"
+
+#: src/PaymentMethods/BuyNowPayLater/Klarna.php:25
+msgid "GlobalPayments - Klarna"
+msgstr "全球支付 - Klarna"
+
+#: src/PaymentMethods/BuyNowPayLater/Klarna.php:26
+msgid "Connect to Klarna via Unified Payments Gateway"
+msgstr "通过统一付款支付网关连接到 Klarna"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:84
+#: assets/frontend/js/globalpayments-applepay.js:73
+#: assets/frontend/js/globalpayments-applepay.js:74
+#: resources/js/frontend/components/digitalWallets/applePayComponent.js:55
+#: resources/js/frontend/components/digitalWallets/applePayComponent.js:56
+#: assets/frontend/blocks/gateways.js:130
+#: assets/frontend/blocks/gateways.js:131
+msgid "Pay with Apple Pay"
+msgstr "使用 Apple Pay 付款"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:86
+msgid "GlobalPayments - Apple Pay"
+msgstr "全球支付 - Apple Pay"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:87
+msgid "Connect to Apple Pay via Unified Payments Gateway"
+msgstr "通过统一付款支付网关连接到 Apple Pay"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:98
+msgid "Apple Merchant ID*"
+msgstr "Apple 商家 ID*"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:103
+msgid "Apple Merchant Cert Path*"
+msgstr "Apple 商家凭证路径*"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:108
+msgid "Apple Merchant Key Path*"
+msgstr "Apple 商家密钥路径*"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:113
+msgid "Apple Merchant Key Passphrase"
+msgstr "Apple 商家密钥通行词"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:117
+msgid "Apple Merchant Domain*"
+msgstr "Apple 商家网域*"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:122
+msgid "Apple Merchant Display Name*"
+msgstr "Apple 商家显示名称*"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:127
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:95
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:102
+msgid "Accepted Cards*"
+msgstr "接受的卡片*"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:132
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:100
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:107
+msgid "Visa"
+msgstr "维萨卡"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:133
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:101
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:108
+msgid "MasterCard"
+msgstr "万事达卡"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:134
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:102
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:109
+msgid "AMEX"
+msgstr "美国运通"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:135
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:103
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:110
+msgid "Discover"
+msgstr "发现卡"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:111
+msgid "JCB"
+msgstr "JCB"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:145
+msgid "Apple button color"
+msgstr "Apple 按钮颜色"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:147
+msgid "Button styling at checkout"
+msgstr "结账时的按钮样式"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:151
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:146
+msgid "Black"
+msgstr "黑色"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:152
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:145
+msgid "White"
+msgstr "白色"
+
+#: src/PaymentMethods/DigitalWallets/ApplePay.php:153
+msgid "White with Outline"
+msgstr "带边框的白色"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:57
+msgid "Pay with Click To Pay"
+msgstr "使用点击付款"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:59
+msgid "GlobalPayments - Click To Pay"
+msgstr "全球支付 - 点击付款"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:60
+msgid "Connect to Click To Pay via Unified Payments Gateway"
+msgstr "通过统一支付网关连接到点击付款"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:71
+msgid "Click To Pay Client ID*"
+msgstr "Click To Pay 客户端 ID*"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:73
+msgid "Your Merchant ID provided by Click To Pay."
+msgstr "Click To Pay 提供的商家 ID。"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:77
+msgid "Render Click To Pay natively"
+msgstr "本机呈现 Click To Pay"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:78
+msgid "Click To Pay will render natively within the payment form"
+msgstr "Click To Pay 将在付款表单中本机呈现"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:83
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:84
+msgid "Accept Canadian Visa debit cards"
+msgstr "接受加拿大 Visa 签账卡"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:89
+msgid "Display Global Payments footer"
+msgstr "显示 Global Payments 页尾"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:90
+msgid "Display Global Payments footer within the payment form"
+msgstr "在付款表单中显示 Global Payments 页尾"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:248
+msgid "Click To Pay Billing"
+msgstr "Click To Pay 账单"
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:256
+msgid "Email address:"
+msgstr "电子邮件地址："
+
+#: src/PaymentMethods/DigitalWallets/ClickToPay.php:276
+msgid "Click To Pay Shipping"
+msgstr "Click To Pay 运送"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:72
+msgid "Pay with Google Pay"
+msgstr "使用 Google Pay 付款"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:74
+msgid "GlobalPayments - Google Pay"
+msgstr "全球支付 - Google Pay"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:75
+msgid "Connect to Google Pay via Unified Payments Gateway"
+msgstr "通过统一付款支付网关连接到 Google Pay"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:86
+msgid "Global Payments Client ID*"
+msgstr "Global Payments 客户端 ID*"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:88
+msgid "Your Client ID provided by Global Payments."
+msgstr "Global Payments 提供的客户端 ID。"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:92
+msgid "Google Merchant ID"
+msgstr "Google 商家 ID"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:94
+msgid "Your Merchant ID provided by Google."
+msgstr "Google 提供的商家 ID。"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:97
+msgid "Google Merchant Display Name"
+msgstr "Google 商家显示名称"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:99
+msgid "Displayed to the customer in the Google Pay dialog."
+msgstr "在 Google Pay 对话中向客户显示。"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:122
+msgid "Allowed Card Auth Methods*"
+msgstr "允许的卡片认证方法*"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:134
+msgid "PAN_ONLY"
+msgstr "仅卡号"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:135
+msgid "CRYPTOGRAM_3DS"
+msgstr "加密凭据 3DS"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:117
+msgid ""
+"PAN_ONLY: This authentication method is associated with payment cards stored on file with the user's Google Account.\n"
+"\t\tCRYPTOGRAM_3DS: This authentication method is associated with cards stored as Android device tokens.\n"
+"\n"
+"\t\tPAN_ONLY can expose the FPAN, which requires an additional SCA step up to a 3DS check. Currently, Global Payments does not support the Google Pay SCA challenge with an FPAN. For the best acceptance, we recommend that you provide only the CRYPTOGRAM_3DS option."
+msgstr ""
+"PAN_ONLY：此认证方法与保存在使用者 Google 账户上的付款卡相关联。\n"
+"\t\tCRYPTOGRAM_3DS：此认证方法与保存为 Android 设备代码的卡相关联。\n"
+"\n"
+"\t\tPAN_ONLY 可能会暴露 FPAN，需要额外的 SCA 步骤以进行 3DS 检查。目前，Global Payments 不支持使用 FPAN 进行 Google Pay SCA 质询。为了获得最佳接受度，我们建议您仅提供 CRYPTOGRAM_3DS 选项。"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:141
+msgid "Button Color"
+msgstr "按钮颜色"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:163
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:223
+msgid "Bank Payment"
+msgstr "银行转账"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:225
+msgid "GlobalPayments - Bank Payment"
+msgstr "全球支付 - 银行转账"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:226
+msgid "Connect to Bank Payments via Unified Payments Gateway"
+msgstr "通过统一付款支付网关连接到银行转账"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:232
+msgid "Account Number"
+msgstr "账户号码"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:234
+msgid "Account number, for bank transfers within the UK (UK to UK bank). Only required if no bank details are stored on account."
+msgstr "账户号码，用于英国境内银行转账（英国间银行转账）。仅在账户上未保存银行详细信息时需要。"
+
+#: src/Gateways/GpApiGateway.php:176
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:237
+msgid "Account Name"
+msgstr "账户名称"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:239
+msgid "The name of the individual or business on the bank account. Only required if no bank details are stored on account."
+msgstr "银行账户上个人或企业的名称。仅在账户上未保存银行详细信息时需要。"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:242
+msgid "IBAN"
+msgstr "IBAN"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:244
+msgid "Only required for EUR transacting merchants."
+msgstr "仅适用于进行欧元交易的商家。"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:247
+msgid "Sort Code"
+msgstr "银行代码"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:249
+msgid "Six digits which identify the bank and branch of an account. Included with the Account Number for UK to UK bank transfers. Only required if no bank details are stored on account."
+msgstr "六位数字，用于识别账户的银行和分行。英国间银行转账时与账户号码一起包含。仅在账户上未保存银行详细信息时需要。"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:252
+msgid "Countries"
+msgstr "国家/地区"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:247
+msgid ""
+"Allows you to input a COUNTRY or string of COUNTRIES to limit what is shown to the customer.\n"
+" Including a country overrides your default account configuration.\n"
+" <br/><br/>Format: List of ISO 3166-2 (two characters) codes separated by a |\n"
+" <br/><br/>Example: FR|GB|IE"
+msgstr ""
+"允许您输入国家或国家字符串，以限制向客户显示的内容。\n"
+" 包含国家将覆盖您的默认账户配置。\n"
+" <br/><br/>格式：由 | 分隔的 ISO 3166-2（两个字符）代码列表\n"
+" <br/><br/>示例：FR|GB|IE"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:259
+msgid "Currencies*"
+msgstr "货币*"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:263
+msgid "Note: The payment method will be displayed at checkout only for the selected currencies."
+msgstr "注意：付款方式将仅在结账时针对所选货币显示。"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:265
+msgid "GBP"
+msgstr "英镑 (GBP)"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:266
+msgid "EUR"
+msgstr "欧元 (EUR)"
+
+#: src/Utils/Utils.php:58
+msgid "Your payment was unsuccessful. Please try again or use a different payment method."
+msgstr "您的付款未成功。请重试或使用其他付款方式。"
+
+#: src/Utils/Utils.php:60
+msgid "An error occurred while processing the payment. Please try again or use a different payment method."
+msgstr "处理付款时发生错误。请重试或使用其他付款方式。"
+
+#: assets/admin/js/globalpayments-admin.js:55
+msgid "Please be sure that you have filled AppId and AppKey fields!"
+msgstr "请确保您已填写 AppId 和 AppKey 字段！"
+
+#: assets/frontend/js/globalpayments-applepay.js:93
+#: resources/js/frontend/components/digitalWallets/applePayComponent.js:90
+#: assets/frontend/blocks/gateways.js:165
+msgid "Unable to create ApplePaySession"
+msgstr "无法建立 Apple Pay 工作阶段"
+
+#: assets/frontend/js/globalpayments-applepay.js:94
+#: assets/frontend/js/globalpayments-applepay.js:109
+#: assets/frontend/js/globalpayments-applepay.js:126
+#: assets/frontend/js/globalpayments-applepay.js:133
+#: resources/js/frontend/components/digitalWallets/applePayComponent.js:91
+#: resources/js/frontend/components/digitalWallets/applePayComponent.js:106
+#: resources/js/frontend/components/digitalWallets/applePayComponent.js:150
+#: resources/js/frontend/components/digitalWallets/applePayComponent.js:157
+#: assets/frontend/blocks/gateways.js:166
+#: assets/frontend/blocks/gateways.js:181
+#: assets/frontend/blocks/gateways.js:225
+#: assets/frontend/blocks/gateways.js:232
+msgid "We're unable to take your payment through Apple Pay. Please try again or use an alternative payment method."
+msgstr "我们无法通过 Apple Pay 处理您的付款。请重试或使用其他付款方式。"
+
+#: assets/frontend/js/globalpayments-applepay.js:189
+#: resources/js/frontend/gateways/gpapi.js:47
+#: assets/frontend/blocks/gateways.js:1617
+msgid "Apple Pay requires your checkout be served over HTTPS"
+msgstr "Apple Pay 要求您的结账页面通过 HTTPS 提供"
+
+#: assets/frontend/js/globalpayments-applepay.js:194
+#: resources/js/frontend/gateways/gpapi.js:52
+#: assets/frontend/blocks/gateways.js:1622
+msgid "Apple Pay is not supported on this device/browser"
+msgstr "此设备/浏览器不支持 Apple Pay"
+
+#: assets/frontend/js/globalpayments-clicktopay.js:81
+#: assets/frontend/js/globalpayments-secure-payment-fields.js:223
+#: resources/js/frontend/components/digitalWallets/clickToPayComponent.js:58
+#: assets/frontend/blocks/gateways.js:322
+msgid "Warning! Payment fields cannot be loaded"
+msgstr "警告！无法加载付款字段"
+
+#: resources/js/frontend/components/hostedPaymentPages/hppComponent.js:279
+msgid "Billing phone number is required for secure payments."
+msgstr "账单电话号码是安全付款的必填字段。"
+
+#: src/Gateways/GpApiGateway.php:616
+#: assets/frontend/blocks/gateways_hpp.js:1
+msgid "Pay With Credit / Debit Card Via Globalpayments"
+msgstr "通过 Global Payments 以信用卡/借记卡付款"
+
+#: assets/frontend/js/globalpayments-secure-payment-fields.js:391
+#: assets/frontend/js/globalpayments-secure-payment-fields.js:398
+msgid "Something went wrong while doing 3DS processing."
+msgstr "进行 3DS 处理时出错。"
+
+#: assets/frontend/js/globalpayments-secure-payment-fields.js:483
+msgid "Something went wrong. Please contact us to get assistance."
+msgstr "出错了。请联系我们以寻求协助。"
+
+#: assets/frontend/js/globalpayments-secure-payment-fields.js:492
+msgid "We're not able to process this payment. Please refresh the page and try again."
+msgstr "我们无法处理此付款。请重新整理页面并重试。"
+
+#: assets/frontend/js/saved-cards-tooltip.js:8
+msgid "For card-based installment payment options, please enter your card information below."
+msgstr "对于基于卡片的分期付款选项，请在下方输入您的卡片信息。"
+
+#: src/Gateways/GpApiGateway.php:180
+#: src/Gateways/GpApiGateway.php:205
+msgid "Specify which account to use when processing a transaction. Default account will be used if this is not specified."
+msgstr "指定处理交易时要使用的账户。如果未指定，将使用默认账户。"
+
+#: src/Gateways/GpApiGateway.php:201
+msgid "Sandbox Account Name"
+msgstr "沙箱账户名称"
+
+#: includes/admin/views/html-transaction-info.php:16
+#: includes/admin/views/html-pay-order.php:13
+msgid "Close modal panel"
+msgstr "关闭模态面板"
+
+#: src/Gateways/GpiTransactionApiGateway.php:119
+msgid "United States"
+msgstr "美国"
+
+#: src/Gateways/GpiTransactionApiGateway.php:120
+msgid "Canada"
+msgstr "加拿大"
+
+#: src/Gateways/GpApiGateway.php:204
+msgid "Get your App ID and App Key from your %sGlobal Payments Developer Account%s. Please follow the instructions provided in the %splugin description%s. When you are ready to go Live, please contact %ssupport to get you live credentials."
+msgstr "从您的 %sGlobal Payments 开发者账户%s 取得应用程序 ID 和应用程序密钥。请遵循 %s外挂程式说明%s 中提供的说明。当您准备好正式环境时，请联系 %s支持以取得正式认证%s。"
+
+#: src/Gateways/GpApiGateway.php:290
+msgid "Note: to use the card saving feature, you must have multi-use token support enabled on your account. Please contact <a href=\"https://developer.globalpay.com/support/integration-support\" target=\"_blank\" title=\"Contact Support\">support</a> with any questions regarding this option."
+msgstr "注意：要使用保存卡片功能，您必须在账户上启用多用途代码支持。如对此选项有任何疑问，请联系<a href=\"https://developer.globalpay.com/support/integration-support\" target=\"_blank\" title=\"Contact Support\">支持</a>。"
+
+#: src/Gateways/AbstractGateway.php:604
+msgid "During a Capture or Authorize payment action, this value will be passed along as the transaction-specific descriptor listed on the customer's bank account. Please contact <a href=\"https://developer.globalpay.com/support/integration-support\" target=\"_blank\" title=\"Contact Support\">support</a> with any questions regarding this option (maxLength: 25)."
+msgstr "在捕获或授权付款时，此值将作为交易特定描述符传递，并在客户银行账户中列出。如对此选项有任何疑问，请联系<a href=\"https://developer.globalpay.com/support/integration-support\" target=\"_blank\" title=\"Contact Support\">支持</a>（最大长度：25）。"
+
+#: src/Gateways/GpApiGateway.php:269
+msgid "Sandbox Account Name*"
+msgstr "沙箱账户名称*"
+
+#: src/Gateways/GpApiGateway.php:261
+msgid "Live Account Name*"
+msgstr "正式账户名称*"
+
+#: src/Gateways/GpApiGateway.php:274
+msgid "Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href=\"https://developer.globalpay.com/support/integration-support\" target=\"_blank\" title=\"Contact Support\">Integration Support</a> Team based on location"
+msgstr "选择处理交易时使用的账户。如未指定，将使用默认账户。<br>如需协助寻找账户名称，请依所在位置联系我们的<a href=\"https://developer.globalpay.com/support/integration-support\" target=\"_blank\" title=\"Contact Support\">整合支持</a>团队。"
+
+#: src/Gateways/GpApiGateway.php:294
+msgid "Payment Interface"
+msgstr "付款界面"
+
+#: src/Gateways/GpApiGateway.php:296
+msgid "Choose how customers will enter their payment details. Drop-in UI provides card fields directly on your checkout page. Hosted Payment Pages redirect customers to a secure payment form."
+msgstr "选择客户输入付款详细信息的方式。Drop-in UI 直接在结账页面提供卡片字段。托管支付页面将客户重新导向至安全的付款表单。"
+
+#: src/Gateways/GpApiGateway.php:300
+msgid "Drop-in UI"
+msgstr "嵌入式界面 (Drop-in UI)"
+
+#: src/Gateways/GpApiGateway.php:301
+msgid "Hosted Payment Pages"
+msgstr "托管支付页面"
+
+#: src/Gateways/GpApiGateway.php:327
+msgid "Dynamic Currency Conversion"
+msgstr "动态货币转换"
+
+#: src/Gateways/GpApiGateway.php:328
+msgid "Enable Dynamic Currency Conversion (DCC)"
+msgstr "启用动态货币转换 (DCC)"
+
+#: src/Gateways/GpApiGateway.php:331
+msgid "Applies to Unified Payments transactions in both Sandbox and Live Mode. Only available when Payment Interface is set to Hosted Payment Pages."
+msgstr "适用于沙箱和正式模式下的 Unified Payments 交易。仅在支付界面设为托管支付页面时可用。"
+
+#: src/Gateways/GpApiGateway.php:304
+msgid "Hosted Payment Settings"
+msgstr "托管付款设置"
+
+#: src/Gateways/GpApiGateway.php:308
+msgid "Hosted Payment Pages Display Text"
+msgstr "托管支付页面显示文字"
+
+#: src/Gateways/GpApiGateway.php:310
+msgid "Custom text to display on the checkout page when Hosted Payment Pages is selected. If left empty, a default message will be shown."
+msgstr "选择托管支付页面时，在结账页面显示的自订文字。如果留空，将显示默认讯息。"
+
+#: src/Gateways/GpApiGateway.php:312
+msgid "Select Place Order to view available payment methods."
+msgstr "请选择「下订单」以查看可用的付款方式。"
+
+#: src/Gateways/GpApiGateway.php:316
+#: src/Gateways/GpApiGateway.php:317
+msgid "Enable Google Pay for HPP"
+msgstr "为 HPP 启用 Google Pay"
+
+#: src/Gateways/GpApiGateway.php:319
+msgid "Enable Google Pay as a payment option on the Hosted Payment Page."
+msgstr "在托管支付页面上将 Google Pay 作为付款选项启用。"
+
+#: src/Gateways/GpApiGateway.php:323
+#: src/Gateways/GpApiGateway.php:324
+msgid "Enable Apple Pay for HPP"
+msgstr "为 HPP 启用 Apple Pay"
+
+#: src/Gateways/GpApiGateway.php:326
+msgid "Enable Apple Pay as a payment option on the Hosted Payment Page."
+msgstr "在托管支付页面上将 Apple Pay 作为付款选项启用。"
+
+#: src/Gateways/GpApiGateway.php:335
+#: src/Gateways/GpApiGateway.php:336
+msgid "Enable Installments"
+msgstr "启用分期付款"
+
+#: src/Gateways/GpApiGateway.php:339
+msgid "Enable installment payment option for customers. Only available for Drop-in UI payment interface."
+msgstr "为客户启用分期付款选项。仅适用于 Drop-in UI 付款界面。"
+
+#: src/Gateways/GpApiGateway.php
+msgid "Enable BLIK for HPP"
+msgstr "为 HPP 启用 BLIK"
+
+#: src/Gateways/GpApiGateway.php
+msgid "Enable BLIK as a payment option on the Hosted Payment Page."
+msgstr "在托管支付页面上将 BLIK 作为付款选项启用。"
+
+#: src/Gateways/GpApiGateway.php
+msgid "Enable Open Banking for HPP"
+msgstr "为 HPP 启用 Open Banking"
+
+#: src/Gateways/GpApiGateway.php
+msgid "Enable Open Banking as a payment option on the Hosted Payment Page."
+msgstr "在托管支付页面上将 Open Banking 作为付款选项启用。"
+
+#: src/Gateways/GpApiGateway.php:392
+msgid "Transaction Region"
+msgstr "交易地区"
+
+#: src/Gateways/GpApiGateway.php:395
+msgid "Select where transactions are processed. This controls the GP API host for sandbox and live transactions."
+msgstr "选择处理交易的地区。这控制沙箱和正式交易的 GP API 主机。"
+
+#: src/Gateways/GpApiGateway.php:402
+msgid "Global (default)"
+msgstr "全球（默认）"
+
+#: src/Gateways/GpApiGateway.php:403
+msgid "Europe"
+msgstr "欧洲"
+
+#: src/PaymentMethods/DigitalWallets/GooglePay.php:124
+msgid "<strong>PAN_ONLY:</strong> This authentication method is associated with payment cards stored on file with the user's Google Account.<br><strong>CRYPTOGRAM_3DS:</strong> This authentication method is associated with cards stored as Android device tokens.<br><br>PAN_ONLY can expose the FPAN, which requires an additional SCA step up to a 3DS check. Currently, Global Payments does not support the Google Pay SCA challenge with an FPAN. For the best acceptance, we recommend that you provide only the CRYPTOGRAM_3DS option."
+msgstr "<strong>PAN_ONLY:</strong> 此认证方法与保存在使用者 Google 账户上的付款卡相关联。<br><strong>CRYPTOGRAM_3DS:</strong> 此认证方法与保存为 Android 设备代码的卡相关联。<br><br>PAN_ONLY 可能会暴露 FPAN，需要额外的 SCA 步骤以进行 3DS 检查。目前，Global Payments 不支持使用 FPAN 进行 Google Pay SCA 验证。为了获得最佳接受度，我们建议您仅提供 CRYPTOGRAM_3DS 选项。"
+
+#: src/PaymentMethods/OpenBanking/OpenBanking.php:255
+msgid "Allows you to input a COUNTRY or string of COUNTRIES to limit what is shown to the customer. Including a country overrides your default account configuration. <br/><br/>Format: List of ISO 3166-2 (two characters) codes separated by a | <br/><br/>Example: FR|GB|IE"
+msgstr "允许您输入国家或国家字串以限制向客户显示的内容。包含国家会覆盖您的默认账户设置。<br/><br/>格式：ISO 3166-2（两个字符）代码清单，以 | 分隔<br/><br/>示例：FR|GB|IE"
+
+#: src/Gateways/GpApiGateway.php:1134
+msgid "Based on the WooCommerce store location 3D Secure %s"
+msgstr "根据 WooCommerce 商店所在地，3D Secure %s"
+
+#: src/Gateways/GpApiGateway.php:1136
+msgid "is required for all transactions, when in live mode"
+msgstr "在正式模式下为所有交易必填"
+
+#: src/Gateways/GpApiGateway.php:1137
+msgid "is not required"
+msgstr "非必填"

@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+=  1.19.3 (06/04/26)
+* Enhancements: Added support to Traditional Chinese and Simplified Chinese
+
 =  1.19.2 (05/28/26)
 * Bug fix: GPAPI: Fixed 3DS issue with Woo Classic Checkout w/HPP checkout related to shipping phone number missing
 
