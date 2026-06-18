@@ -4,11 +4,13 @@ namespace GlobalPayments\WooCommercePaymentGatewayProvider\Gateways;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\PayOrderTrait;
 use WC_Order;
 
 defined( 'ABSPATH' ) || exit;
 
 class TransitGateway extends AbstractGateway {
+	use PayOrderTrait;
 	/**
 	 * Gateway ID
 	 */
@@ -328,5 +330,20 @@ class TransitGateway extends AbstractGateway {
 		$is_successful	= $this->handle_response( $request, $response );
 
 		return $is_successful;
+	}
+
+	/**
+	 * Add gateway-specific hooks
+	 */
+	protected function add_hooks() {
+		parent::add_hooks();
+
+		if ( is_admin() && current_user_can( 'edit_shop_orders' ) ) {
+			// Admin Pay for Order hooks
+			add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'pay_order_modal' ), 99 );
+			add_filter( 'globalpayments_secure_payment_fields_styles', array( $this, 'pay_order_modal_secure_payment_fields_styles' ) );
+		}
+		add_action( 'woocommerce_api_globalpayments_pay_order', array( $this, 'pay_order_modal_process_payment' ), 99 );
+		add_action( 'woocommerce_api_globalpayments_get_payment_methods', array( $this, 'pay_order_modal_get_payment_methods' ) );
 	}
 }

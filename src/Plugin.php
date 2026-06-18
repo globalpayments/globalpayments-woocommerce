@@ -6,16 +6,19 @@
 namespace GlobalPayments\WooCommercePaymentGatewayProvider;
 
 use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\AffirmBlock;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\ApplePayBlock;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\ClickToPayBlock;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\GooglePayBlock;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\KlarnaBlock;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\OpenBankingBlock;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\PaypalBlock;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\GpApiGateway;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGateway;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\GpApiGatewayBlock;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Blocks\Gateways\{
+    AffirmBlock,
+    ApplePayBlock,
+    ClickToPayBlock,
+    GooglePayBlock,
+    GpApiGatewayBlock,
+    HeartlandGatewayBlock,
+    HeartlandGiftGatewayBlock,
+    KlarnaBlock,
+    OpenBankingBlock,
+    PaypalBlock
+};
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\{GpApiGateway, HeartlandGateway};
 
 defined( 'ABSPATH' ) || exit;
 
@@ -28,7 +31,7 @@ class Plugin {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.19.3';
+	const VERSION = '1.20.1';
 
 	/**
 	 * Init the package.
@@ -94,6 +97,7 @@ class Plugin {
 			'woocommerce_blocks_payment_method_type_registration',
 			function (PaymentMethodRegistry $payment_method_registry) {
 				$payment_method_registry->register( new GpApiGatewayBlock() );
+				$payment_method_registry->register( new HeartlandGatewayBlock() );
 				$payment_method_registry->register( new ApplePayBlock() );
 				$payment_method_registry->register( new ClickToPayBlock() );
 				$payment_method_registry->register( new GooglePayBlock() );
@@ -103,6 +107,18 @@ class Plugin {
 				$payment_method_registry->register( new PaypalBlock() );
 			}
 		);
+
+		// Initialize gift card block support when Heartland is enabled with gift cards
+		$heartlandSettings = get_option( 'woocommerce_' . HeartlandGateway::GATEWAY_ID . '_settings' );
+		if (
+			! empty( $heartlandSettings ) &&
+			isset( $heartlandSettings['enabled'] ) &&
+			'yes' === $heartlandSettings['enabled'] &&
+			isset( $heartlandSettings['allow_gift_cards'] ) &&
+			'yes' === $heartlandSettings['allow_gift_cards']
+		) {
+			new HeartlandGiftGatewayBlock();
+		}
 	}
 
 	/**

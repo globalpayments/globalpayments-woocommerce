@@ -22,10 +22,42 @@ trait PayOrderTrait {
 			return;
 		}
 
-		// The HTML needed for the `Pay for Order` modal
-		include_once( Plugin::get_path() . '/includes/admin/views/html-pay-order.php' );
+		// Only show the button if this gateway is enabled
+		if ( 'yes' !== $this->enabled ) {
+			return;
+		}
+		
+		// Gather all enabled GlobalPayments gateways
+		$enabled_gateways = $this->get_enabled_globalpayments_gateways();
+		
+		// If no gateways are enabled, don't show anything
+		if ( empty( $enabled_gateways ) ) {
+			return;
+		}
 
+		// Render the modal template for this gateway (needed for Backbone modal)
+		// Use include (not include_once) to allow all gateways to render their templates
+		// Use a global flag to ensure only one button renders across all gateway instances
+		global $globalpayments_pay_order_button_rendered;
+		$render_button = false;
+		
+		if ( ! $globalpayments_pay_order_button_rendered ) {
+			$render_button = true;
+			$globalpayments_pay_order_button_rendered = true;
+		}
+
+		include( Plugin::get_path() . '/includes/admin/views/html-pay-order.php' );
+
+		// Enqueue tokenization script for this gateway (needed for hosted fields configuration)
 		$this->tokenization_script();
+
+		// Only enqueue shared scripts once (from the first gateway)
+		static $scripts_enqueued = false;
+		if ( $scripts_enqueued ) {
+			return;
+		}
+		$scripts_enqueued = true;
+
 		wp_enqueue_script(
 			'globalpayments-modal',
 			Plugin::get_url( '/assets/admin/js/globalpayments-modal.js' ),
@@ -37,8 +69,11 @@ trait PayOrderTrait {
 			WC()->version,
 			true
 		);
+		
+		// Use gateway-specific script handle to avoid conflicts
+		$admin_script_handle = 'globalpayments-admin-' . $this->id;
 		wp_enqueue_script(
-			'globalpayments-admin',
+			$admin_script_handle,
 			Plugin::get_url( '/assets/admin/js/globalpayments-admin.js' ),
 			array(
 				'jquery',
@@ -51,18 +86,32 @@ trait PayOrderTrait {
 		);
 
 		// set script translation, this will look in plugin languages directory and look for .json translation file
-		wp_set_script_translations('globalpayments-admin', 'globalpayments-gateway-provider-for-woocommerce', WP_PLUGIN_DIR . '/'. basename( dirname( __FILE__ , 4 ) ) . '/languages');
+		wp_set_script_translations( $admin_script_handle, 'globalpayments-gateway-provider-for-woocommerce', WP_PLUGIN_DIR . '/'. basename( dirname( __FILE__ , 4 ) ) . '/languages');
 
+		// Prepare data for all enabled gateways
+		$gateways_data = array();
+		foreach ( $enabled_gateways as $gateway ) {
+			$gateway_id_short = str_replace( 'globalpayments_', '', $gateway->id );
+			$gateways_data[ $gateway_id_short ] = array(
+				'gateway_id'          => $gateway->id,
+				'modal_template'      => 'wc-globalpayments-pay-order-modal-' . $gateway->id,
+				'payment_methods'     => $gateway->get_stored_payment_methods( $order->get_customer_id() ),
+			);
+		}
+		
+		// Pass unified params with all gateways data
 		wp_localize_script(
-			'globalpayments-admin',
+			$admin_script_handle,
 			'globalpayments_admin_params',
 			array(
 				'_wpnonce'            => wp_create_nonce( 'woocommerce-globalpayments-pay' ),
 				'gateway_id'          => $this->id,
-				'payorder_url'        => WC()->api_request_url( 'globalpayments_pay_order' ),
 				'payment_methods'     => $this->get_stored_payment_methods( $order->get_customer_id() ),
+				'payorder_url'        => WC()->api_request_url( 'globalpayments_pay_order' ),
 				'payment_methods_url' => WC()->api_request_url( 'globalpayments_get_payment_methods' ),
-				"is_admin_order_page" => ! is_null( get_current_screen() ) && 'woocommerce_page_wc-orders' === get_current_screen()->base,
+				'is_admin_order_page' => ! is_null( get_current_screen() ) && 'woocommerce_page_wc-orders' === get_current_screen()->base,
+				'gateways'            => $gateways_data,
+				'order_payment_method' => $order->get_payment_method(),
 			)
 		);
 		wp_enqueue_style(
@@ -93,7 +142,7 @@ trait PayOrderTrait {
 	 *
 	 * @return array
 	 */
-	private function get_stored_payment_methods( int $customer_id ) {
+	public function get_stored_payment_methods( int $customer_id ) {
 		$payment_methods = array();
 		if ( empty( $customer_id ) ) {
 			return $payment_methods;
@@ -134,6 +183,14 @@ trait PayOrderTrait {
 				throw new \Exception( __( 'Invalid payment request.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 			}
 
+			// Check if this gateway should handle this payment
+			// Multiple gateways may be listening to the same endpoint
+			$submitted_payment_method = wc_get_post_data_by_key( 'payment_method' );
+			if ( $submitted_payment_method !== $this->id ) {
+				// This payment is for a different gateway, skip processing
+				return;
+			}
+
 			// Validate
 			if ( empty( abs( $order->get_total() ) ) ) {
 				throw new \Exception( __( 'Invalid amount. Order total must be greater than zero.', 'globalpayments-gateway-provider-for-woocommerce' ) );
@@ -142,8 +199,19 @@ trait PayOrderTrait {
 				throw new \Exception( __( 'This order has a transaction ID associated with it already. Please click the checkbox to proceed with payment.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 			}
 
-			// Update payment method.
-			$order->set_payment_method( $this->id );
+			// Clear old transaction ID if user has allowed to reprocess
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified above via wp_verify_nonce
+			if ( ! empty( $_POST['transaction_id'] ) && ! empty( $_POST['allow_order'] ) ) {
+				$old_transaction_id = $order->get_transaction_id();
+				$order->set_transaction_id( '' );
+				$order->add_order_note( sprintf(
+					__( 'Previous transaction ID (%s) cleared. Processing new payment attempt.', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$old_transaction_id
+				) );
+			}
+
+			// Update payment method and title.
+			$order->set_payment_method( $this );
 			$order->save();
 
 			// Process Payment
@@ -217,5 +285,24 @@ trait PayOrderTrait {
 		);
 
 		return wp_json_encode( $secure_payment_fields_styles );
+	}
+
+	/**
+	 * Get all enabled GlobalPayments gateways
+	 *
+	 * @return array
+	 */
+	private function get_enabled_globalpayments_gateways(): array {
+		$enabled_gateways = array();
+		$available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
+		
+		foreach ( $available_gateways as $gateway ) {
+			// Only include GlobalPayments gateways (gpapi, genius, and transit)
+			if ( strpos( $gateway->id, 'globalpayments_' ) === 0 && 'yes' === $gateway->enabled ) {
+				$enabled_gateways[] = $gateway;
+			}
+		}
+		
+		return $enabled_gateways;
 	}
 }

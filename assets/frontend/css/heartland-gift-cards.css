@@ -25,3 +25,266 @@
 #gift-card-pin {
     width: 26%;
 }
+
+/* ==========================================
+   WooCommerce Blocks Checkout Gift Card Styles
+   ========================================== */
+
+.heartland-gift-card-section {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #fafafa;
+}
+
+.heartland-gift-card-section .gift-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.heartland-gift-card-section #gift-card-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.heartland-gift-card-section #gift-card-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.heartland-gift-card-section #gift-card-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+}
+
+.heartland-gift-card-section #gift-card-number {
+    flex: 2;
+    min-width: 150px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.heartland-gift-card-section #gift-card-pin {
+    flex: 1;
+    min-width: 80px;
+    max-width: 120px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.heartland-gift-card-section #gift-card-number:focus,
+.heartland-gift-card-section #gift-card-pin:focus {
+    outline: none;
+    border-color: #015a94;
+    box-shadow: 0 0 0 1px #015a94;
+}
+
+.heartland-gift-card-section #gift-card-number:disabled,
+.heartland-gift-card-section #gift-card-pin:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.heartland-gift-card-section #apply-gift-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    background-color: #0071ba;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 4px;
+}
+
+.heartland-gift-card-section #apply-gift-card:hover:not(:disabled) {
+    background-color: #015a94;
+}
+
+.heartland-gift-card-section #apply-gift-card:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.heartland-gift-card-section #gift-card-error {
+    color: #cc1818;
+    font-size: 13px;
+    margin: 0;
+    padding: 8px 12px;
+    background-color: #fef1f1;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.heartland-gift-card-section #gift-card-success {
+    color: #008a20;
+    font-size: 13px;
+    margin: 0;
+    padding: 8px 12px;
+    background-color: #f0fff4;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.heartland-applied-gift-cards-info {
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+/* ==========================================
+   Applied Gift Cards List Styles
+   ========================================== */
+
+.heartland-applied-gift-cards-list {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.heartland-applied-gift-cards-title {
+    margin: 0 0 12px 0;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.heartland-applied-gift-cards-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.heartland-applied-gift-card-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.heartland-applied-gift-card-item:last-child {
+    margin-bottom: 0;
+}
+
+.heartland-applied-gift-card-item.removing {
+    opacity: 0.5;
+    background-color: #fafafa;
+}
+
+.heartland-gift-card-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+}
+
+.heartland-gift-card-amount {
+    font-size: 13px;
+    font-weight: 600;
+    color: #008a20;
+    margin: 0 12px;
+}
+
+.heartland-remove-gift-card-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #cc1818;
+    background-color: transparent;
+    border: 1px solid #cc1818;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.heartland-remove-gift-card-btn:hover:not(:disabled) {
+    background-color: #cc1818;
+    color: #ffffff;
+}
+
+.heartland-remove-gift-card-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.heartland-gift-card-loading {
+    padding: 8px;
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Applied gift cards in order summary */
+.securesubmit-remove-gift-card {
+    color: #cc1818;
+    font-size: 12px;
+    text-decoration: none;
+    margin-left: 8px;
+}
+
+.securesubmit-remove-gift-card:hover {
+    text-decoration: underline;
+}
+
+/* Responsive adjustments for blocks checkout */
+@media (max-width: 600px) {
+    .heartland-gift-card-section #gift-card-input {
+        flex-direction: column;
+    }
+
+    .heartland-gift-card-section #gift-card-number,
+    .heartland-gift-card-section #gift-card-pin {
+        width: 100%;
+        max-width: none;
+    }
+
+    .heartland-gift-card-section #apply-gift-card {
+        width: 100%;
+    }
+}
+
+/* ==========================================
+   Gift Card Only Order Notice
+   ========================================== */
+
+.heartland-gift-card-only-notice {
+    margin-bottom: 16px;
+}
+
+.heartland-gift-card-only-notice p {
+    padding: 16px;
+    background-color: #f0fff4;
+    border: 1px solid #008a20;
+    border-radius: 4px;
+    color: #006617;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+}

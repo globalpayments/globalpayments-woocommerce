@@ -52,6 +52,15 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.20.1 (06/18/26)
+* Enhancement: Added Refund Eligibility Tooltip for Asynchronous Payments
+* Enhancement: Update Global Payments PHP SDK v14.2.0
+* Bug fix: Added fix for Pay for Order button functionality for Genius & TransIT payment gateway
+* Bug fix: Added fix for HPP checkout : Nonce Validation Failure on First Order Attempt for New Customers
+
+= 1.20.0 (06/11/26)
+* Enhancement: Portico Gateway: Created block checkout support
+
 =  1.19.3 (06/04/26)
 * Enhancements: Added support to Traditional Chinese and Simplified Chinese
 

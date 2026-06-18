@@ -196,9 +196,19 @@ trait HppTrait {
 	/**
 	 * Validate HPP nonce from request
 	 *
+	 * Skips validation when a new customer account was just created during checkout,
+	 * because WordPress nonces are tied to user session - the nonce generated for a guest
+	 * becomes invalid after the user is logged in.
+	 *
 	 * @return bool True if valid, false otherwise
 	 */
 	protected function validate_hpp_nonce(): bool {
+		// Skip nonce validation if a new customer was just created during checkout.
+		// WooCommerce's checkout nonce is still validated before process_payment().
+		if ( did_action( 'woocommerce_created_customer' ) > 0 ) {
+			return true;
+		}
+
 		$nonce = $this->get_hpp_nonce_from_request();
 
 		if ( empty( $nonce ) ) {

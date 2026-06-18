@@ -187,11 +187,46 @@
 		 */
 		payForOrder: function( e ) {
 			e.preventDefault();
+			
+			var params = globalpayments_admin_params;
+			var gateways = params.gateways || {};
+			var orderPaymentMethod = params.order_payment_method || '';
+			
+			// Determine which gateway to use
+			var selectedGateway = null;
+			var selectedGatewayKey = null;
+			
+			// First, try to use the order's original payment method if it's enabled
+			if ( orderPaymentMethod ) {
+				var orderGatewayKey = orderPaymentMethod.replace( 'globalpayments_', '' );
+				if ( gateways[orderGatewayKey] ) {
+					selectedGateway = gateways[orderGatewayKey];
+					selectedGatewayKey = orderGatewayKey;
+				}
+			}
+			
+			// If order's gateway not available, use the first enabled gateway
+			if ( ! selectedGateway ) {
+				for ( var key in gateways ) {
+					if ( gateways.hasOwnProperty( key ) ) {
+						selectedGateway = gateways[key];
+						selectedGatewayKey = key;
+						break;
+					}
+				}
+			}
+			
+			// If no gateway found, show error
+			if ( ! selectedGateway ) {
+				alert( __( 'No payment gateway available.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+				return;
+			}
+			// Open modal with selected gateway's data
 			$( this ).WCGlobalPaymentsPayOrderBackboneModal({
-				template: 'wc-globalpayments-pay-order-modal',
+				template: selectedGateway.modal_template,
 				variable: {
 					customer_id: $( '#customer_user' ).val(),
-					payment_methods: globalpayments_admin_params.payment_methods,
+					payment_methods: selectedGateway.payment_methods,
 				}
 			});
 		},
@@ -254,14 +289,12 @@
 		 * @param target
 		 */
 		modalLoaded: function ( e, target ) {
-			switch ( target ) {
-				case 'wc-globalpayments-pay-order-modal':
-					$( document.body ).trigger( 'globalpayments_pay_order_modal_loaded' );
-					$( document.body ).trigger( 'wc-credit-card-form-init' );
-					break;
-				case 'wc-globalpayments-transaction-info-modal':
-					$( document.body ).trigger( 'globalpayments_transaction_info_modal_loaded' );
-					break;
+			// Check if target matches any gateway-specific modal template
+			if ( target.indexOf( 'wc-globalpayments-pay-order-modal' ) === 0 ) {
+				$( document.body ).trigger( 'globalpayments_pay_order_modal_loaded' );
+				$( document.body ).trigger( 'wc-credit-card-form-init' );
+			} else if ( target === 'wc-globalpayments-transaction-info-modal' ) {
+				$( document.body ).trigger( 'globalpayments_transaction_info_modal_loaded' );
 			}
 		},
 

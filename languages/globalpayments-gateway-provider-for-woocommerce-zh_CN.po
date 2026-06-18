@@ -44,6 +44,10 @@ msgstr "订单付款"
 msgid "Admins can process customer orders over the phone using this functionality."
 msgstr "管理员可以使用此功能通过电话处理客户订单。"
 
+#: src/PaymentMethods/AbstractPaymentMethod.php
+msgid "Payment confirmation for this method may take several days. Refunds are only available after a final payment status is received. Please wait for confirmation or contact support if the delay continues."
+msgstr "此付款方式的确认可能需要数天时间。只有在收到最终付款状态后才能进行退款。如果延迟持续，请等待确认或联系客户支持。"
+
 #: includes/admin/views/html-pay-order.php:55
 msgid "This order has a transaction ID associated with it already. Click the checkbox to proceed."
 msgstr "此订单已关联交易 ID。勾选此核取方块以继续。"

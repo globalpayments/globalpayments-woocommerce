@@ -42,6 +42,10 @@ msgstr "Pagar por Pedido"
 msgid "Admins can process customer orders over the phone using this functionality."
 msgstr "Los administradores pueden procesar las ordenes de los clientes desde el telefóno usando esta funcionalidad"
 
+#: src/PaymentMethods/AbstractPaymentMethod.php
+msgid "Payment confirmation for this method may take several days. Refunds are only available after a final payment status is received. Please wait for confirmation or contact support if the delay continues."
+msgstr "La confirmación de este método de pago puede tomar varios días. Las devoluciones solo estarán disponibles después de que el estatus final de pago sea recibido. Por favor espere la confirmación o contacte a soporte en caso de que el retraso continúe."
+
 #: includes/admin/views/html-pay-order.php:55
 msgid "This order has a transaction ID associated with it already. Click the checkbox to proceed."
 msgstr "Este pedido ya tiene un ID de transacción asociado. Haz clic en la casilla para continuar."

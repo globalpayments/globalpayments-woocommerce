@@ -1467,15 +1467,33 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		if ( is_admin() ) {
 			return null;
 		}
-		$cart_totals = WC()->session->get( 'cart_totals' );
+		
+		// Check if session and cart_totals exist
+		if ( ! WC()->session || ! ( $cart_totals = WC()->session->get( 'cart_totals' ) ) ) {
+			return null;
+		}
 
 		return round( $cart_totals['total'], 2 );
 	}
 
 	protected function get_order_data() {
+		$order_id = absint( get_query_var( 'order-pay' ) );
+		
+		// For order-pay flows, use the order total rather than cart total
+		$amount = 0;
+		if ( $order_id ) {
+			$order = wc_get_order( $order_id );
+			if ( $order ) {
+				$amount = $order->get_total();
+			}
+		} elseif ( WC()->cart && is_callable( array( WC()->cart, 'get_total' ) ) ) {
+			// Fall back to cart total for checkout flows
+			$amount = WC()->cart->get_total( 'edit' );
+		}
+		
 		return array(
-			'id'       => absint( get_query_var( 'order-pay' ) ),
-			'amount'   => wc_format_decimal( $this->get_order_total(), 2 ),
+			'id'       => $order_id,
+			'amount'   => wc_format_decimal( $amount, 2 ),
 			'currency' => get_woocommerce_currency(),
 		);
 	}

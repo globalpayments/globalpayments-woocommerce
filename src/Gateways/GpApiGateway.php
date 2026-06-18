@@ -501,7 +501,7 @@ class GpApiGateway extends AbstractGateway {
 
 		// For HPP, add the nonce
 		if ( $this->is_hpp_mode() ) {
-			$options['hpp_nonce'] = wp_create_nonce( 'gp_hpp_nonce' );
+			$options['hpp_nonce'] = wp_create_nonce( 'gp_hpp_payment' );
 			$options['payment_interface'] = 'hpp';
 			$options['hpp_text'] = $this->get_option( 'hpp_text' );
 

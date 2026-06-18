@@ -596,7 +596,8 @@ class SdkClient implements ClientInterface {
 			$gatewayConfig,
 			$this->args[ RequestArg::SERVICES_CONFIG ]
 		);
-		if ( $this->get_arg( RequestArg::SERVICES_CONFIG )['debug'] ) {
+		$debug_enabled = $this->get_arg( RequestArg::SERVICES_CONFIG )['debug'] ?? false;
+		if ( $debug_enabled ) {
 			$gatewayConfig->requestLogger = new SampleRequestLogger( new Logger(WC_LOG_DIR ) );
 		}
 

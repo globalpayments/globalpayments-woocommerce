@@ -163,22 +163,112 @@ class HeartlandGateway extends AbstractGateway {
 		parent::add_hooks();
 
 		if ( $this->allow_gift_cards === true ) {
+			// Skip classic gift card hooks if block checkout is enabled
+			// HeartlandGiftGatewayBlock handles gift cards for block checkout
+			if ( $this->is_checkout_block_enabled() ) {
+				// Only register order-related hooks that are needed for both checkout types
+				$gcthing = new HeartlandGiftCardOrder();
+				add_filter(
+					'woocommerce_get_order_item_totals',
+					array( $gcthing, 'addItemsToPostOrderDisplay' ),
+					PHP_INT_MAX - 1,
+					2
+				);
+				// Classic checkout hook (fallback)
+				add_action(
+					'woocommerce_checkout_order_processed',
+					array( $gcthing, 'processGiftCardsZeroTotal' ),
+					PHP_INT_MAX,
+					2
+				);
+				// Block checkout hook - uses different signature (WC_Order instead of order_id + posted)
+				add_action(
+					'woocommerce_store_api_checkout_order_processed',
+					array( $gcthing, 'processGiftCardsZeroTotalBlockCheckout' ),
+					PHP_INT_MAX,
+					1
+				);
+				add_action( 'wp_enqueue_scripts', function () {
+					wp_enqueue_style(
+						'heartland-gift-cards',
+						Plugin::get_url( '/assets/frontend/css/heartland-gift-cards.css' )
+					);
+				} );
+				return;
+			}
+
+			// Classic checkout gift card handling
 		    $HeartlandGiftGateway = new HeartlandGiftGateway( $this );
 
-			add_action( 'wp_ajax_use_gift_card',                       array( $HeartlandGiftGateway, 'applyGiftCard' ) );
-			add_action( 'wp_ajax_nopriv_use_gift_card',                array( $HeartlandGiftGateway, 'applyGiftCard' ) );
-			add_action( 'woocommerce_review_order_before_order_total', array( $HeartlandGiftGateway, 'addGiftCards' ) );
-			add_action( 'woocommerce_cart_totals_before_order_total',  array( $HeartlandGiftGateway, 'addGiftCards' ) );
-			add_filter( 'woocommerce_calculated_total',                array( $HeartlandGiftGateway, 'updateOrderTotal' ), 10, 2 );
-			add_action( 'wp_ajax_nopriv_remove_gift_card',             array( $HeartlandGiftGateway, 'removeGiftCard' ) );
-			add_action( 'wp_ajax_remove_gift_card',                    array( $HeartlandGiftGateway, 'removeGiftCard' ) );
-			wp_enqueue_style( 'heartland-gift-cards', Plugin::get_url( '/assets/frontend/css/heartland-gift-cards.css' ) );
+			add_action(
+				'wp_ajax_use_gift_card',
+				array( $HeartlandGiftGateway, 'applyGiftCard' )
+			);
+			add_action(
+				'wp_ajax_nopriv_use_gift_card',
+				array( $HeartlandGiftGateway, 'applyGiftCard' )
+			);
+			add_action(
+				'woocommerce_review_order_before_order_total',
+				array( $HeartlandGiftGateway, 'addGiftCards' )
+			);
+			add_action(
+				'woocommerce_cart_totals_before_order_total',
+				array( $HeartlandGiftGateway, 'addGiftCards' )
+			);
+			add_filter(
+				'woocommerce_calculated_total',
+				array( $HeartlandGiftGateway, 'updateOrderTotal' ),
+				10,
+				2
+			);
+			add_action(
+				'wp_ajax_nopriv_remove_gift_card',
+				array( $HeartlandGiftGateway, 'removeGiftCard' )
+			);
+			add_action( 'wp_ajax_remove_gift_card', array( $HeartlandGiftGateway, 'removeGiftCard' ) );
+			add_action( 'wp_enqueue_scripts', function () {
+				wp_enqueue_style(
+					'heartland-gift-cards',
+					Plugin::get_url( '/assets/frontend/css/heartland-gift-cards.css' )
+				);
+			} );
 
 			$gcthing = new HeartlandGiftCardOrder();
 
-			add_filter('woocommerce_get_order_item_totals', array( $gcthing, 'addItemsToPostOrderDisplay'), PHP_INT_MAX - 1, 2 );
-			add_action('woocommerce_checkout_order_processed', array( $gcthing, 'processGiftCardsZeroTotal'), PHP_INT_MAX, 2 );
+			add_filter(
+				'woocommerce_get_order_item_totals',
+				array( $gcthing, 'addItemsToPostOrderDisplay' ),
+				PHP_INT_MAX - 1,
+				2
+			);
+			add_action(
+				'woocommerce_checkout_order_processed',
+				array( $gcthing, 'processGiftCardsZeroTotal' ),
+				PHP_INT_MAX,
+				2
+			);
 		}
+	}
+
+	/**
+	 * Check if the WooCommerce checkout page uses the block-based checkout.
+	 *
+	 * @return bool True if block checkout is enabled, false otherwise.
+	 */
+	protected function is_checkout_block_enabled(): bool {
+		$checkout_page_id = wc_get_page_id( 'checkout' );
+
+		if ( $checkout_page_id && $checkout_page_id > 0 ) {
+			$checkout_page = get_post( $checkout_page_id );
+			if (
+				$checkout_page && function_exists( 'has_block' ) && has_block( 'woocommerce/checkout', $checkout_page )
+			) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	protected function is_transaction_active( TransactionSummary $details ) {
@@ -269,16 +359,28 @@ class HeartlandGateway extends AbstractGateway {
 	 *
 	 * @param int $order_id
 	 *
-	 * @return array	 *
+	 * @return array
 	 */
 	public function process_payment( $order_id ) {
-		$order         = new WC_Order( $order_id );
+		$order                  = new WC_Order( $order_id );
+		$applied_gift_cards     = WC()->session ? WC()->session->get( 'heartland_gift_card_applied' ) : null;
+		$has_applied_gift_cards = is_object( $applied_gift_cards ) && count( get_object_vars( $applied_gift_cards ) ) > 0;
+
+		// Check if this is a gift-card-only order (order total is $0 or effectively covered by gift cards)
+		$order_total = (float) $order->get_total();
+		$is_gift_card_only_order = $has_applied_gift_cards && $order_total <= 0.01;
+
+		// If gift cards cover the entire order, skip credit card processing
+		if ( $is_gift_card_only_order ) {
+			return $this->process_gift_card_only_payment( $order_id, $order );
+		}
+
 		$request       = $this->prepare_request( $this->payment_action, $order );
 		$response      = $this->submit_request( $request );
 		$is_successful = $this->handle_response( $request, $response );
 
 		// Charge HPS gift cards if CC trans succeeds
-		if ( $is_successful && !empty( WC()->session->get( 'heartland_gift_card_applied' ) ) ) {
+		if ( $is_successful && $has_applied_gift_cards ) {
 			$gift_card_order_placement = new HeartlandGiftCardOrder();
 			$gift_payments_successful = $gift_card_order_placement->processGiftCardPayment( $order_id );
 
@@ -294,6 +396,62 @@ class HeartlandGateway extends AbstractGateway {
 				$is_successful = false;
 				}
 			}
+		}
+
+		$note_text = sprintf(
+			'%1$s%2$s %3$s. Order created with Transaction ID: %4$s.',
+			get_woocommerce_currency_symbol($order->get_currency()),
+			$order->get_total(),
+			$this->payment_action,
+			$order->get_transaction_id()
+		);
+
+		$order->add_order_note($note_text);
+
+		return array(
+			'result'   => $is_successful ? 'success' : 'failure',
+			'redirect' => $is_successful ? $this->get_return_url( $order ) : false,
+		);
+	}
+
+	/**
+	 * Process a gift-card-only payment (no credit card charge needed).
+	 *
+	 * @param int      $order_id The order ID.
+	 * @param WC_Order $order    The order object.
+	 *
+	 * @return array Payment result.
+	 */
+	protected function process_gift_card_only_payment( int $order_id, WC_Order $order ): array {
+		$is_successful = false;
+
+		try {
+			$gift_card_order_placement = new HeartlandGiftCardOrder();
+			$gift_payments_successful  = $gift_card_order_placement->processGiftCardPayment( $order_id );
+
+			if ( $gift_payments_successful ) {
+				$is_successful = true;
+
+				// Mark order as paid
+				$order->payment_complete();
+
+				$note_text = sprintf(
+					/* translators: %1$s currency symbol, %2$s order total */
+					__( 'Order paid in full with gift cards. Total: %1$s%2$s', 'globalpayments-gateway-provider-for-woocommerce' ),
+					get_woocommerce_currency_symbol( $order->get_currency() ),
+					wc_format_decimal( $order->get_total(), 2 )
+				);
+				$order->add_order_note( $note_text );
+			}
+		} catch ( \Exception $e ) {
+			$order->add_order_note(
+				sprintf(
+					/* translators: %s error message */
+					__( 'Gift card payment failed: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$e->getMessage()
+				)
+			);
+			wc_add_notice( $e->getMessage(), 'error' );
 		}
 
 		return array(

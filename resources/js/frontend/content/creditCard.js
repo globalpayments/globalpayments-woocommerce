@@ -292,7 +292,7 @@ const getFieldConfiguration = () => {
 			target: '#' + state.settings.id + '-' + state.fieldOptions['card-cvc-field'].class
 		},
 		'submit': {
-			text: getSubmitButtonText(),
+			text: helper.getSubmitButtonText(),
 			target: '#' + state.settings.id + '-card-submit'
 		}
 	};

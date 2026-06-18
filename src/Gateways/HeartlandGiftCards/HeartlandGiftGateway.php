@@ -7,9 +7,7 @@ use Exception;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HeartlandGateway;
-
 
 defined('ABSPATH') || exit;
 
@@ -23,6 +21,12 @@ class HeartlandGiftGateway
         $this->secret_api_key = $heartlandGateway->get_backend_gateway_options()['secretApiKey'];
     }
 
+    /**
+     * 
+     * @var string
+     */
+    protected string $secret_api_key;
+    
     protected $temp_balance;
     protected $gift_card_pin_submitted;
 

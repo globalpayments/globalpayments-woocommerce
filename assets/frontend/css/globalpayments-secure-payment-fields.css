@@ -17,10 +17,171 @@ div[id^="GlobalPayments-overlay-"] {
 	position:relative;
 	list-style:none outside;
 	display:block;
-	width:100%;
+	width:95%;
 	font-size:14px;
 }
 
 .woocommerce-page #payment button.woocommerce-globalpayments-hidden {
 	display: none !important;
+}
+
+/* ==========================================
+   WooCommerce Blocks Checkout Secure Payment Fields Styles
+   ========================================== */
+
+/* Container for all Heartland secure payment fields */
+.globalpayments.globalpayments_heartland {
+    margin-bottom: 16px;
+}
+
+/* Labels for secure payment fields */
+.globalpayments.globalpayments_heartland > label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: none;
+    letter-spacing: normal;
+    color: #1e1e1e;
+}
+
+.globalpayments.globalpayments_heartland > label .required {
+    color: #cc1818;
+    margin-left: 2px;
+}
+
+/* Individual field containers (card-number, card-expiration, card-cvv) */
+.globalpayments.globalpayments_heartland.card-number,
+.globalpayments.globalpayments_heartland.card-expiration,
+.globalpayments.globalpayments_heartland.card-cvv {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* The iframe container divs */
+.globalpayments.globalpayments_heartland.card-number > div[id$="-card-number"],
+.globalpayments.globalpayments_heartland.card-expiration > div[id$="-card-expiration"],
+.globalpayments.globalpayments_heartland.card-cvv > div[id$="-card-cvv"] {
+    min-width: 150px;
+    padding-bottom: 20px;
+    /* border: 1px solid #ccc; */
+    /* border-radius: 4px; */
+	height: 30px;
+    font-size: 14px;
+    background-color: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.globalpayments.globalpayments_heartland.card-number > label {
+	padding-top: 30px;
+}
+
+/* Focus state for iframe containers */
+.globalpayments.globalpayments_heartland.card-number > div[id$="-card-number"]:focus-within,
+.globalpayments.globalpayments_heartland.card-expiration > div[id$="-card-expiration"]:focus-within,
+.globalpayments.globalpayments_heartland.card-cvv > div[id$="-card-cvv"]:focus-within {
+    outline: none;
+    border-color: #015a94;
+    box-shadow: 0 0 0 1px #015a94;
+}
+
+/* Iframe styling adjustments */
+.globalpayments.globalpayments_heartland iframe {
+    width: 100%;
+    min-height: 24px;
+    border: none;
+    background: transparent;
+}
+
+/* Card number field - full width */
+.globalpayments.globalpayments_heartland.card-number {
+    width: 100%;
+}
+
+/* Expiration and CVV can be side by side on larger screens */
+.globalpayments.globalpayments_heartland.card-expiration {
+    flex: 2;
+    min-width: 120px;
+}
+
+.globalpayments.globalpayments_heartland.card-cvv {
+    flex: 1;
+    min-width: 80px;
+    max-width: 150px;
+}
+
+/* Submit button styling to match gift card apply button */
+.globalpayments.globalpayments_heartland.card-submit {
+    margin-top: 16px;
+}
+
+.globalpayments.globalpayments_heartland.card-submit button,
+.globalpayments.globalpayments_heartland.card-submit input[type="submit"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    background-color: #0071ba;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 100%;
+}
+
+.globalpayments.globalpayments_heartland.card-submit button:hover:not(:disabled),
+.globalpayments.globalpayments_heartland.card-submit input[type="submit"]:hover:not(:disabled) {
+    background-color: #015a94;
+}
+
+.globalpayments.globalpayments_heartland.card-submit button:disabled,
+.globalpayments.globalpayments_heartland.card-submit input[type="submit"]:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Error state for fields */
+.globalpayments.globalpayments_heartland.card-number.has-error > div[id$="-card-number"],
+.globalpayments.globalpayments_heartland.card-expiration.has-error > div[id$="-card-expiration"],
+.globalpayments.globalpayments_heartland.card-cvv.has-error > div[id$="-card-cvv"] {
+    border-color: #cc1818;
+    box-shadow: 0 0 0 1px #cc1818;
+}
+
+/* Validation error messages */
+.globalpayments.globalpayments_heartland .validation-error {
+    color: #cc1818;
+    font-size: 13px;
+    margin: 4px 0 0 0;
+    padding: 8px 12px;
+    background-color: #fef1f1;
+    border-radius: 4px;
+}
+
+/* Success state */
+.globalpayments.globalpayments_heartland .validation-success {
+    color: #008a20;
+    font-size: 13px;
+    margin: 4px 0 0 0;
+    padding: 8px 12px;
+    background-color: #f0fff4;
+    border-radius: 4px;
+}
+
+/* Responsive adjustments for blocks checkout */
+@media (max-width: 600px) {
+    .globalpayments.globalpayments_heartland.card-expiration,
+    .globalpayments.globalpayments_heartland.card-cvv {
+        width: 100%;
+        max-width: none;
+    }
+
+    .globalpayments.globalpayments_heartland.card-submit button,
+    .globalpayments.globalpayments_heartland.card-submit input[type="submit"] {
+        width: 100%;
+    }
 }

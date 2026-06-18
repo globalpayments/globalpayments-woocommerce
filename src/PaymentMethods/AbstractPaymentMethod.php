@@ -200,6 +200,11 @@ abstract class AbstractPaymentMethod extends WC_Payment_Gateway implements Payme
 			'process_admin_options'
 		) );
 		add_filter( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+		
+		// Admin refund advisory for async payments
+		if ( is_admin() && current_user_can( 'edit_shop_orders' ) ) {
+			add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'display_refund_advisory_for_async' ), 100 );
+		}
 	}
 
 	/**
@@ -212,7 +217,8 @@ abstract class AbstractPaymentMethod extends WC_Payment_Gateway implements Payme
 	}
 
 	public function admin_enqueue_scripts( $hook_suffix ) {
-		if ( 'woocommerce_page_wc-settings' !== $hook_suffix || isset( $_GET['tab'] ) && 'checkout' !== $_GET['tab'] ) {
+		$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : '';
+		if ( 'woocommerce_page_wc-settings' !== $hook_suffix || 'checkout' !== $tab ) {
 			return;
 		}
 
@@ -319,5 +325,122 @@ abstract class AbstractPaymentMethod extends WC_Payment_Gateway implements Payme
 	 */
 	protected function init_gateway() {
 		$this->gateway = new GpApiGateway( true );
+	}
+
+	/**
+	 * Display refund advisory for async payment methods.
+	 *
+	 * @param \WC_Order $order
+	 * @return void
+	 */
+	public function display_refund_advisory_for_async( $order ): void {
+		// Prevent duplicate rendering - use static variable
+		static $already_rendered = array();
+		
+		if ( isset( $already_rendered[ $order->get_id() ] ) ) {
+			return;
+		}
+		
+		// Only show for specific async payment method IDs or when order notes indicate async payment
+		$async_payment_indicators = array( 'globalpayments_bankpayment', 'globalpayments_paypal' );
+		$order_payment_method = $order->get_payment_method();
+		
+		// Check if it's a direct async payment method
+		$is_async_payment = in_array( $order_payment_method, $async_payment_indicators, true );
+		
+		// Also check order notes for async payment keywords (for cases where gpapi is used but it's actually async)
+		if ( ! $is_async_payment && $order_payment_method === 'globalpayments_gpapi' ) {
+			$order_notes = wc_get_order_notes( array( 'order_id' => $order->get_id() ) );
+			foreach ( $order_notes as $note ) {
+				if ( stripos( $note->content, 'Open Banking' ) !== false || 
+				     stripos( $note->content, 'PayPal' ) !== false || 
+				     stripos( $note->content, 'Awaiting' ) !== false ) {
+					$is_async_payment = true;
+					break;
+				}
+			}
+		}
+		
+		if ( ! $is_async_payment ) {
+			return;
+		}
+
+		// Only show for orders with transaction ID
+		$transaction_id = $order->get_transaction_id();
+		if ( empty( $transaction_id ) ) {
+			return;
+		}
+
+		$show_advisory = false;
+
+		// Check WooCommerce order status
+		$order_status = $order->get_status();
+		$pending_order_statuses = array( 'pending', 'on-hold', 'processing' );
+		
+		if ( in_array( $order_status, $pending_order_statuses, true ) ) {
+			$show_advisory = true;
+		}
+
+		// Display advisory if conditions are met
+		if ( $show_advisory ) {
+			$already_rendered[ $order->get_id() ] = true;
+			$this->render_refund_advisory_html();
+		}
+	}
+
+	/**
+	 * Render the HTML for refund advisory message with tooltip near refund button.
+	 *
+	 * @return void
+	 */
+	protected function render_refund_advisory_html(): void {
+		/* translators: Tooltip shown on refund button for async payment methods */
+		$tooltip_message = esc_js( __( 'Payment confirmation for this method may take several days. Refunds are only available after a final payment status is received. Please wait for confirmation or contact support if the delay continues.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+		?>
+		<script type="text/javascript">
+			jQuery(document).ready(function($) {
+				function addRefundButtonTooltip() {
+					// Find refund button - try multiple selectors for compatibility
+					var $refundButton = $('.button.refund-items').first();
+					if (!$refundButton || $refundButton.length === 0) {
+						$refundButton = $('button.refund-items').first();
+					}
+					if (!$refundButton || $refundButton.length === 0) {
+						$refundButton = $('.wc-order-refund-items button').first();
+					}
+					
+					if ($refundButton && $refundButton.length > 0) {
+						// Check if tooltip hasn't been added already
+						if (!$refundButton.attr('data-globalpayments-tooltip-added')) {
+							// Add title attribute to the button itself
+							$refundButton.attr('title', '<?php echo $tooltip_message; ?>');
+							$refundButton.attr('data-globalpayments-tooltip-added', 'true');
+							
+							// Initialize WooCommerce tipTip on the button itself
+							if (typeof $.fn.tipTip === 'function') {
+								$refundButton.tipTip( {
+									'attribute': 'title',
+									'fadeIn':    50,
+									'fadeOut':   50,
+									'delay':     200
+								} );
+							}
+							return true;
+						}
+					}
+					return false;
+				}
+				
+				// Try multiple times with delays
+				var attempts = 0;
+				var maxAttempts = 3;
+				var retryInterval = setInterval(function() {
+					if (addRefundButtonTooltip() || ++attempts >= maxAttempts) {
+						clearInterval(retryInterval);
+					}
+				}, 500);
+			});
+		</script>
+		<?php
 	}
 }

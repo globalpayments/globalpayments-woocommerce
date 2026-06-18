@@ -19,16 +19,25 @@ class AuthorizationRequest extends AbstractRequest {
 			$token          = $paymentTokenData->get_single_use_token();
 		}
 
+		$serverTransId = null;
+		$dynamicDescriptor = null;
+		$entryMode = null;
+		if ( is_array( $this->data ) ) {
+			$serverTransId = $this->data[ $this->gateway_id ]['serverTransId'] ?? null;
+			$dynamicDescriptor = $this->data[ 'dynamic_descriptor' ] ?? null;
+			$entryMode = $this->data['entry_mode'] ?? null;
+		}
+
 		$response = array(
 			RequestArg::AMOUNT               => null !== $this->order ? $this->order->get_total() : null,
 			RequestArg::CURRENCY             => null !== $this->order ? $this->order->get_currency() : null,
 			RequestArg::CARD_DATA            => $token,
-			RequestArg::SERVER_TRANS_ID      => $this->data[ $this->gateway_id ]['serverTransId'] ?? null,
-			RequestArg::DYNAMIC_DESCRIPTOR   => $this->data[ 'dynamic_descriptor' ],
+			RequestArg::SERVER_TRANS_ID      => $serverTransId,
+			RequestArg::DYNAMIC_DESCRIPTOR   => $dynamicDescriptor,
 		);
 
-		if ( isset ( $this->data['entry_mode'] ) ) {
-			$response[ RequestArg::ENTRY_MODE ] = $this->data['entry_mode'];
+		if ( null !== $entryMode ) {
+			$response[ RequestArg::ENTRY_MODE ] = $entryMode;
 		}
 
 		// Add installment data if installments are enabled
@@ -46,7 +55,12 @@ class AuthorizationRequest extends AbstractRequest {
 	 */
 	protected function is_installments_enabled(): bool {
 		$gateway_settings = get_option( 'woocommerce_globalpayments_gpapi_settings', array() );
-		return isset( $gateway_settings['enable_installments'] ) && $gateway_settings['enable_installments'] === 'yes';
+		
+		return (
+			$gateway_settings['enabled'] === 'yes'
+			&& isset( $gateway_settings['enable_installments'] )
+			&& $gateway_settings['enable_installments'] === 'yes'
+		);
 	}
 
 	/**

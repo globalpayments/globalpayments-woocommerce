@@ -94,8 +94,55 @@ abstract class AbstractRequest implements RequestInterface {
 				$this->get_card_holder_name(
 					null !== $this->order ? $this->order->get_formatted_billing_full_name() : null
 				),
-			RequestArg::ORDER_ID => null !== $this->order ? (string) $this->order->get_order_number() : null
+			RequestArg::ORDER_ID => $this->get_order_identifier()
 		);
+	}
+
+	/**
+	 * Get order identifier with retry suffix if needed
+	 *
+	 * @return string|null
+	 */
+	protected function get_order_identifier(): ?string {
+		if ( null === $this->order ) {
+			return null;
+		}
+		
+		$order_number = (string) $this->order->get_order_number();
+		
+		// For Genius gateway only, handle invoice number with 8 character limit
+		if ( strpos( $this->gateway_id, 'genius' ) !== false ) {
+			// For admin pay order, add unique suffix to prevent duplicate transactions
+			// Check if this is an admin context (Pay for Order functionality)
+			$is_admin_pay_order = is_admin() && current_user_can( 'edit_shop_orders' );
+			
+			// Also check POST data for additional confirmation
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in WooCommerce checkout/pay-order handling
+			if ( ! $is_admin_pay_order && ! empty( $_POST ) ) {
+				$is_admin_pay_order = isset( $_POST['woocommerce_globalpayments_pay'] );
+			}
+			
+			if ( $is_admin_pay_order ) {
+				// Use a higher-entropy suffix to reduce collisions on rapid retries
+				// while keeping the full Genius invoice number within 8 characters.
+				$unique_id = strtoupper( substr( hash( 'crc32b', microtime( true ) . wp_rand() ), 0, 5 ) );
+				
+				// Truncate order number if needed to fit: 2 chars of order + 'R' + 5 chars = max 8 chars
+				$max_order_length = 2; // Leave room for 'R' + 5 character retry suffix
+				if ( strlen( $order_number ) > $max_order_length ) {
+					$order_number = substr( $order_number, 0, $max_order_length );
+				}
+				
+				$order_number .= 'R' . $unique_id;
+			} else {
+				// For Genius gateway, ensure order number doesn't exceed 8 characters
+				if ( strlen( $order_number ) > 8 ) {
+					$order_number = substr( $order_number, 0, 8 );
+				}
+			}
+		}
+		
+		return $order_number;
 	}
 
 	public function get_request_data( $key = null ) {

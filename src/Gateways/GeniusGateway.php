@@ -7,10 +7,12 @@ use Exception;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\RequestArg;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Traits\PayOrderTrait;
 
 defined( 'ABSPATH' ) || exit;
 
 class GeniusGateway extends AbstractGateway {
+	use PayOrderTrait;
 	/**
 	 * Gateway ID
 	 */
@@ -172,13 +174,22 @@ class GeniusGateway extends AbstractGateway {
 	}
 
 	/**
-	 * Add Genius-specific subscription hooks.
+	 * Add Genius-specific hooks for subscriptions and admin Pay for Order.
 	 *
 	 * @return void
 	 */
 	protected function add_hooks(): void {
 		parent::add_hooks();
 
+		// Admin Pay for Order hooks.
+		if ( is_admin() && current_user_can( 'edit_shop_orders' ) ) {
+			add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'pay_order_modal' ), 99 );
+			add_filter( 'globalpayments_secure_payment_fields_styles', array( $this, 'pay_order_modal_secure_payment_fields_styles' ) );
+		}
+		add_action( 'woocommerce_api_globalpayments_pay_order', array( $this, 'pay_order_modal_process_payment' ), 99 );
+		add_action( 'woocommerce_api_globalpayments_get_payment_methods', array( $this, 'pay_order_modal_get_payment_methods' ) );
+
+		// Subscription hooks.
 		if ( ! class_exists( 'WC_Subscriptions_Order' ) ) {
 			return;
 		}

@@ -34,4 +34,18 @@ interface RequestInterface {
 	 * @return array
 	 */
 	public function get_default_args();
+
+	/**
+	 *
+	 * @param mixed $key
+	 * @return mixed
+	 */
+	public function get_request_data( $key = null );
+
+	/**
+	 *
+	 * @param array $data
+	 * @return mixed
+	 */
+	public function set_request_data( array $data );
 }

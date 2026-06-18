@@ -134,6 +134,66 @@ class HeartlandGiftCardOrder
         }
     }
 
+    /**
+     * Process gift card payment for block checkout when order total is zero.
+     *
+     * This is triggered by woocommerce_store_api_checkout_order_processed for block checkout.
+     * Unlike classic checkout, block checkout passes WC_Order directly.
+     *
+     * @param \WC_Order $order The order object.
+     * @return void
+     */
+    public function processGiftCardsZeroTotalBlockCheckout( WC_Order $order ) {
+        // Only process if this is a gift-card-only order (zero or near-zero total)
+        $order_total = (float) $order->get_total();
+
+        // Check if gift cards are applied in session
+        $applied_gift_cards = WC()->session ? WC()->session->get( 'heartland_gift_card_applied' ) : null;
+        $has_applied_gift_cards = is_object( $applied_gift_cards ) && count( get_object_vars( $applied_gift_cards ) ) > 0;
+
+        // Only process if:
+        // 1. Order total is zero (or very close to it)
+        // 2. Gift cards are applied in session
+        // 3. Order hasn't already been paid
+        if ( $order_total >= 0.01 || ! $has_applied_gift_cards || $order->is_paid() ) {
+            return;
+        }
+
+        try {
+            $success = self::processGiftCardPayment( $order->get_id() );
+
+            if ( $success ) {
+                // Mark the order as paid
+                $order->payment_complete();
+            }
+        } catch ( \Exception $e ) {
+            $order->add_order_note(
+                sprintf(
+                    /* translators: %s error message */
+                    esc_html__( 'Gift card payment failed: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+                    $e->getMessage()
+                )
+            );
+            // Set order status to failed
+            $order->update_status( 'failed', $e->getMessage() );
+        }
+    }
+
+    /**
+     * Get the original order total before gift card deductions.
+     *
+     * @return float The original total.
+     */
+    protected function getOriginalTotal(): float {
+        $securesubmit_data = WC()->session ? WC()->session->get( 'securesubmit_data' ) : null;
+
+        if ( is_object( $securesubmit_data ) && isset( $securesubmit_data->original_total ) ) {
+            return (float) $securesubmit_data->original_total;
+        }
+
+        return 0.0;
+    }
+
     protected function buildOrderRows($rows, $order_total, $applied_cards)
     {
         $index_of_order_total = array_search('order_total', array_keys($rows));

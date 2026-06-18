@@ -37,8 +37,6 @@ abstract class AbstractAsyncPaymentMethod extends AbstractPaymentMethod implemen
 				$this,
 				'process_admin_options'
 			) );
-
-			add_filter( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		}
 
 		add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'thankyou_order_received_text' ) );
