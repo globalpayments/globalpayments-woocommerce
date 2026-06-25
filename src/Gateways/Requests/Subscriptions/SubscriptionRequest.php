@@ -75,7 +75,6 @@ class SubscriptionRequest extends AbstractRequest {
 	}
 	private function get_customer_data() {
 		$customer            = new Customer();
-		$customer->id        = $this->order->get_customer_id();
 		$customer->firstName = Utils::sanitize_string( $this->order->get_billing_first_name() );
 		$customer->lastName  = Utils::sanitize_string( $this->order->get_billing_last_name() );
 		$customer->email     = $this->order->get_billing_email();

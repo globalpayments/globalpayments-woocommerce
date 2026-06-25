@@ -52,6 +52,9 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.20.2 (06/25/26)
+* Bug fix: Removed customer->id property from SubscriptionRequest as it was causing an error with the newer SDK
+
 = 1.20.1 (06/18/26)
 * Enhancement: Added Refund Eligibility Tooltip for Asynchronous Payments
 * Enhancement: Update Global Payments PHP SDK v14.2.0
