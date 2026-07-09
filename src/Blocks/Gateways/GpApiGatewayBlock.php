@@ -38,7 +38,7 @@ class GpApiGatewayBlock extends AbstractGatewayBlock {
 			$data['secure_payment_fields'] = array();
 			$data['gateway_options'] = array();
 			$data['field_styles'] = array();
-			$data['threedsecure'] = $this->gateway->enable_three_d_secure;
+			$data['threedsecure'] = wc_string_to_bool( $this->gateway->enable_three_d_secure );
 		}
 
 		return $data;

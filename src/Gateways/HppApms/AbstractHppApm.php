@@ -39,7 +39,7 @@ class AbstractHppApm {
     public static function handle_hpp_status_notification(): void
     {
         $logger = wc_get_logger();
-        $context = ['source' => 'globalpayments_hpp_status'];
+        $context = ['source' => 'globalpayments_hpp'];
         
         $gateway = new GpApiGateway();
         
@@ -122,7 +122,7 @@ class AbstractHppApm {
         GpApiGateway $gateway
     ): void {
         $logger = wc_get_logger();
-        $context = ['source' => 'globalpayments_hpp_status'];
+        $context = ['source' => 'globalpayments_hpp'];
         
         $status_upper = strtoupper( $payment_status );
 

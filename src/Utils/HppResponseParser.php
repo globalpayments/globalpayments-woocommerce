@@ -2,7 +2,11 @@
 
 namespace GlobalPayments\WooCommercePaymentGatewayProvider\Utils;
 
-defined('ABSPATH') || exit;
+
+use GlobalPayments\Api\Entities\Transaction;
+
+defined( 'ABSPATH' ) || exit;
+
 
 /**
  * HPP Response Parser
@@ -180,4 +184,22 @@ class HppResponseParser {
         return $gateway_data['payment_method']['message'] ?? 
                __('Payment failed. Please try again.', 'globalpayments-gateway-provider-for-woocommerce');
     }
+    /**
+     * Extract HPP URL from SDK response
+     *
+     * @throws \Exception
+     * @return string the HPP URL
+     */
+	public static function extract_hpp_url_from_response( Transaction $response ): string {
+		if (
+			isset( $response->payByLinkResponse ) &&
+			is_object( $response->payByLinkResponse ) &&
+			isset( $response->payByLinkResponse->url )
+
+		) {
+			return (string) $response->payByLinkResponse->url;
+
+		}
+		throw new \Exception( 'HPP URL not found in gateway response' );
+	}
 }

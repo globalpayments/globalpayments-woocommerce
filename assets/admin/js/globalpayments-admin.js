@@ -404,18 +404,14 @@
 			//Note: this should also target the AVS / CVN as HPP does not return these values, update will be needed in future
 			let display = this.isHppSelected();
 			let hppSelector = `#woocommerce_${this.id}_section_hpp`;
-			let hppSectionTable = document.querySelector( hppSelector + '~ table.form-table' );
-			let hppSectionTitle = document.querySelector( hppSelector );
-
-			if ( display && hppSectionTable && hppSectionTitle ) {
-				hppSectionTable.style.display = 'block';
-				hppSectionTitle.style.display = 'block';
-			} else if ( hppSectionTable && hppSectionTitle ) {
-				hppSectionTable.style.display = 'none';
-				hppSectionTitle.style.display = 'none';
-			} else {
-				return;
-			}
+			let hppInstallmentsSelector = hppSelector + '_installments';
+			let hppElements = [
+				document.querySelector( hppInstallmentsSelector + '~ table.form-table' ),
+				... document.querySelectorAll( hppSelector + ' , ' + hppInstallmentsSelector + ' , ' + hppInstallmentsSelector + ' + p' )
+			].filter( Boolean );
+			hppElements.forEach( ( el ) => {
+				el.style.display = display ? 'block' : 'none';
+			} );
 
 			//toggle DiUI Polish APM fields visibility
 			if (document.getElementById('woocommerce_globalpayments_gpapi_enable_blik') !== null) {

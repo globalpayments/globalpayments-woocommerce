@@ -16,7 +16,7 @@ const GpApiContentWrapper = ( props ) => {
 	const paymentInterface = settings.helper_params?.payment_interface || settings.payment_interface;
 	const hppNonce = settings.helper_params?.hpp_nonce || settings.hpp_nonce;
 	const hppText = settings.helper_params?.hpp_text || settings.hpp_text;
-	const three_d_secure_enabled = settings.helper_params?.enableThreeDSecure || settings.enableThreeDSecure;
+	const three_d_secure_enabled = settings.helper_params?.enableThreeDSecure ?? settings.enableThreeDSecure ?? false;
 	
 	if ( paymentInterface === 'hpp' ) {
 		const hppProps = {
@@ -26,7 +26,7 @@ const GpApiContentWrapper = ( props ) => {
 			gateway_id: 'globalpayments_gpapi',
 			payment_interface: 'hpp',
 			environment_indicator: settings.environment_indicator || '',
-			enableThreeDSecure: three_d_secure_enabled || false,
+			enableThreeDSecure: three_d_secure_enabled,
 		};
 		return <HppComponent {...hppProps} />;
 	}

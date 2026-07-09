@@ -646,4 +646,54 @@ class InstallmentsService {
         <?php
         return ob_get_clean();
     }
+
+ 
+    /**
+     * Determines if the shop location is either UK or Canada
+     * @return bool
+     */
+    public static function hpp_installments_eligible(): bool
+    {
+        return in_array( WC()->countries->get_base_country(), ['GB', 'CA'] );
+    }
+
+  /**
+   * Uses the installment data array to create a formatted order note
+   *
+   * @param array $installment_data comes from the HPP response
+   * @return string the formatted order note
+   */
+  public static function format_installments_order_note( array $installment_data ): string {
+        $store_currency_code = get_woocommerce_currency_symbol();
+        return sprintf( __( 
+            'User Paid Via installments:<br/>
+            Plan Duration: %s %s <br/>
+            Costs Percentage: %s <br/>
+            Total Amount: %s <br/>
+            Total Plan Cost: %s <br/>
+            Currency: %s <br/>
+            Fees Total: %s <br/>
+            Fees Subsequent Amount: %s
+        ', 'globalpayments-gateway-provider-for-woocommerce' ),
+        $installment_data['count'] ?? '',
+        $installment_data['time_unit'] ?? '',
+        ( $installment_data['cost_percentage'] ?? '' ) . "%",
+        $store_currency_code . ( $installment_data['total_amount'] ?? '' ),
+        $store_currency_code . ( $installment_data['total_plan_cost'] ?? '' ),
+        $installment_data['currency'] ?? '',
+        $store_currency_code . ( $installment_data['fees']['total_amount'] ?? '' ),
+        $store_currency_code . ( $installment_data['fees']['subsequent_amount'] ?? '' )
+        );
+    }
+
+    /**
+     * Check if payment included installments data
+     *
+     * @param array $gateway_data
+     * @return bool true if installments data present, false otherwise
+     */
+    public static function has_installments( array $gateway_data ): bool
+    {
+        return !empty( $gateway_data['installment'] ) && !empty( $gateway_data['installment']['terms'] );
+    }
 }

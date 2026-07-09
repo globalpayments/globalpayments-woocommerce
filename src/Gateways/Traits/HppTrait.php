@@ -107,7 +107,7 @@ trait HppTrait {
 			$gateway_response = $this->submit_hpp_request( $request );
 
 			// Extract HPP URL from response
-			$hpp_url = $this->extract_hpp_url_from_response( $gateway_response );
+			$hpp_url = HppResponseParser::extract_hpp_url_from_response( $gateway_response );
 
 			if ( empty( $hpp_url ) ) {
 				throw new \Exception( 'Failed to create HPP URL from gateway response' );
@@ -176,22 +176,6 @@ trait HppTrait {
 		return $gateway_response;
 	}
 
-	/**
-	 * Extract HPP URL from SDK response
-	 *
-	 * @throws \Exception
-	 * @return string the HPP URL
-	 */
-	protected function extract_hpp_url_from_response( Transaction $response ): string {
-		if (
-			property_exists( $response, 'payByLinkResponse' ) &&
-			property_exists( $response->payByLinkResponse, 'url' )
-		) {
-			return $response->payByLinkResponse->url;
-		}
-
-		throw new \Exception( 'HPP URL not found in gateway response' );
-	}
 
 	/**
 	 * Validate HPP nonce from request
@@ -224,7 +208,7 @@ trait HppTrait {
 	 * @return string containing the nonce empty if not found
 	 */
 	protected function get_hpp_nonce_from_request(): string {
-		// Check classic
+		// Classic Checkout
 		if ( isset( $_POST['gp_hpp_nonce'] ) ) {
 			return sanitize_text_field( $_POST['gp_hpp_nonce'] );
 		}
@@ -370,8 +354,8 @@ trait HppTrait {
 		if ( $is_successful ) {
 			$transaction_id = $gateway_data['id'] ?? '';
 
-			// Handle installments BEFORE payment_complete() to ensure data is available in emails
-			if ( $this->has_installments( $gateway_data ) ) {
+			// Handle installments before payment_complete() to ensure data is available in emails
+			if ( InstallmentsService::has_installments( $gateway_data ) ) {
 				$this->save_installment_data( $order, $gateway_data );
 			}
 
@@ -600,15 +584,6 @@ trait HppTrait {
 		exit;
 	}
 
-	/**
-	 * Check if payment includeed installments data
-	 *
-	 * @param array $gateway_data
-	 * @return bool true if installments data present, false otherwise
-	 */
-	protected function has_installments( array $gateway_data ): bool {
-		return ! empty( $gateway_data['installment'] ) && ! empty( $gateway_data['installment']['terms'] );
-	}
 
 	/**
 	 * Save installment data to order
@@ -623,6 +598,7 @@ trait HppTrait {
 		if ( ! empty( $installment_data ) ) {
 			$order->update_meta_data( '_globalpayments_installment_data', $installment_data );
 			$order->update_meta_data( '_gp_has_installments', 'yes' );
+			$order->add_order_note( wp_kses_post( InstallmentsService::format_installments_order_note( $installment_data['terms'] ) ) );
 			$order->save();
 		}
 	}
@@ -738,7 +714,7 @@ trait HppTrait {
 			return $fields;
 		}
 		// Make billing phone required if 3DS is enabled
-		if ( $this->enable_three_d_secure ) {
+		if ( wc_string_to_bool( $this->enable_three_d_secure ) ) {
 			if ( isset( $fields['billing']['billing_phone'] ) ) {
 				$fields['billing']['billing_phone']['required'] = 1;
 				// For WooCommerce validation
@@ -783,14 +759,34 @@ trait HppTrait {
 	}
 
 	/**
-	 *
+	 * Gets the X-GP-Signature from the request headers, required for validation. 
 	 * @return string
 	 */
 	private function obtainSignature(): string {
-		if ( ! empty( array_change_key_case( getallheaders() )['x-gp-signature'] ) ) {
-			return array_change_key_case( getallheaders() )['x-gp-signature'];
+		$signature = '';
+		if ( ! empty( $_REQUEST['X-GP-Signature'] ) ) {
+			$signature = (string) $_REQUEST['X-GP-Signature'];
 		} else {
-			return ! empty( ( $_SERVER['HTTP_X_GP_SIGNATURE'] ) ) ? $_SERVER['HTTP_X_GP_SIGNATURE'] : '';
+			if ( function_exists( 'getallheaders' ) ) {
+				$headers   = array_change_key_case( getallheaders() );
+				$signature = ( ! empty( $headers['x-gp-signature'] ) ) ? $headers['x-gp-signature'] : '';
+			}
+
+			// Final attempt to get the signature
+			if ( '' === $signature && isset( $_SERVER['HTTP_X_GP_SIGNATURE'] ) &&
+			! empty( $_SERVER['HTTP_X_GP_SIGNATURE'] ) ) {
+				$signature = (string) $_SERVER['HTTP_X_GP_SIGNATURE'];
+			}
 		}
+		return $signature;
+	}
+
+	/**
+     * Determines if the shop location is either UK or Canada
+     * @return bool
+     */
+	public function check_hpp_installments_eligibility() :bool
+	{
+		return InstallmentsService::hpp_installments_eligible();
 	}
 }

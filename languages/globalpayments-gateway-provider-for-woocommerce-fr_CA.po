@@ -9,7 +9,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2024-03-29T17:46:34+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Language: \n"
+"Language: fr_CA\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: globalpayments-gateway-provider-for-woocommerce\n"
 
@@ -894,9 +894,177 @@ msgstr "Sélectionnez l'endroit où les transactions sont traitées. Ceci contr�
 msgid "Global (default)"
 msgstr "Global (par défaut)"
 
+#: src/Gateways/GpApiGateway.php:455
+msgid "Installments Payment Options"
+msgstr "Options de paiement par versements"
+
+#: src/Gateways/GpApiGateway.php:457
+msgid "Installments may appear during payment when supported by your GlobalPayments account and the customer's card.<br/>Hosted Payment Page Installments is an account-level feature. This payment option will only display during checkout if it has been enabled on your GlobalPayments account.<br/><b>Contact GlobalPayments support to learn more about enabling Installments.</b>"
+msgstr "Les paiements par versements peuvent apparaître lors du paiement lorsqu'ils sont pris en charge par votre compte Global Payments et la carte du client.<br/>Les paiements par versements de la page de paiement hébergée sont une fonctionnalité au niveau du compte. Cette option de paiement s'affichera uniquement lors du paiement si elle a été activée dans votre compte Global Payments.<br/><b>Contactez le soutien de Global Payments pour en savoir plus sur l'activation des paiements par versements.</b>"
+
 #: src/Gateways/GpApiGateway.php:403
 msgid "Europe"
 msgstr "Europe"
+
+#: src/Gateways/GpApiGateway.php:400
+msgid "Shown Installments Plan Types"
+msgstr "Types de plans de paiement par versements affichés"
+
+#: src/Gateways/GpApiGateway.php:401
+msgid "Limit Shown Plans By Type"
+msgstr "Limiter les plans affichés par type"
+
+#: src/Gateways/GpApiGateway.php:404
+msgid "Show All Plans"
+msgstr "Afficher tous les plans"
+
+#: src/Gateways/GpApiGateway.php:405
+msgid "Only Show Customer Funded Installment Plans"
+msgstr "Afficher uniquement les plans financés par le client"
+
+#: src/Gateways/GpApiGateway.php:406
+msgid "Only Show Merchant Funded Installment Plans"
+msgstr "Afficher uniquement les plans financés par le marchand"
+
+#: src/Gateways/GpApiGateway.php:407
+msgid "Only Show Hybrid Funded Installment Plans"
+msgstr "Afficher uniquement les plans à financement hybride"
+
+#: src/Gateways/GpApiGateway.php:408
+msgid "Only Show Bilateral Funded Installment Plans"
+msgstr "Afficher uniquement les plans à financement bilatéral"
+
+#: src/Gateways/GpApiGateway.php:411
+msgid "Used to filter installment plans based on plan type. MERCHANT_FUNDED (if sent, will return merchant funded plans only) CONSUMER_FUNDED (if sent, will return consumer funded plans only) HYBRID_FUNDED (if sent, will return both merchant and consumer funded plans) BILATERAL (if sent, will return BILATERAL plans only) ANY (if sent, will return all available plans) (default) Note: If not present, request will be sent with default value."
+msgstr "Utilisé pour filtrer les plans de versements en fonction du type de plan. MERCHANT_FUNDED (si envoyé, ne retournera que les plans financés par le marchand) CONSUMER_FUNDED (si envoyé, ne retournera que les plans financés par le client) HYBRID_FUNDED (si envoyé, retournera les plans financés par le marchand et le client) BILATERAL (si envoyé, ne retournera que les plans BILATERAL) ANY (si envoyé, retournera tous les plans disponibles) (par défaut) Remarque : Si absent, la demande sera envoyée avec la valeur par défaut."
+
+#: src/Gateways/GpApiGateway.php:419
+msgid "Shown Installment Plans Maxium duration (Only applicable for Merchant funded Installment plans)"
+msgstr "Durée maximale des plans de versements affichés (Applicable uniquement aux plans financés par le marchand)"
+
+#: src/Gateways/GpApiGateway.php:423
+msgid "Used to retrieve installment plans with specific tenure. <b>Applicable to merchant-funded plans only.</b>"
+msgstr "Utilisé pour récupérer les plans de versements avec une durée spécifique. <b>Applicable uniquement aux plans financés par le marchand.</b>"
+
+#: src/Gateways/GpApiGateway.php:429
+msgid "Only Show 6 Month Plans"
+msgstr "Afficher uniquement les plans de 6 mois"
+
+#: src/Gateways/GpApiGateway.php:428
+msgid "Only Show 12 Month Plans"
+msgstr "Afficher uniquement les plans de 12 mois"
+
+#: src/Gateways/GpApiGateway.php:429
+msgid "Only Show 24 Month Plans"
+msgstr "Afficher uniquement les plans de 24 mois"
+
+#: src/Gateways/GpApiGateway.php:430
+msgid "Only Show 32 Month Plans"
+msgstr "Afficher uniquement les plans de 32 mois"
+
+#: src/Gateways/GpApiGateway.php:433
+msgid "Used to retrieve installment plans with specific tenure. Applicable to merchant-funded plans only. Example: max_term_months_merchant_funded = 12 — Means that only plans with tenure ≤ 12 months will be retrieved. Merchant-funded plans with tenure > 12 months will not be returned. Default: 1000 Note: If not present, request will be sent with default value. Used to determine whether to return the longest or shortest tenure/duration plans depending on the amount sent."
+msgstr "Utilisé pour récupérer les plans de versements avec une durée spécifique. Applicable uniquement aux plans financés par le marchand. Exemple : max_term_months_merchant_funded = 12 — Signifie que seuls les plans d'une durée ≤ 12 mois seront récupérés. Les plans financés par le marchand d'une durée > 12 mois ne seront pas retournés. Défaut : 1000 Remarque : Si absent, la demande sera envoyée avec la valeur par défaut. Utilisé pour déterminer s'il faut retourner les plans de durée la plus longue ou la plus courte en fonction du montant envoyé."
+
+#: src/Gateways/GpApiGateway.php:441
+msgid "Installments Amount Threshold"
+msgstr "Seuil de montant pour les versements"
+
+#: src/Gateways/GpApiGateway.php:442
+msgid "Used to determine whether to return the longest or shortest tenure/duration plans depending on the amount sent.\n              <b>Setting 0 or nothing will disable this feature and plans will be shown in default sort order</b><br/>\n              The amount should be sent in the smallest unit of the required currency. <br/><b>Example: 2000 = %s20.00</b>"
+msgstr "Utilisé pour déterminer s'il faut retourner les plans de durée la plus longue ou la plus courte en fonction du montant envoyé.\n              <b>Définir 0 ou ne rien définir désactivera cette fonctionnalité et les plans seront affichés dans l'ordre de tri par défaut</b><br/>\n              Le montant doit être envoyé dans la plus petite unité de la devise requise. <br/><b>Exemple : 2000 = %s20.00</b>"
+
+#: src/Gateways/GpApiGateway.php:452
+msgid "The amount should be sent in the smallest unit of the required currency. Example: 2000 = €20.00 Ex value sent 50000 will mean that: For transactions with an amount less or equal than €500.00, the plans with the shortest tenure will be displayed first. For transactions with an amount greater than €500.00, the plans with the longest tenure will be displayed first. Note: If not present, request will be sent with default value: plans with the longest tenure."
+msgstr "Le montant doit être envoyé dans la plus petite unité de la devise requise. Exemple : 2000 = €20.00 La valeur envoyée 50000 signifiera que : Pour les transactions d'un montant inférieur ou égal à €500.00, les plans de plus courte durée seront affichés en premier. Pour les transactions d'un montant supérieur à €500.00, les plans de plus longue durée seront affichés en premier. Remarque : Si absent, la demande sera envoyée avec la valeur par défaut : plans de plus longue durée."
+
+#: src/Services/InstallmentsService.php:667
+msgid "User Paid Via installments:<br/>\n            Plan Duration: %s %s <br/>\n            Costs Percentage: %s <br/>\n            Total Amount: %s <br/>\n            Total Plan Cost: %s <br/>\n            Currency: %s <br/>\n            Fees Total: %s <br/>\n            Fees Subsequent Amount: %s\n        "
+msgstr "Utilisateur a payé par versements :<br/>\n            Durée du plan : %s %s <br/>\n            Pourcentage de coûts : %s <br/>\n            Montant total : %s <br/>\n            Coût total du plan : %s <br/>\n            Devise : %s <br/>\n            Frais totaux : %s <br/>\n            Montant des frais subséquents : %s\n        "
+
+#: src/Services/InstallmentsService.php:72
+msgid "INSTALLMENT PLAN DETAILS"
+msgstr "DÉTAILS DU PLAN DE VERSEMENTS"
+
+#: src/Services/InstallmentsService.php:81
+msgid "Payment Plan: %d %s payments"
+msgstr "Plan de paiement : %d versements de %s"
+
+#: src/Services/InstallmentsService.php:86
+msgid "Original Amount: %s"
+msgstr "Montant initial : %s"
+
+#: src/Services/InstallmentsService.php:90
+msgid "Monthly Payment: %s"
+msgstr "Paiement mensuel : %s"
+
+#: src/Services/InstallmentsService.php:95
+msgid "Interest Rate: %s%%"
+msgstr "Taux d'intérêt : %s%%"
+
+#: src/Services/InstallmentsService.php:134
+msgid "View Installment Plan Details"
+msgstr "Voir les détails du plan de versements"
+
+#: src/Services/InstallmentsService.php:142
+msgid "Installment Plan Details"
+msgstr "Détails du plan de versements"
+
+#: src/Services/InstallmentsService.php:151
+msgid "Month Plan"
+msgstr "Plan mensuel"
+
+#: src/Services/InstallmentsService.php:157
+msgid "Payment Plan:"
+msgstr "Plan de paiement :"
+
+#: src/Services/InstallmentsService.php:161
+msgid "payments"
+msgstr "versements"
+
+#: src/Services/InstallmentsService.php:167
+msgid "Original Amount:"
+msgstr "Montant initial :"
+
+#: src/Services/InstallmentsService.php:172
+msgid "Total Plan Cost:"
+msgstr "Coût total du plan :"
+
+#: src/Services/InstallmentsService.php:177
+msgid "Installment Fees:"
+msgstr "Frais de versements :"
+
+#: src/Services/InstallmentsService.php:182
+msgid "Interest Rate:"
+msgstr "Taux d'intérêt :"
+
+#: src/Services/InstallmentsService.php:183
+msgid "APR"
+msgstr "TAP"
+
+#: src/Services/InstallmentsService.php:188
+msgid "Total Amount:"
+msgstr "Montant total :"
+
+#: src/Services/InstallmentsService.php:195
+msgid "Payment Frequency:"
+msgstr "Fréquence de paiement :"
+
+#: src/Services/InstallmentsService.php:202
+msgid "Currency:"
+msgstr "Devise :"
+
+#: src/Services/InstallmentsService.php:218
+msgid "View Terms & Conditions"
+msgstr "Voir les termes et conditions"
+
+#: src/Services/InstallmentsService.php:227
+msgid "Close"
+msgstr "Fermer"
+
+#: src/Services/InstallmentsService.php:229
+msgid "Powered by GlobalPayments"
+msgstr "Propulsé par GlobalPayments"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:86
 msgid "GlobalPayments - Apple Pay"

@@ -237,6 +237,8 @@ $store_logo_url = wp_get_attachment_image_src( $store_logo_id, 'full' )[0] ?? ''
             .order-row {
                 flex-direction: column;
                 gap: 2px;
+                overflow-wrap: anywhere;
+                word-break: break-all;
             }
         }
     </style>
@@ -278,7 +280,6 @@ $store_logo_url = wp_get_attachment_image_src( $store_logo_id, 'full' )[0] ?? ''
                     </div>
                     
                     <?php if ( ! empty( $transaction_id ) ): ?>
-                        <!-- TODO: check this value, it appears to be very long and outside of the main container -->
                     <div class="order-row">
                         <span class="order-label"><?php esc_html_e( 'Transaction ID:', 'globalpayments-gateway-provider-for-woocommerce' ); ?></span>
                         <span class="order-value"><?php echo esc_html( $transaction_id ); ?></span>

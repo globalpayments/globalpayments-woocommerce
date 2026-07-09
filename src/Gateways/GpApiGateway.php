@@ -178,6 +178,25 @@ class GpApiGateway extends AbstractGateway {
 	public $enable_dcc;
 
 	protected static string $js_lib_version = '4.1.19';
+	
+	/*
+	 * Different Installment plans selection
+	 * @var string
+	 */
+	public $hpp_installments_plan_types;
+
+	/**
+	 * Maximum months for a merchant funded installment plans
+	 * @var string
+	 */
+	public $hpp_installments_plan_merchant_funded_max;
+
+	/**
+	 * Installments amount threshold used to influence plan sort order
+	 * 
+	 * @var string
+	 */
+	public $hpp_installments_plan_threshold;
 
 	public function __construct( $is_provider = false ) {
 		parent::__construct( $is_provider );
@@ -367,6 +386,87 @@ class GpApiGateway extends AbstractGateway {
 				'default'     => 'no',
 			),
 		);
+		// Hpp installments options, is only available in the UK and Canada currently
+		if ( $this->check_hpp_installments_eligibility() ) {
+			$hpp_installments_section = array(
+            'section_hpp_installments' => array(
+              		'title' => __( 'Installments Payment Options', 'globalpayments-gateway-provider-for-woocommerce' ),
+          			'type' => 'title',
+          			'description' => __( 'Installments may appear during payment when supported by your GlobalPayments account and the customer\'s card.<br/>Hosted Payment Page Installments is an account-level feature. This payment option will only display during checkout if it has been enabled on your GlobalPayments account.<br/><b>Contact GlobalPayments support to learn more about enabling Installments.</b>', 'globalpayments-gateway-provider-for-woocommerce' )
+              ),
+
+            'hpp_installments_plan_types' => array(
+              'title'       => __( 'Shown Installments Plan Types', 'globalpayments-gateway-provider-for-woocommerce' ),
+              'description' => __( 'Limit Shown Plans By Type', 'globalpayments-gateway-provider-for-woocommerce' ),
+              'type'        => 'select',
+              'options'     => array(
+                'any'             => __( 'Show All Plans', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'consumer_funded' => __( 'Only Show Customer Funded Installment Plans', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'merchant_funded' => __( 'Only Show Merchant Funded Installment Plans', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'hybrid_funded' => __( 'Only Show Hybrid Funded Installment Plans', 'globalpayments-gateway-provider-for-woocommerce' ),
+                'bilateral' => __( 'Only Show Bilateral Funded Installment Plans', 'globalpayments-gateway-provider-for-woocommerce' ),
+              ),
+              'default'     => 'any',
+			  'desc_tip'    => __(
+					'Used to filter installment plans based on plan type. MERCHANT_FUNDED (if sent, will return merchant funded plans only) CONSUMER_FUNDED (if sent, will return consumer funded plans only) HYBRID_FUNDED (if sent, will return both merchant and consumer funded plans) BILATERAL (if sent, will return BILATERAL plans only) ANY (if sent, will return all available plans) (default) Note: If not present, request will be sent with default value.',
+					'globalpayments-gateway-provider-for-woocommerce'
+				),
+			  ),
+            'hpp_installments_plan_merchant_funded_max'     => array(
+              'title'       => __(
+                'Shown Installment Plans Maximum duration (Only applicable for Merchant funded Installment plans)',
+                'globalpayments-gateway-provider-for-woocommerce'
+              ),
+              'description' => __(
+                'Used to retrieve installment plans with specific tenure. <b>Applicable to merchant-funded plans only.</b>',
+                'globalpayments-gateway-provider-for-woocommerce'
+              ),
+              'type'        => 'select',
+              'options'     => array(
+                'no_limit' => __( 'Show All Plans', 'globalpayments-gateway-provider-for-woocommerce' ),
+                '6_limit'  => __( 'Only Show 6 Month Plans', 'globalpayments-gateway-provider-for-woocommerce' ),
+                '12_limit' => __( 'Only Show 12 Month Plans', 'globalpayments-gateway-provider-for-woocommerce' ),
+                '24_limit' => __( 'Only Show 24 Month Plans', 'globalpayments-gateway-provider-for-woocommerce' ),
+                '32_limit' => __( 'Only Show 32 Month Plans', 'globalpayments-gateway-provider-for-woocommerce' ),
+              ),
+              'default'     => 'no_limit',
+			   'desc_tip'    => __(
+					'Used to retrieve installment plans with specific tenure. Applicable to merchant-funded plans only. Example: max_term_months_merchant_funded = 12 — Means that only plans with tenure ≤ 12 months will be retrieved. Merchant-funded plans with tenure > 12 months will not be returned. Default: 1000 Note: If not present, request will be sent with default value. Used to determine whether to return the longest or shortest tenure/duration plans depending on the amount sent.',
+			   		'globalpayments-gateway-provider-for-woocommerce'
+				),
+		  	),
+            'hpp_installments_plan_threshold' => array(
+              'title'       => __( 'Installments Amount Threshold', 'globalpayments-gateway-provider-for-woocommerce' ),
+              'description' => sprintf(
+                __(
+                  'Used to determine whether to return the longest or shortest tenure/duration plans depending on the amount sent.
+              <b>Setting 0 or nothing will disable this feature and plans will be shown in default sort order</b><br/>
+              The amount should be sent in the smallest unit of the required currency. <br/><b>Example: 2000 = %s20.00</b>',
+                  'globalpayments-gateway-provider-for-woocommerce'
+                ),
+                get_woocommerce_currency_symbol()
+              ),
+              'type'        => 'number',
+              'min'         => 0,
+              // Limited to 15 digits
+              'max'         => 999999999999999,
+              'css'         => '-webkit-appearance: none;-moz-appearance: textfield;',
+              'default'     => 0,
+			   'desc_tip'    => __(
+					'The amount should be sent in the smallest unit of the required currency. Example: 2000 = €20.00 Ex value sent 50000 will mean that: For transactions with an amount less or equal than €500.00, the plans with the shortest tenure will be displayed first. For transactions with an amount greater than €500.00, the plans with the longest tenure will be displayed first. Note: If not present, request will be sent with default value: plans with the longest tenure.',
+				   'globalpayments-gateway-provider-for-woocommerce'
+				),
+            ),
+		  );
+          // Insert directly after section_hpp
+			$position = array_search( 'section_hpp', array_keys( $theArray ) );
+			if ( $position !== false ) {
+				$theArray = array_slice( $theArray, 0, $position+1, true ) +
+							$hpp_installments_section +
+							array_slice( $theArray, $position + 1, null, true );
+				}
+        
+		}
 
 		// Add installments field conditionally for Mexico (insert before HPP section)
 		if (
@@ -490,7 +590,7 @@ class GpApiGateway extends AbstractGateway {
 			'dataResidency'         => ( 'europe' === $region ) ? 'EU' : '',
 			'transaction_region'    => $region,
 			'requireCardHolderName' => true,
-			'enableThreeDSecure'    => $this->enable_three_d_secure,
+			'enableThreeDSecure'    => wc_string_to_bool( $this->enable_three_d_secure ),
 			'fieldValidation' => [
 				'enabled' => true,
 			],
@@ -572,7 +672,10 @@ class GpApiGateway extends AbstractGateway {
 			'enable_applepay_hpp'	   => $this->get_option( 'enable_applepay_hpp' ),
 			'enable_blik_hpp'		   => $this->get_option( 'enable_blik_hpp' ),
 			'enable_open_banking_hpp'  => $this->get_option( 'enable_open_banking_hpp' ),
-		);
+			'hpp_installments_plan_types'               => $this->get_option( 'hpp_installments_plan_types' ),
+			'hpp_installments_plan_merchant_funded_max' => $this->get_option( 'hpp_installments_plan_merchant_funded_max' ),
+			'hpp_installments_plan_threshold'           => $this->get_option( 'hpp_installments_plan_threshold' ),
+			);
 	}
 
 	public function get_access_token() {
@@ -850,7 +953,7 @@ class GpApiGateway extends AbstractGateway {
 		}
 
 
-		if ( ! empty( $errors->errors ) || !$this->enable_three_d_secure ) {
+		if ( ! empty( $errors->errors ) || ! wc_string_to_bool( $this->enable_three_d_secure ) ) {
 			return;
 		}
 
@@ -1281,7 +1384,7 @@ class GpApiGateway extends AbstractGateway {
 		if ( $this->payment_interface === 'hpp' ) {
 			$params['hpp_nonce'] = wp_create_nonce( 'gp_hpp_payment' );
 			$params['hpp_text'] = $this->get_option( 'hpp_text' );
-			$params['enableThreeDSecure'] = $this->enable_three_d_secure;
+			$params['enableThreeDSecure'] = wc_string_to_bool( $this->enable_three_d_secure );
 		}
 
 		if ( $this->payment_interface === 'hpp' ) {

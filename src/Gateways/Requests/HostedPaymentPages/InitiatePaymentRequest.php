@@ -15,11 +15,13 @@ use GlobalPayments\Api\Entities\Enums\{
 	ExemptStatus,
 	HPPAllowedPaymentMethods,
 	PaymentMethodUsageMode,
-	PhoneNumberType
+	PhoneNumberType,
+	InstallmentsFundingMode
 };
 use GlobalPayments\Api\Utils\CountryUtils;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\AbstractRequest;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Services\InstallmentsService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -117,6 +119,11 @@ class InitiatePaymentRequest extends AbstractRequest {
 		if(property_exists( $payer, "shippingPhone" ) && $payer->shippingPhone !== "" && $payer->shippingPhone !== null ){
 			$hpp_builder->withShippingPhone( $payer->shippingPhone );
 		};
+
+		if ( InstallmentsService::hpp_installments_eligible() ) {
+			$hpp_builder = $this->add_installments_filtering( $hpp_builder );
+		}
+
 		return $hpp_builder->execute();
 	}
 
@@ -264,5 +271,63 @@ class InitiatePaymentRequest extends AbstractRequest {
 	 */
 	protected function convertToASCII( string $siteTitle ){
 		return preg_replace( '/[^A-Za-z0-9\s]/' , '' , iconv( 'UTF-8', 'ASCII//TRANSLIT//IGNORE', $siteTitle ) );
+	}
+
+	/**
+	 * Adds installments filtering options to the installments shown on HPP
+	 *
+	 * @param HPPBuilder $hpp_builder to apply the fitering options to.
+	 * @return HPPBuilder $hpp_builder with installments filtering applied if the
+	 * withInstallments method applied, returns the same HPPBuilder if method not
+	 * available.
+	 */
+	protected function add_installments_filtering( HPPBuilder $hpp_builder ): HPPBuilder
+	{
+		if ( !method_exists( $hpp_builder, 'withInstallments' ) ) {
+			return $hpp_builder;
+		}
+
+		// Defaults
+		$fundingMode = InstallmentsFundingMode::ANY;
+		$maxMonths   = 32;
+		$threshold   = null;
+
+		// Funding mode
+		$planType = $this->config['hpp_installments_plan_types'] ?? null;
+		if ( !empty( $planType ) && $planType !== 'any' ) {
+			$planType =  strtoupper( $planType );
+			$InstallmentsFundingModeReflection = new \ReflectionClass( InstallmentsFundingMode::class );
+			$InstallmentsFundingModeConsts = $InstallmentsFundingModeReflection->getConstants();
+			
+			if ( isset( $InstallmentsFundingModeConsts[$planType] ) ) {
+				$fundingMode = $InstallmentsFundingModeConsts[$planType];
+			} else {
+				$fundingMode = InstallmentsFundingMode::ANY;
+			}
+		}
+		
+		// Max months (only relevant for merchant funded)
+		if (
+			$fundingMode === InstallmentsFundingMode::MERCHANT_FUNDED &&
+			!empty( $this->config['hpp_installments_plan_merchant_funded_max'] ) ) {
+			$raw = explode( '_', $this->config['hpp_installments_plan_merchant_funded_max'] )[0];
+			$months = ( int ) $raw;
+
+			if ( $months > 0 ) {
+				$maxMonths = $months;
+			}
+		}
+
+		// Threshold
+		$rawThreshold = $this->config['hpp_installments_plan_threshold'] ?? null;
+
+		if ( $rawThreshold !== null && $rawThreshold !== '0' ) {
+			$thresholdValue = ( int ) $rawThreshold;
+			if ( $thresholdValue > 0 && strlen( ( string ) $rawThreshold) < 16 ) {
+				$threshold = $thresholdValue;
+			}
+		}
+
+		return $hpp_builder->withInstallments( $fundingMode, $maxMonths, $threshold );
 	}
 }
