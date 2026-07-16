@@ -100,10 +100,31 @@ class InitiatePaymentRequest extends AbstractRequest {
 			$hpp_payment_methods = array_merge( $hpp_payment_methods, $enabled_alternative_payments );
 		}
 
+		// Map admin payment action to HPP capture mode.
+		$payment_action = $this->config['payment_action'] ?? null;
+		if ( null === $payment_action && is_array( $requestData ) ) {
+			$payment_action = $requestData['payment_action'] ?? null;
+		}
+		if ( null === $payment_action ) {
+			$payment_action = AbstractGateway::TXN_TYPE_SALE;
+		}
+
+		$allowed_actions = array(
+			AbstractGateway::TXN_TYPE_AUTHORIZE,
+			AbstractGateway::TXN_TYPE_SALE,
+		);
+		if ( ! in_array( $payment_action, $allowed_actions, true ) ) {
+			$payment_action = AbstractGateway::TXN_TYPE_SALE;
+		}
+
+		$capture_mode = ( AbstractGateway::TXN_TYPE_AUTHORIZE === $payment_action )
+			? CaptureMode::LATER
+			: CaptureMode::AUTO;
+
 		$hpp_builder->withTransactionConfig(
 			Channel::CardNotPresent,
 			$store_country_code,
-			CaptureMode::AUTO,
+			$capture_mode,
 			$hpp_payment_methods,
 			PaymentMethodUsageMode::SINGLE
 		);

@@ -276,6 +276,15 @@ class GpApiGateway extends AbstractGateway {
 					'required' => 'required'
 				),
 			),
+			'credentials_api_check'	=> array(   
+				'title'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'button',
+				'class'       => 'button-credentials-check button-primary live-toggle',
+				'default'     => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Note: The Payment Methods will not be displayed at checkout if the credentials are not correct.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'css'         => 'width: 200px',
+			),
 			'account_name'         => array(
 				'title'       => __( '', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'text',
@@ -285,7 +294,6 @@ class GpApiGateway extends AbstractGateway {
             'account_name_dropdown'         => array(
                 'title'       => __( 'Live Account Name*', 'globalpayments-gateway-provider-for-woocommerce' ),
                 'type'        => 'select',
-                'default'     => '',
                 'default'     => '',
                 'class'       => 'required live-toggle',
                 'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" target="_blank" title="Contact Support">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -308,6 +316,15 @@ class GpApiGateway extends AbstractGateway {
 					'required' => 'required'
 				),
 			),
+			'credentials_api_check_sandbox'	=> array(
+				'title'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'button',
+				'class'       => 'button-credentials-check button-primary sandbox-toggle',
+				'default'     => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'description' => __( 'Note: The Payment Methods will not be displayed at checkout if the credentials are not correct.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'css'         => 'width: 200px',
+			),
 			'sandbox_account_name'  => array(
 				'type'        => 'text',
 				'default'     => '',
@@ -317,18 +334,8 @@ class GpApiGateway extends AbstractGateway {
                 'title'       => __( 'Sandbox Account Name*', 'globalpayments-gateway-provider-for-woocommerce' ),
                 'type'        => 'select',
                 'default'     => '',
-                'default'     => '',
                 'class'       => 'required sandbox-toggle',
                 'description' => __( 'Select which account to use when processing a transaction. Default account will be used if this is not specified. <br>For assistance locating your account name, please contact our <a href="https://developer.globalpay.com/support/integration-support" target="_blank" title="Contact Support">Integration Support</a> Team based on location', 'globalpayments-gateway-provider-for-woocommerce' ),
-            ),
-            'credentials_api_check'	=> array(
-                'title'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
-                'label'       => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
-                'type'        => 'button',
-                'class'       => 'button-credentials-check button-primary',
-                'default'     => __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ),
-                'description' => __( 'Note: The Payment Methods will not be displayed at checkout if the credentials are not correct.', 'globalpayments-gateway-provider-for-woocommerce' ),
-                'css'         => 'width: 200px',
             ),
 			'allow_card_saving'    => array(
 				'title'       => __( 'Allow Card Saving', 'globalpayments-gateway-provider-for-woocommerce' ),
@@ -665,6 +672,7 @@ class GpApiGateway extends AbstractGateway {
 				'x-gp-extension' => 'globalpayments-woocommerce;version=' . Plugin::VERSION,
 			],
 			'debug'                    => $this->debug,
+			'payment_action'           => $this->payment_action,
 			'enable_dcc'               => $this->get_option( 'enable_dcc', 'no' ),
 			'transaction_region'       => $this->get_option( 'transaction_region', 'global' ),
 			'serviceUrl'               => $this->get_region_service_url(),

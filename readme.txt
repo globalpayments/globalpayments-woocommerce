@@ -52,7 +52,11 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
-= 1.21.0
+= 1.21.1 (07/16/26)
+* Bug fix: GPAPI: Fixed Capture mode value with respect to payment action
+* Enhancement: Improved Check Credentials  button layout
+
+= 1.21.0 (07/09/26)
 * Feature: Added installment filtering options for GPAPI Hosted Payment Pages
 * Enhancement: Update Global Payments PHP SDK version to v14.2.1
 * Bug fix: GPAPI: Fixed AVS/CVV result codes sometimes being ignored

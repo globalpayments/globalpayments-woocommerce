@@ -145,7 +145,8 @@
 		},
 
 		addValueToCredentialsCheckButton: function() {
-			$( '#woocommerce_globalpayments_gpapi_credentials_api_check' ).attr( 'value', __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ) );
+			$( '#woocommerce_globalpayments_gpapi_credentials_api_check, #woocommerce_globalpayments_gpapi_credentials_api_check_sandbox' )
+				.attr( 'value', __( 'Credentials check', 'globalpayments-gateway-provider-for-woocommerce' ) );
 		},
 
 		getGatewaySetting: function ( setting ) {
@@ -466,7 +467,7 @@
 		 * @returns {string}
 		 */
 		getCheckCredentialsButtonSelector: function () {
-			return '#woocommerce_globalpayments_gpapi_credentials_api_check';
+			return '#woocommerce_globalpayments_gpapi_credentials_api_check, #woocommerce_globalpayments_gpapi_credentials_api_check_sandbox';
 		},
 
 		/**
