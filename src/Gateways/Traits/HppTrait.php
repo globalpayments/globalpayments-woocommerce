@@ -8,6 +8,7 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\HppApms\AbstractHp
 use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\HppResponseParser;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Services\InstallmentsService;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\Utils;
 
 use WC_Order;
 
@@ -767,10 +768,8 @@ trait HppTrait {
 		if ( ! empty( $_REQUEST['X-GP-Signature'] ) ) {
 			$signature = (string) $_REQUEST['X-GP-Signature'];
 		} else {
-			if ( function_exists( 'getallheaders' ) ) {
-				$headers   = array_change_key_case( getallheaders() );
-				$signature = ( ! empty( $headers['x-gp-signature'] ) ) ? $headers['x-gp-signature'] : '';
-			}
+			$headers   = array_change_key_case( Utils::get_all_headers() );
+			$signature = ( ! empty( $headers['x-gp-signature'] ) ) ? $headers['x-gp-signature'] : '';
 
 			// Final attempt to get the signature
 			if ( '' === $signature && isset( $_SERVER['HTTP_X_GP_SIGNATURE'] ) &&

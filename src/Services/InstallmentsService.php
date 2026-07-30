@@ -54,6 +54,8 @@ class InstallmentsService {
                 return '£' . number_format( $major_amount, 2 );
             case 'USD':
                 return '$' . number_format( $major_amount, 2 );
+            case 'CAD':
+                return 'CA$' . number_format( $major_amount, 2 );
             case 'EUR':
                 return '€' . number_format( $major_amount, 2 );
             default:

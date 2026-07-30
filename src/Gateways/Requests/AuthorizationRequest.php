@@ -41,8 +41,11 @@ class AuthorizationRequest extends AbstractRequest {
 		}
 
 		// Add installment data if installments are enabled
-		if ( $this->is_installments_enabled() && null !== $this->order ) {
-			$response[ RequestArg::INSTALLMENT_DATA ] = $this->get_installment_data();
+		$installments_enabled = $this->is_installments_enabled();
+		
+		if ( $installments_enabled && null !== $this->order ) {
+			$installment_data = $this->get_installment_data();
+			$response[ RequestArg::INSTALLMENT_DATA ] = $installment_data;
 		}
 
 		return $response;
@@ -56,11 +59,42 @@ class AuthorizationRequest extends AbstractRequest {
 	protected function is_installments_enabled(): bool {
 		$gateway_settings = get_option( 'woocommerce_globalpayments_gpapi_settings', array() );
 		
-		return (
+		// Check for either Mexico installments OR Visa installments
+		$has_mexico_installments = (
 			$gateway_settings['enabled'] === 'yes'
 			&& isset( $gateway_settings['enable_installments'] )
 			&& $gateway_settings['enable_installments'] === 'yes'
 		);
+		
+		$has_visa_installments = (
+			$gateway_settings['enabled'] === 'yes'
+			&& isset( $gateway_settings['enable_visa_installments'] )
+			&& $gateway_settings['enable_visa_installments'] === 'yes'
+		);
+		
+		return $has_mexico_installments || $has_visa_installments;
+	}
+
+	/**
+	 * Convert language code to 3-letter code for Visa Installments
+	 *
+	 * @param string $lang_code 2-letter or 3-letter language code
+	 * @return string 3-letter language code (strictly 'eng' or 'fre')
+	 */
+	private function convert_language_code( $lang_code ): string {
+		$language_map = array(
+			'en'  => 'eng',
+			'eng' => 'eng',
+			'fr'  => 'fre',
+			'fre' => 'fre',
+		);
+
+		if ( ! empty( $lang_code ) ) {
+			$lang = strtolower( $lang_code );
+			return $language_map[ $lang ] ?? $lang_code;
+		}
+
+		return $lang_code;
 	}
 
 	/**
@@ -71,11 +105,15 @@ class AuthorizationRequest extends AbstractRequest {
 	protected function get_installment_data(): ?array {
 		$installment_id = null;
 		$installment_reference = null;
+		$installment_lang = null;
+		$installment_version = null;
 		
 		// First check if installment ID is passed explicitly in gateway data
 		if ( isset( $this->data[ $this->gateway_id ]['installmentId'] ) ) {
 			$installment_id = $this->data[ $this->gateway_id ]['installmentId'];
 			$installment_reference = $this->data[ $this->gateway_id ]['installmentReference'] ?? null;
+			$installment_lang = $this->data[ $this->gateway_id ]['installmentLang'] ?? null;
+			$installment_version = $this->data[ $this->gateway_id ]['installmentVersion'] ?? null;
 		}
 
 		// For WooCommerce Blocks, check payment_data array
@@ -92,15 +130,31 @@ class AuthorizationRequest extends AbstractRequest {
 					if ( $payment_item->key === 'installmentReference' ) {
 						$installment_reference = $payment_item->value;
 					}
+					if ( $payment_item->key === 'installmentLang' ) {
+						$installment_lang = $payment_item->value;
+					}
+					if ( $payment_item->key === 'installmentVersion' ) {
+						$installment_version = $payment_item->value;
+					}
 				}
 			}
 		}
 
 		if ( !empty( $installment_id ) ) {
-			return array(
+			$installment_data = array(
 				'id' => $installment_id,
 				'reference' => $installment_reference ?? $this->order->get_order_number()
 			);
+			
+			// Add terms for Visa Installments (GB only) if language and version are provided
+			if ( !empty( $installment_lang ) && !empty( $installment_version ) ) {
+				$installment_data['terms'] = array(
+					'language' => $this->convert_language_code( $installment_lang ),
+					'version' => $installment_version
+				);
+			}
+			
+			return $installment_data;
 		}
 		
 		// Check if token_response contains installment information
@@ -109,11 +163,21 @@ class AuthorizationRequest extends AbstractRequest {
 				stripslashes( $this->data[ $this->gateway_id ]['token_response'] )
 			);
 			if ( isset( $token_response->installment ) ) {
-				return array(
+				$installment_data = array(
 					'id' => $token_response->installment->installmentId ?? null,
 					'reference' => $token_response->installment->installmentReference
 						?? $this->order->get_order_number()
 				);
+				
+				// Add terms if language and version are available in token response
+				if ( isset( $token_response->installment->language ) && isset( $token_response->installment->version ) ) {
+					$installment_data['terms'] = array(
+						'language' => $this->convert_language_code( $token_response->installment->language ),
+						'version' => $token_response->installment->version
+					);
+				}
+				
+				return $installment_data;
 			}
 		}
 		

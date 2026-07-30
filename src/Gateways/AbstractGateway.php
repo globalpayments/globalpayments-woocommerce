@@ -1478,6 +1478,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 
 	protected function get_order_data() {
 		$order_id = absint( get_query_var( 'order-pay' ) );
+		$country = '';
 		
 		// For order-pay flows, use the order total rather than cart total
 		$amount = 0;
@@ -1485,16 +1486,23 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			$order = wc_get_order( $order_id );
 			if ( $order ) {
 				$amount = $order->get_total();
+				$country = $order->get_billing_country();
 			}
 		} elseif ( WC()->cart && is_callable( array( WC()->cart, 'get_total' ) ) ) {
 			// Fall back to cart total for checkout flows
 			$amount = WC()->cart->get_total( 'edit' );
+			
+			// Get billing country from customer session
+			if ( WC()->customer && is_callable( array( WC()->customer, 'get_billing_country' ) ) ) {
+				$country = WC()->customer->get_billing_country();
+			}
 		}
-		
+
 		return array(
 			'id'       => $order_id,
 			'amount'   => wc_format_decimal( $amount, 2 ),
 			'currency' => get_woocommerce_currency(),
+			'country'  => $country,
 		);
 	}
 

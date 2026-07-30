@@ -171,13 +171,41 @@ class GpApiGateway extends AbstractGateway {
 	public $enable_installments;
 
 	/**
+	 * Enable/Disable Visa Installments for UK
+	 *
+	 * @var bool
+	 */
+	public $enable_visa_installments;
+
+	/**
+	 * Visa Installments Funding Mode
+	 *
+	 * @var string
+	 */
+	public $visa_installments_funding_mode;
+
+	/**
+	 * Visa Installments Max Time Unit Number
+	 *
+	 * @var string
+	 */
+	public $visa_installments_max_time_unit_number;
+
+	/**
+	 * Visa Installments Maximum Amount
+	 *
+	 * @var string
+	 */
+	public $visa_installments_max_amount;
+
+	/**
 	 * Enable Dynamic Currency Conversion (DCC)
 	 *
 	 * @var bool
 	 */
 	public $enable_dcc;
 
-	protected static string $js_lib_version = '4.1.19';
+	protected static string $js_lib_version = '4.1.25';
 	
 	/*
 	 * Different Installment plans selection
@@ -494,10 +522,78 @@ class GpApiGateway extends AbstractGateway {
 				),
 			);
 			// Insert before section_hpp
+			$position = array_search( 'section_hpp', array_keys( $theArray ) );
+			if ( $position !== false ) {
+				$theArray = array_slice( $theArray, 0, $position, true ) +
+							$installmentsField +
+							array_slice( $theArray, $position, null, true );
+			}
+		}
+
+		// Add Visa Installments for UK and Canada merchants
+		$is_visa_installments_eligible = (
+			( WC()->countries->get_base_country() === 'GB' && get_woocommerce_currency() === 'GBP' )
+			|| ( WC()->countries->get_base_country() === 'CA' && get_woocommerce_currency() === 'CAD' )
+		);
+		if ( $is_visa_installments_eligible ) {
+			$visaInstallmentsFields = array(
+				'enable_visa_installments' => array(
+					'title'       => __( 'Enable Visa Installments', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'label'       => __( 'Enable Visa Installments', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'type'        => 'checkbox',
+					'description' => __( 'Enable Visa installment payment option for customers', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'default'     => 'no',
+					'class'       => 'drop-in-toggle',
+				),
+				'visa_installments_funding_mode' => array(
+					'title'       => __( 'Visa Installments Funding Mode', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'type'        => 'select',
+					'description' => __( 'Set the funding mode for Visa installment payments (for use in Drop-in UI mode only, default is "Any")', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'default'     => 'ANY',
+					'class'       => 'wc-enhanced-select visa-installments-field',
+					'options'     => array(
+						'MERCHANT_FUNDED' => __( 'Merchant Funded', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'CONSUMER_FUNDED' => __( 'Consumer Funded', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'HYBRID_FUNDED'   => __( 'Hybrid Funded', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'BILATERAL'       => __( 'Bilateral', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'ANY'             => __( 'Any', 'globalpayments-gateway-provider-for-woocommerce' ),
+					),
+					'desc_tip'    => false,
+				),
+				'visa_installments_max_time_unit_number' => array(
+					'title'       => __( 'Visa Installments Max Time Unit Number', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'type'        => 'select',
+					'description' => __( 'Set the maximum time unit number for Visa installment payments', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'default'     => '24',
+					'class'       => 'wc-enhanced-select visa-installments-field',
+					'options'     => array(
+						'3'  => __( '3', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'6'  => __( '6', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'9'  => __( '9', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'12' => __( '12', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'18' => __( '18', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'24' => __( '24', 'globalpayments-gateway-provider-for-woocommerce' ),
+					),
+					'desc_tip'    => false,
+				),
+				'visa_installments_max_amount' => array(
+					'title'       => __( 'Visa Installments Max Amount', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'type'        => 'number',
+					'description' => __( 'Set the maximum amount for Visa installment payments', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'default'     => '100000',
+					'class'       => 'visa-installments-field',
+					'custom_attributes' => array(
+						'min'  => '0',
+						'step' => '1',
+					),
+					'desc_tip'    => false,
+				),
+			);
+			// Insert before section_hpp
 			$position = array_search('section_hpp', array_keys($theArray));
 			if ($position !== false) {
 				$theArray = array_slice($theArray, 0, $position, true) +
-							$installmentsField +
+							$visaInstallmentsFields +
 							array_slice($theArray, $position, null, true);
 			}
 		}
@@ -604,6 +700,10 @@ class GpApiGateway extends AbstractGateway {
 			'language' => substr( get_user_locale(), 0, 2 ),
 			'payment_interface'     => $this->payment_interface,
 			'enable_installments' => $this->enable_installments,
+			'enable_visa_installments' => $this->enable_visa_installments,
+			'visa_installments_funding_mode' => $this->visa_installments_funding_mode,
+			'visa_installments_max_time_unit_number' => $this->visa_installments_max_time_unit_number,
+			'visa_installments_max_amount' => $this->visa_installments_max_amount,
 		);
 
 		// For HPP, add the nonce

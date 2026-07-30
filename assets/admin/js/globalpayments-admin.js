@@ -14,6 +14,7 @@
 		this.toggleCredentialsSettings();
 		this.toggleValidations();
 		this.toggleHppSettings();
+		this.toggleVisaInstallmentsFields();
 		this.attachEventHandlers();
 		this.attachCredentialChangeHandlers();
 		this.validate_checkbox_fields('.accepted_cards.required');
@@ -34,6 +35,7 @@
 				$( document ).on( 'change', $( '.aca_methods.required' ), this.validate_checkbox_fields.bind( this, '.aca_methods.required' ) );
 				$( document ).on( 'change', $( '.ob_currencies.required' ), this.validate_checkbox_fields.bind( this, '.ob_currencies.required' ) );
 				$( document ).on( 'change', this.getPaymentInterfaceSelector(), this.toggleHppSettings.bind( this ) );
+				$( document ).on( 'change', '#woocommerce_' + this.id + '_enable_visa_installments', this.toggleVisaInstallmentsFields.bind( this ) );
 				$( document ).on( 'click', this.getCheckCredentialsButtonSelector(), this.checkApiCredentials.bind( this , 'account_name_dropdown', 'account_name' ) );
 				$( document ).on( 'load ', this.checkApiCredentials( 'account_name_dropdown', 'account_name', 'change' ));
 			}
@@ -408,7 +410,10 @@
 			let hppInstallmentsSelector = hppSelector + '_installments';
 			let hppElements = [
 				document.querySelector( hppInstallmentsSelector + '~ table.form-table' ),
-				... document.querySelectorAll( hppSelector + ' , ' + hppInstallmentsSelector + ' , ' + hppInstallmentsSelector + ' + p' )
+				... document.querySelectorAll( hppSelector + ' , ' 
+					+ hppSelector + '+ table.form-table , ' 
+					+ hppInstallmentsSelector + ' , ' 
+					+ hppInstallmentsSelector + ' + p' )
 			].filter( Boolean );
 			hppElements.forEach( ( el ) => {
 				el.style.display = display ? 'block' : 'none';
@@ -439,6 +444,18 @@
 				}
 			}
 
+			//toggle Visa Installments field visibility (only for Drop-in UI)
+			if (document.getElementById('woocommerce_globalpayments_gpapi_enable_visa_installments') !== null) {
+				let visaInstallmentsRow = document
+					.getElementById('woocommerce_globalpayments_gpapi_enable_visa_installments')
+					.closest('tr');
+				if (display) {
+					visaInstallmentsRow.style.display = 'none';
+				} else {
+					visaInstallmentsRow.style.display = '';
+				}
+			}
+
 			//toggle DCC field visibility (only for HPP)
 			if (document.getElementById('woocommerce_globalpayments_gpapi_enable_dcc') !== null) {
 				let dccRow = document
@@ -450,6 +467,39 @@
 					dccRow.style.display = 'none';
 				}
 			}
+
+			// Re-evaluate Visa Installments dependent fields when interface changes.
+			this.toggleVisaInstallmentsFields();
+		},
+
+		/**
+		 * Toggle Visa Installments related fields visibility
+		 * @returns {void}
+		 */
+		toggleVisaInstallmentsFields: function () {
+			const enableVisaInstallmentsCheckbox = document.getElementById('woocommerce_' + this.id + '_enable_visa_installments');
+
+			if (!enableVisaInstallmentsCheckbox) {
+				return;
+			}
+
+			const isEnabled = enableVisaInstallmentsCheckbox.checked;
+			const isDropIn = !this.isHppSelected();
+			const showVisaInstallmentFields = isEnabled && isDropIn;
+			const visaInstallmentsFields = document.querySelectorAll('.visa-installments-field');
+
+			visaInstallmentsFields.forEach(function(field) {
+				const row = field.closest('tr');
+				if (row) {
+					if (showVisaInstallmentFields) {
+						row.style.display = '';
+						field.disabled = false;
+					} else {
+						row.style.display = 'none';
+						field.disabled = true;
+					}
+				}
+			});
 		},
 
 		/**

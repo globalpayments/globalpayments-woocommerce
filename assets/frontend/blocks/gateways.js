@@ -440,6 +440,7 @@
           const accountName = u.settings.helper_params?.account_name;
 
           ee.installments = {
+            program: "LATAM", // LATAM Installments
             country: orderCountry || billingCountry || "MX",
             currency: u.settings.helper_params?.order?.currency || "MXN",
             contract_reference: u.settings.helper_params?.order?.id || "ORDER_" + Date.now()
@@ -450,8 +451,39 @@
           }
         }
 
-        // Handle two-decimal currencies (MXN) as minor units
-        const twoDecimalCurrencies = ['MXN'];
+        // Add Visa Installments configuration for (UK/ CAD)
+        if (e.payment_interface === "drop_in" && e.enable_visa_installments === true) {
+          const orderCurrency = u.settings.helper_params?.order?.currency;
+          const accountName = u.settings.helper_params?.account_name;
+          const billingCountry = document.querySelector("#billing-country input")?.value;
+          const orderCountry = u.settings.helper_params?.order?.country;
+
+          // Convert GB to UK for Visa Installments (GB is WooCommerce standard, UK is Visa spec)
+          let visaCountry = orderCountry || billingCountry;
+          if (visaCountry === "GB") {
+            visaCountry = "UK";
+          }
+
+          ee.installments = {
+            country: visaCountry, // UK for United Kingdom as per Visa spec
+            currency: orderCurrency,
+            contract_reference: u.settings.helper_params?.order?.id || "ORDER_" + Date.now(),
+            program: "VIS", // VIS for Visa Installments
+            config: {
+              funding_mode: e.visa_installments_funding_mode || "ANY",
+              max_time_unit_number: parseInt(e.visa_installments_max_time_unit_number) || 24,
+              max_amount: parseInt(e.visa_installments_max_amount)
+            }
+          }
+
+          // Add accountName if available (optional)
+          if (accountName) {
+            ee.installments.accountName = accountName;
+          }
+        }
+
+        // Handle two-decimal currencies (MXN, GBP, CAD) as minor units
+        const twoDecimalCurrencies = ['MXN', 'GBP', 'CAD'];
         const orderCurrency = u.settings.helper_params?.order?.currency || 'USD';
         let formAmount = u.settings.helper_params.order.amount;
 
@@ -714,6 +746,14 @@
       if (u.tokenResponse && u.tokenResponse.installment) {
         e.installmentId = u.tokenResponse.installment.installmentId;
         e.installmentReference = u.tokenResponse.installment.installmentReference;
+        
+        // Add language and version if available
+        if (u.tokenResponse.installment.language) {
+          e.installmentLang = u.tokenResponse.installment.language;
+        }
+        if (u.tokenResponse.installment.version) {
+          e.installmentVersion = u.tokenResponse.installment.version;
+        }
       }
 
       u.serverTransId && (e.serverTransId = u.serverTransId),

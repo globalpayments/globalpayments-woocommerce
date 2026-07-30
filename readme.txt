@@ -52,6 +52,11 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.22.0 (07/30/26)
+* Enhancement: GPAPI: Added Support for Visa Installments Payment Plans
+* Bug fix: Admin settings now display the appropriate options based on the selected integration type.
+* Bug fix: GPAPI: HPP: Improved compatibility with non-Apache SAPI hosting environments
+
 = 1.21.1 (07/16/26)
 * Bug fix: GPAPI: Fixed Capture mode value with respect to payment action
 * Enhancement: Improved Check Credentials  button layout

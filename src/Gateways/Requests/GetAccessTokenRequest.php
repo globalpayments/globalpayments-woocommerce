@@ -48,6 +48,22 @@ class GetAccessTokenRequest extends AbstractRequest {
 			);
 		}
 
+		// Add Visa Installments permissions if Visa Installments is enabled for UK/CA
+		$is_visa_enable_country = is_string( $country_code ) && ( 'GB' === strtoupper( $country_code ) || 'CA' === strtoupper( $country_code ) );
+		$is_visa_enable_currency = is_string( $default_currency ) && ( 'GBP' === strtoupper( $default_currency ) || 'CAD' === strtoupper( $default_currency ) );
+		$is_visa_enable = $is_visa_enable_country && $is_visa_enable_currency;
+
+		if (
+			$is_visa_enable
+			&& ! empty( $gateway_settings['enable_visa_installments'] )
+			&& 'yes' === $gateway_settings['enable_visa_installments']
+		) {
+			$permissions = array_merge(
+				$permissions,
+				array( 'PMT_POST_Create', 'PMT_POST_Create_Single', 'INS_POST_Query' )
+			);
+		}
+
 		// Add DCC permission if DCC is enabled and payment interface is HPP.
 		if (
 			! empty( $gateway_settings['enable_dcc'] )

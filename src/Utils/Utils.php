@@ -29,7 +29,36 @@ class Utils {
 		return $request;
 	}
 
+	/**
+	 * PHP-native replacement for getallheaders().
+	 *
+	 * The getallheaders()/apache_request_headers() function is only guaranteed to be
+	 * available under the Apache SAPI. On other environments (e.g. Nginx, FPM, IIS) it
+	 * may not exist, so this method reconstructs the incoming HTTP request headers from
+	 * the $_SERVER superglobal instead.
+	 *
+	 * @return array
+	 */
+	public static function get_all_headers(): array {
+		$headers = array();
 
+		foreach ( $_SERVER as $key => $value ) {
+			if ( 0 === strpos( $key, 'HTTP_' ) ) {
+				$header_name = str_replace(
+					' ', '-', ucwords( str_replace( '_', ' ', strtolower( substr( $key, 5 ) ) ) )
+				);
+				$headers[ $header_name ] = $value;
+			} elseif ( 'CONTENT_TYPE' === $key ) {
+				$headers['Content-Type'] = $value;
+			} elseif ( 'CONTENT_LENGTH' === $key ) {
+				$headers['Content-Length'] = $value;
+			} elseif ( 'CONTENT_MD5' === $key ) {
+				$headers['Content-MD5'] = $value;
+			}
+		}
+
+		return $headers;
+	}
 
 	/**
 	 * Converts all accent characters to ASCII characters and removes non-supported chars.

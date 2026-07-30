@@ -7,6 +7,7 @@ use Exception;
 use Automattic\WooCommerce\Caching\CacheException;
 use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\GpApiGateway;
+use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\Utils;
 use WC_Order;
 use WC_Order_Refund;
 use WP_Exception;
@@ -243,10 +244,8 @@ class AbstractApm {
 		if ( ! empty( $_REQUEST['X-GP-Signature'] ) ) {
 			$signature = (string) $_REQUEST['X-GP-Signature'];
 		} else {
-			if ( function_exists( 'getallheaders' ) ) {
-				$headers   = array_change_key_case( getallheaders() );
-				$signature = ( ! empty( $headers['x-gp-signature'] ) ) ? $headers['x-gp-signature'] : '';
-			}
+			$headers   = array_change_key_case( Utils::get_all_headers() );
+			$signature = ( ! empty( $headers['x-gp-signature'] ) ) ? $headers['x-gp-signature'] : '';
 
 			// Final attempt to get the signature
 			if ( '' === $signature && isset( $_SERVER['HTTP_X_GP_SIGNATURE'] ) &&

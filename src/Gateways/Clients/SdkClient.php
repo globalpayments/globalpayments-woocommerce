@@ -7,6 +7,7 @@ use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\InstallmentData;
+use GlobalPayments\Api\Entities\InstallmentTerms;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\CardType;
@@ -159,6 +160,15 @@ class SdkClient implements ClientInterface {
 				$installmentData = new InstallmentData();
 				$installmentData->id = $args[0]['id'] ?? null;
 				$installmentData->reference = $args[0]['reference'] ?? null;
+				
+				// Add terms if available (for Visa Installments)
+				if ( isset( $args[0]['terms'] ) && is_array( $args[0]['terms'] ) ) {
+					$installmentTerms = new InstallmentTerms();
+					$installmentTerms->language = $args[0]['terms']['language'] ?? null;
+					$installmentTerms->version = $args[0]['terms']['version'] ?? null;
+					$installmentData->terms = $installmentTerms;
+				}
+
 				$builder->installment = $installmentData;
 				continue;
 			}
