@@ -1471,7 +1471,27 @@ class GpApiGateway extends AbstractGateway {
 			return $this->process_hpp_payment( $order_id );
 		}
 
-		return parent::process_payment( $order_id );
+		// For declines, handle_response() throws so catch and mark order as
+		// 'failed' before throwing again
+		try {
+			return parent::process_payment( $order_id );
+		} catch ( \Exception $e ) {
+			$order = wc_get_order( $order_id );
+			if ( $order instanceof \WC_Order && ! $order->is_paid() && 'failed' !== $order->get_status() ) {
+				$transaction_id = ! empty( $this->declined_transaction_id )
+					? $this->declined_transaction_id
+					: __( 'N/A', 'globalpayments-gateway-provider-for-woocommerce' );
+
+				$note_text = sprintf(
+					/* translators: %s: gateway transaction ID for the declined payment attempt */
+					__( 'Payment attempt declined by the gateway; order marked as failed. Transaction ID: %s.', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$transaction_id
+				);
+
+				$order->update_status( 'failed', $note_text );
+			}
+			throw $e;
+		}
 	}
 
 	/**

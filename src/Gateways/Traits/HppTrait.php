@@ -45,6 +45,10 @@ trait HppTrait {
 		add_action( 'woocommerce_api_globalpayments_hpp_cancel', array( $this, 'process_hpp_cancel' ) );
 		add_action( 'woocommerce_api_globalpayments_hpp_final', array( $this, 'process_hpp_final' ) );
 
+		// Guard against a duplicate order when the shopper paid but never reached the
+		// order-received page (so their cart was never emptied) and returns to checkout.
+		add_action( 'template_redirect', array( $this, 'maybe_prevent_duplicate_hpp_order' ) );
+
 		// Classic checkout hooks - Make fields required and adds additional validation
 		add_filter( 'woocommerce_checkout_fields', array( $this, 'hpp_three_d_secure_required_fields' ), 1000, 1 );
 		add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate_hpp_required_fields' ), 1000, 2 );
@@ -125,6 +129,15 @@ trait HppTrait {
 			if ( ! empty( $gateway_response->transactionId ) ) {
 				$order->set_transaction_id( $gateway_response->transactionId );
 				$order->save();
+			}
+
+			// The HPP posts its result back cross-site, so that callback has no shopper session
+			// and cannot empty the cart. Record the order in the shopper's own session here (this
+			// runs in their session) so the cart can be cleared on their next front-end load.
+			if ( WC()->session ) {
+				WC()->session->set( 'gp_hpp_awaiting_order', $order_id );
+				// TEMP DIAGNOSTIC - remove once cart-clearing is confirmed working.
+				$logger->info( sprintf( 'HPP set awaiting-order session key: order #%d', $order_id ), $context );
 			}
 
 			return array(
@@ -245,7 +258,7 @@ trait HppTrait {
 		}
 
 		$input_data = json_decode( $raw_input, true );
-		if ( ! $input_data ) {
+		if ( ! is_array( $input_data ) || empty( $input_data ) ) {
 			if ( $this->debug ) {
 				$logger->error( 'Failed to parse HPP return data JSON', $context );
 			}
@@ -253,8 +266,42 @@ trait HppTrait {
 			return;
 		}
 
+		// Finalize the order server-side from the validated return payload. The return
+		// page's auto-submit to the final endpoint only runs if the shopper's browser
+		// stays open, so relying on it leaves successful (and other) outcomes stranded
+		// in 'pending' when the shopper closes the browser. Doing it here does not depend
+		// on client-side JavaScript.
+		$this->update_order_status_from_hpp_return( $input_data );
+
 		// Render the return page
 		$this->render_hpp_return_page( $signature, $raw_input );
+	}
+
+	/**
+	 * Finalize the WooCommerce order from a validated HPP return payload.
+	 *
+	 * Runs server-side while rendering the return page, so the order is finalized even
+	 * when the shopper closes the browser before the auto-submit form posts to the final
+	 * endpoint. Delegates to the idempotent apply_hpp_result_to_order(), which guards
+	 * against double-processing if the final callback later runs for the same order.
+	 *
+	 * @param array $gateway_data Decoded, signature-validated HPP return payload.
+	 * @return void
+	 */
+	protected function update_order_status_from_hpp_return( array $gateway_data ): void {
+		$order_id = absint( HppResponseParser::extract_order_id( $gateway_data ) );
+
+		if ( ! $order_id ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order instanceof WC_Order ) {
+			return;
+		}
+
+		$this->apply_hpp_result_to_order( $order, $gateway_data );
 	}
 
 	/**
@@ -349,67 +396,187 @@ trait HppTrait {
 			wp_die( __( 'Order not found', 'globalpayments-gateway-provider-for-woocommerce' ), 404 );
 		}
 
-		// Process the payment result directly (following AbstractApm pattern)
-		$is_successful = HppResponseParser::is_successful_payment( $gateway_data );
+		$redirect_url = $this->apply_hpp_result_to_order( $order, $gateway_data );
 
-		if ( $is_successful ) {
-			$transaction_id = $gateway_data['id'] ?? '';
-
-			// Handle installments before payment_complete() to ensure data is available in emails
-			if ( InstallmentsService::has_installments( $gateway_data ) ) {
-				$this->save_installment_data( $order, $gateway_data );
-			}
-
-			$order->payment_complete( $transaction_id );
-			$order->add_order_note(
-				sprintf(
-					__( 'Payment completed via HPP. Transaction ID: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
-					$transaction_id
-				)
-			);
-
-			wp_redirect( $order->get_checkout_order_received_url() );
-		} elseif ( HppResponseParser::is_pending_payment( $gateway_data ) ) {
-
-			$transaction_id = $gateway_data['id'] ?? '';
-			$pending_note   = sprintf(
-				__(
-					'Payment is pending. Transaction ID: %s',
-					'globalpayments-gateway-provider-for-woocommerce'
-				),
-				$transaction_id
-			);
-			if ( 'PENDING' === strtoupper( $order->get_status() ) ) {
-				$order->add_order_note( $pending_note );
-			} else {
-				$order->update_status( 'pending', $pending_note );
-			}
-
-			wp_redirect( $order->get_checkout_order_received_url() );
-
-		} else {
-			$error_message = HppResponseParser::get_error_message( $gateway_data );
-
-			if ( $this->debug ) {
-				$logger->error(
-					'HPP Callback Processing: Payment failed, updating order status',
-					array_merge(
-						$context,
-						array(
-							'error_message' => $error_message,
-						)
-					)
-				);
-			}
-
-			$order->update_status( 'failed', $error_message );
-			wc_add_notice( $error_message, 'error' );
-
-			wp_redirect( wc_get_checkout_url() );
-		}
-
+		wp_redirect( $redirect_url );
 		exit;
 	}
+
+	/**
+	 * Apply a signature-verified HPP gateway result to an order.
+	 *
+	 * Idempotent and safe to call from both the server-to-server return callback and the
+	 * browser auto-submit final callback, so order completion no longer depends on
+	 * client-side JavaScript running in the shopper's browser.
+	 *
+	 * @param WC_Order $order        Order located from the gateway response reference.
+	 * @param array    $gateway_data Signature-verified gateway response data.
+	 * @return string Redirect URL for the browser flow.
+	 */
+	protected function apply_hpp_result_to_order( WC_Order $order, array $gateway_data ): string {
+		if ( $order->get_payment_method() !== $this->id ) {
+			return wc_get_checkout_url();
+		}
+
+		// Guard against double-processing when both the return and final callbacks fire.
+		$already_final = in_array( $order->get_status(), array( 'processing', 'completed' ), true );
+		if ( HppResponseParser::is_successful_payment( $gateway_data ) ) {
+			if ( ! $already_final ) {
+				$transaction_id  = $gateway_data['id'] ?? '';
+				$previous_status = $order->get_status();
+
+				// Handle installments before payment_complete() to ensure data is available in emails.
+				if ( InstallmentsService::has_installments( $gateway_data ) ) {
+					$this->save_installment_data( $order, $gateway_data );
+				}
+
+				$order->payment_complete( $transaction_id );
+				$order->add_order_note(
+					sprintf(
+						__( 'Payment completed via HPP. Transaction ID: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+						$transaction_id
+					)
+				);
+
+				// A late-but-valid payment can arrive after the unpaid-order timeout cancelled
+				// the order; surface the recovery so staff can verify stock/fulfilment.
+				if ( 'cancelled' === $previous_status ) {
+					$order->add_order_note(
+						sprintf(
+							__( 'Order recovered from Cancelled by a verified HPP payment. Please review stock and fulfilment. Transaction ID: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+							$transaction_id
+						)
+					);
+				}
+			}
+
+			// Empty the paid cart for the shopper's browser even when the server-to-server
+			// status notification already finalized the order (which runs without a session
+			// and so cannot clear the cart), so the same items can't be accidentally re-ordered.
+			$this->empty_hpp_cart_for_order( $order );
+
+			return $order->get_checkout_order_received_url();
+		}
+
+		if ( HppResponseParser::is_pending_payment( $gateway_data ) ) {
+			if ( ! $already_final ) {
+				$transaction_id = $gateway_data['id'] ?? '';
+				$pending_note   = sprintf(
+					__( 'Payment is pending. Transaction ID: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$transaction_id
+				);
+				if ( 'PENDING' === strtoupper( $order->get_status() ) ) {
+					$order->add_order_note( $pending_note );
+				} else {
+					$order->update_status( 'pending', $pending_note );
+				}
+			}
+
+			return $order->get_checkout_order_received_url();
+		}
+
+		if ( ! $already_final ) {
+			$error_message = HppResponseParser::get_error_message( $gateway_data );
+			$order->update_status( 'failed', $error_message );
+			wc_add_notice( $error_message, 'error' );
+		}
+
+		return wc_get_checkout_url();
+	}
+
+	/**
+	 * Empty the cart tied to a paid HPP order.
+	 *
+	 * Clears the current session cart when the paying browser is present, and removes the
+	 * logged-in customer's persistent cart so a completed payment can't be re-ordered even
+	 * when only the server-to-server notification (no shopper session) finishes the order.
+	 *
+	 * @param WC_Order $order Paid order.
+	 * @return void
+	 */
+	protected function empty_hpp_cart_for_order( WC_Order $order ): void {
+		if ( function_exists( 'WC' ) && WC()->cart && ! WC()->cart->is_empty() ) {
+			WC()->cart->empty_cart();
+		}
+
+		if ( function_exists( 'WC' ) && WC()->session ) {
+			WC()->session->set( 'order_awaiting_payment', null );
+			WC()->session->set( 'gp_hpp_awaiting_order', null );
+		}
+
+		$customer_id = $order->get_customer_id();
+		if ( $customer_id ) {
+			delete_user_meta( $customer_id, '_woocommerce_persistent_cart_' . get_current_blog_id() );
+		}
+	}
+
+	/**
+	 * Empty a paid HPP cart on the shopper's next front-end load, and stop a duplicate order.
+	 *
+	 * The HPP posts its result to returnUrl as a cross-site request, so the shopper's
+	 * WooCommerce session and cart are not attached during the callback (SameSite cookies)
+	 * and the cart cannot be emptied there. The order still finalizes because it is keyed off
+	 * the signed order reference, so a shopper who closes the browser after paying is left with
+	 * a paid order but a full cart. To recover, the order id is stored under our own session
+	 * key when the shopper is redirected to the HPP; this runs on template_redirect - in the
+	 * shopper's own session - so on their next front-end load that order is checked and, if it
+	 * is paid, the cart is emptied. WooCommerce's order_awaiting_payment is unreliable for this
+	 * gateway (it is not set for the order-pay flow), so it is only a fallback. On the checkout
+	 * page they are also redirected to the existing order to prevent a second one.
+	 *
+	 * @return void
+	 */
+	public function maybe_prevent_duplicate_hpp_order(): void {
+		if ( is_admin() ) {
+			return;
+		}
+
+		if ( ! WC()->session || ! WC()->cart || WC()->cart->is_empty() ) {
+			return;
+		}
+
+		$awaiting_order_id = absint( WC()->session->get( 'gp_hpp_awaiting_order' ) );
+		if ( ! $awaiting_order_id ) {
+			$awaiting_order_id = absint( WC()->session->get( 'order_awaiting_payment' ) );
+		}
+
+		if ( ! $awaiting_order_id ) {
+			return;
+		}
+
+		// TEMP DIAGNOSTIC - remove once cart-clearing is confirmed working.
+		$logger  = wc_get_logger();
+		$context = array( 'source' => 'globalpayments_hpp' );
+
+		$order = wc_get_order( $awaiting_order_id );
+		if ( ! $order instanceof WC_Order || $order->get_payment_method() !== $this->id ) {
+			return;
+		}
+
+		// TEMP DIAGNOSTIC
+		$logger->info( sprintf( 'HPP dup-check: gateway=%s order #%d status=%s is_paid=%s', $this->id, $order->get_id(), $order->get_status(), $order->is_paid() ? 'yes' : 'no' ), $context );
+
+		if ( ! $order->is_paid() ) {
+			return;
+		}
+
+		$this->empty_hpp_cart_for_order( $order );
+
+		// TEMP DIAGNOSTIC
+		$logger->info( sprintf( 'HPP dup-check: emptied cart for paid order #%d', $order->get_id() ), $context );
+
+		// Redirect only a shopper who returns to the checkout form; never on the order-received
+		// endpoint (also a checkout page) to avoid a redirect loop, and not on other pages.
+		if ( function_exists( 'is_checkout' ) && is_checkout() && ! is_order_received_page() ) {
+			wc_add_notice(
+				__( 'Your previous payment was received and your order is being processed. Your cart has been cleared to avoid placing a duplicate order.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'notice'
+			);
+			wp_safe_redirect( $order->get_checkout_order_received_url() );
+			exit;
+		}
+	}
+
 	/**
 	 * Validate HPP return signature
 	 *

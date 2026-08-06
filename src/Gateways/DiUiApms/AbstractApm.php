@@ -60,14 +60,16 @@ class AbstractApm {
 			if ( $order->get_transaction_id() === $transaction_id ) {
 				self::update_order_status_from_notification( $order, $payment_status, $transaction_id, $request_data );
 			} else {
-				// Fallback: If payment status is DECLINED or CANCELLED and order is on-hold, update to cancelled
+				// Fallback: If the order is still awaiting payment, reflect the reported outcome.
 				$status_upper = strtoupper( $payment_status );
 				if ( in_array( $status_upper, array( 'DECLINED', 'CANCELLED' ) ) && $order->get_status() === 'on-hold' ) {
-					$note_text = sprintf(
-						'Order status updated to cancelled due to payment status: %s (fallback).',
+					$new_status = 'DECLINED' === $status_upper ? 'failed' : 'cancelled';
+					$note_text  = sprintf(
+						'Order status updated to %s due to payment status: %s (fallback).',
+						$new_status,
 						$status_upper
 					);
-					$order->update_status( 'cancelled', $note_text );
+					$order->update_status( $new_status, $note_text );
 					$order->save();
 				}
 			}
@@ -154,10 +156,24 @@ class AbstractApm {
 				}
 				break;
 			case 'DECLINED':
+				if ( in_array( $order->get_status(), array( 'on-hold', 'pending', 'cancelled', 'declined' ) ) ) {
+					$note_text = sprintf(
+						'Payment failed/declined via status notification. %s', $callback_summary
+					);
+
+					$order->update_status( 'failed', $note_text );
+
+					// Add metadata to track callback processing
+					$order->update_meta_data( '_gpapi_apm_callback_processed', date( 'Y-m-d H:i:s' ) );
+					$order->update_meta_data( '_gpapi_apm_payment_status', $payment_status );
+
+					$order->save();
+				}
+				break;
 			case 'CANCELLED':
 				if ( in_array( $order->get_status(), array( 'on-hold', 'pending', 'cancelled', 'declined' ) ) ) {
 					$note_text = sprintf(
-						'Payment failed/declined via status notification. %s',
+						'Payment cancelled via status notification. %s',
 						$callback_summary
 					);
 					$order->update_status( 'cancelled', $note_text );
@@ -184,14 +200,23 @@ class AbstractApm {
 		}
 
 		if ( isset( $_REQUEST['status'] ) && in_array( strtoupper( $_REQUEST['status'] ), array( 'DECLINED', 'CANCELLED' ) ) ) {
-			$order = wc_get_order(
+			$status_upper = strtoupper( $_REQUEST['status'] );
+			
+			$order        = wc_get_order(
 				str_replace( 'WooCommerce_Order_', '', $_REQUEST['reference'] )
 			);
-			if ( $order && $order->get_status() === 'on-hold' ) {
-				$order->update_status( 'cancelled', 'Payment declined or was cancelled by customer.' );
+
+			$new_status = 'DECLINED' === $status_upper ? 'failed' : 'cancelled';
+			$note_text  = 'DECLINED' === $status_upper
+				? 'Payment was declined.'
+				: 'Payment was cancelled by customer.';
+
+			if ( $order && in_array( $order->get_status(), array( 'on-hold', 'pending' ), true ) ) {
+				$order->update_status( $new_status, $note_text );
 			} elseif ( $order ) {
-				$order->add_order_note( sprintf( 'Payment declined or was cancelled by customer.' ) );
+				$order->add_order_note( $note_text );
 			}
+			
 			wp_safe_redirect( wc_get_checkout_url() );
 		} elseif ( isset( $_REQUEST['status'] ) && $_REQUEST['status'] === 'CAPTURED' ) {
 			self::handle_gpapi_apm_status_notification();

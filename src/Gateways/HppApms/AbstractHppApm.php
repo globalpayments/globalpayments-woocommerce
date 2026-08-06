@@ -62,7 +62,7 @@ class AbstractHppApm {
         }
 
         // Extract transaction details using HppResponseParser
-        $transaction_id = HppResponseParser::extract_transaction_id( $request_data );
+        $transaction_id = HppResponseParser::extract_transaction_id( $request_data ) ?? '';
         $payment_status = HppResponseParser::extract_payment_status( $request_data );
         $order_id       = HppResponseParser::extract_order_id( $request_data );
         
@@ -88,14 +88,19 @@ class AbstractHppApm {
         }
         
 
-        // Verify transaction ID matches 
-        if ( !empty( $order->get_transaction_id() ) && $order->get_transaction_id() !== $transaction_id ) {
+        // The order is located via the reference embedded in this notification, so a
+        // differing stored transaction id, such as a retried "_reOrder" sale, still
+        // belongs to the order.
+        if (
+            !empty( $order->get_transaction_id() )
+            && $order->get_transaction_id() !== $transaction_id
+        ) {
             if ( $gateway->debug ) {
-                $logger->warning( 'HPP Status: Transaction ID mismatch' );
+                $logger->info(
+                    'HPP Status: Reconciling transaction ID from ' . $order->get_transaction_id() . ' to ' . $transaction_id,
+                    $context
+                );
             }
-            // Don't process if transaction IDs don't match 
-            wp_die( 'OK', 200 );
-            return;
         }
         
         // Update order status based on payment status

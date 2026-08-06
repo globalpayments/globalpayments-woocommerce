@@ -177,6 +177,14 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 */
 	public $is_production;
 
+	/**
+	 * Transaction ID of the most recent declined payment attempt, captured in handle_response()
+	 * so it can be logged on the order after the decline exception is thrown.
+	 *
+	 * @var string
+	 */
+	protected string $declined_transaction_id = '';
+
 	protected static string $js_lib_version = 'v1';
 
 	public function __construct( $is_provider = false ) {
@@ -1323,6 +1331,10 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 					/** om nom */
 				}
 			}
+
+			if ( ! empty( $response->transactionReference->transactionId ) ) {
+    $this->declined_transaction_id = $response->transactionReference->transactionId;
+}
 
 			throw new ApiException( esc_html(Utils::map_response_code_to_friendly_message( $response->responseCode )) );
 		}
