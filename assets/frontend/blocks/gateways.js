@@ -424,7 +424,20 @@
       // Reset retry count on successful dependency check
       initRetryCount = 0;
 
-      let apmArray = (apmsEnabled) ? [] : false;
+      let apmArray = false;
+      if (apmsEnabled) {
+        apmArray = [];
+        if (acceptBlik) {
+          apmArray.push(GlobalPayments.enums.Apm.Blik);
+        }
+        if (acceptOpenBanking) {
+          apmArray.push(GlobalPayments.enums.Apm.OpenBankingPayment);
+        }
+
+        if (apmArray.length === 0) {
+          apmArray = false;
+        }
+      }
 
       try {
         const t = GlobalPayments;

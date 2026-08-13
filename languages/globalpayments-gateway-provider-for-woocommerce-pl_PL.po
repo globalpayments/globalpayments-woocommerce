@@ -115,6 +115,37 @@ msgstr "Kod bezpieczeństwa karty kredytowej"
 msgid "•••"
 msgstr "•••"
 
+#: src/Gateways/GpApiGateway.php:441
+#: src/Gateways/GpApiGateway.php:442
+msgid "Enable BLIK for HPP"
+msgstr "Włącz BLIK dla HPP"
+
+#: src/Gateways/GpApiGateway.php:444
+msgid "Enable BLIK as a payment option on the Hosted Payment Page."
+msgstr "Włącz BLIK jako opcję płatności na hostowanej stronie płatności."
+
+#: src/Gateways/GpApiGateway.php:447
+#: src/Gateways/GpApiGateway.php:448
+msgid "Enable Open Banking for HPP"
+msgstr "Włącz Open Banking dla HPP"
+
+#: src/Gateways/GpApiGateway.php:450
+msgid "Enable Open Banking as a payment option on the Hosted Payment Page."
+msgstr "Włącz Open Banking jako opcję płatności na hostowanej stronie płatności."
+
+#: src/Gateways/GpApiGateway.php:454
+#: src/Gateways/GpApiGateway.php:455
+msgid "Enable Eraty for HPP"
+msgstr "Włącz Eraty dla HPP"
+
+#: src/Gateways/GpApiGateway.php:458
+msgid "Enable Eraty as a payment option on the Hosted Payment Page."
+msgstr "Włącz Eraty jako opcję płatności na hostowanej stronie płatności."
+
+#: src/Gateways/GpApiGateway.php:1493
+msgid "Eraty HPP payments cannot be refunded via the WooCommerce admin."
+msgstr "Płatności Eraty HPP nie mogą być zwracane przez panel administracyjny WooCommerce."
+
 #: src/Gateways/AbstractGateway.php:618
 msgid "Please enter a valid Credit Card Security Code"
 msgstr "Proszę wprowadzić prawidłowy kod bezpieczeństwa karty kredytowej"

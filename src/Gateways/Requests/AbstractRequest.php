@@ -43,7 +43,7 @@ abstract class AbstractRequest implements RequestInterface {
 	 * @param WC_Order $order
 	 * @param array $config
 	 */
-	public function __construct( $gateway_id, WC_Order $order = null, array $config = array() ) {
+	public function __construct( $gateway_id, ?WC_Order $order = null, array $config = array() ) {
 		$this->gateway_id = $gateway_id;
 		$this->order      = $order;
 		$this->config     = $config;

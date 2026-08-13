@@ -52,6 +52,10 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.22.2 (08/13/26)
+* Bug fix: Added fix for Apm(blik and payu) issue after upgraded JS version
+* GPAPI: Added Eraty APM to Hosted Payment Pages
+
 = 1.22.1 (08/06/26)
 * Bug fix: GPAPI: HPP payment attempts that are declined result in order status 'Failed'
 * GPAPI: HPP: Improvements to order processing methodology

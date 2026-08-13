@@ -18,7 +18,10 @@ use GlobalPayments\Api\Entities\Enums\{
 	PhoneNumberType,
 	InstallmentsFundingMode
 };
-use GlobalPayments\Api\Utils\CountryUtils;
+use GlobalPayments\Api\Utils\{
+	CountryUtils,
+	StringUtils
+	};
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\AbstractGateway;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Gateways\Requests\AbstractRequest;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Services\InstallmentsService;
@@ -70,7 +73,7 @@ class InitiatePaymentRequest extends AbstractRequest {
 						->withName( $ref_text )
 						->withDescription( 'Payment for Order #' . $this->order->get_order_number() )
 						->withReference( $ref_text )
-						->withAmount( $this->order->get_total() )
+						->withAmount( StringUtils::toNumeric( $this->order->get_total() , $this->order->get_currency() ) )
 						->withPayer( $payer )
 						->withCurrency( $this->order->get_currency() )
 						->withOrderReference( $ref_text )
@@ -183,6 +186,10 @@ class InitiatePaymentRequest extends AbstractRequest {
 		}
 		$payer->status = 'NEW';
 		$payer->language = strtoupper( substr( get_locale(), 0, 2 ) ) ?? "EN";
+		if( property_exists( $payer, "reference" ) ){
+			$payer->reference = uniqid(); // Will be removed in the future
+		}
+		
 
 		// Set billing address
 		$billing_address                    = new Address();
@@ -272,12 +279,16 @@ class InitiatePaymentRequest extends AbstractRequest {
 	protected function get_alternative_payment_methods(): array {
 		$enabled_alternative_payments = [];
 
-		if ( isset( $this->config['enable_blik_hpp'] ) && 'yes' === $this->config['enable_blik_hpp'] ) {
+		if ( isset( $this->config['enable_blik_hpp'] ) && wc_string_to_bool( $this->config['enable_blik_hpp'] ) ) {
 			$enabled_alternative_payments[] = HPPAllowedPaymentMethods::BLIK;
 		}
 
-		if ( isset( $this->config['enable_open_banking_hpp'] ) && 'yes' === $this->config['enable_open_banking_hpp'] ) {
+		if ( isset( $this->config['enable_open_banking_hpp'] ) && wc_string_to_bool( $this->config['enable_open_banking_hpp'] ) ) {
 			$enabled_alternative_payments[] = HPPAllowedPaymentMethods::BANK_PAYMENT;
+		}
+		if ( defined( HPPAllowedPaymentMethods::class . '::' . "ERATY" ) && isset( $this->config['enable_eraty_hpp'] ) 
+			&& wc_string_to_bool( $this->config['enable_eraty_hpp'] ) ) {
+			$enabled_alternative_payments[] = HPPAllowedPaymentMethods::ERATY;
 		}
 
 		return $enabled_alternative_payments;

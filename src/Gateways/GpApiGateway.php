@@ -141,6 +141,13 @@ class GpApiGateway extends AbstractGateway {
 	 * @var string
 	 */
 	public $enable_open_banking_hpp;
+	
+	/**
+	 * Enable Eraty for HPP
+	 *
+	 * @var string
+	 */
+	public $enable_eraty_hpp;
 
 	/**
 	 * Enable Google Pay for HPP
@@ -205,7 +212,7 @@ class GpApiGateway extends AbstractGateway {
 	 */
 	public $enable_dcc;
 
-	protected static string $js_lib_version = '4.1.25';
+	protected static string $js_lib_version = '5.0.1';
 	
 	/*
 	 * Different Installment plans selection
@@ -620,6 +627,13 @@ class GpApiGateway extends AbstractGateway {
 						'description' => __( 'Enable Open Banking as a payment option on the Hosted Payment Page.', 'globalpayments-gateway-provider-for-woocommerce' ),
 						'default'     => 'no',
 					),
+					'enable_eraty_hpp' => array(
+						'title'       => __( 'Enable Eraty for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'label'       => __( 'Enable Eraty for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'type'        => 'checkbox',
+						'description' => __( 'Enable Eraty as a payment option on the Hosted Payment Page.', 'globalpayments-gateway-provider-for-woocommerce' ),
+						'default'     => 'no',
+					),
 				)
 			);
 		}
@@ -783,7 +797,8 @@ class GpApiGateway extends AbstractGateway {
 			'hpp_installments_plan_types'               => $this->get_option( 'hpp_installments_plan_types' ),
 			'hpp_installments_plan_merchant_funded_max' => $this->get_option( 'hpp_installments_plan_merchant_funded_max' ),
 			'hpp_installments_plan_threshold'           => $this->get_option( 'hpp_installments_plan_threshold' ),
-			);
+			'enable_eraty_hpp'  	   => $this->get_option( 'enable_eraty_hpp' ),
+		);
 	}
 
 	public function get_access_token() {
@@ -1668,5 +1683,24 @@ class GpApiGateway extends AbstractGateway {
 		return isset( $this->payment_interface ) && $this->payment_interface === 'hpp';
 	}
 
+	/**
+	 * Needed to prevent ERATY HPP payments
+	 * @param mixed $order_id
+	 * @param mixed $amount
+	 * @param mixed $reason
+	 * @return bool|WP_Error
+	 */
+	public function process_refund( $order_id, $amount = null, $reason = '' ) {
+		$order = wc_get_order( $order_id );
+		if ( $order instanceof \WC_Order && $this->is_eraty_order( $order ) ) {
+			return new WP_Error(
+				'eraty_refund',
+				__( 'Eraty HPP payments cannot be refunded via the WooCommerce admin.', 'globalpayments-gateway-provider-for-woocommerce' )
+			);
+		}
+
+		return parent::process_refund( $order_id, $amount, $reason );
+
+	}
 
 }

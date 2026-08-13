@@ -9,7 +9,8 @@ use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\HppResponseParser;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Services\InstallmentsService;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Plugin;
 use GlobalPayments\WooCommercePaymentGatewayProvider\Utils\Utils;
-
+use Automattic\WooCommerce\Utilities\OrderUtil;
+use GlobalPayments\Api\Entities\Enums\HPPAllowedPaymentMethods;
 use WC_Order;
 
 defined( 'ABSPATH' ) || exit;
@@ -52,6 +53,11 @@ trait HppTrait {
 		// Classic checkout hooks - Make fields required and adds additional validation
 		add_filter( 'woocommerce_checkout_fields', array( $this, 'hpp_three_d_secure_required_fields' ), 1000, 1 );
 		add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate_hpp_required_fields' ), 1000, 2 );
+		if( $this->enable_eraty_hpp ){
+			// Disable refund UI for non-refundable ERATY payments
+			add_action( 'woocommerce_order_item_add_action_buttons', array( $this, 'add_eraty_refund_tooltip' ) );
+		}
+		
 	}
 
 	/**
@@ -421,15 +427,25 @@ trait HppTrait {
 		// Guard against double-processing when both the return and final callbacks fire.
 		$already_final = in_array( $order->get_status(), array( 'processing', 'completed' ), true );
 		if ( HppResponseParser::is_successful_payment( $gateway_data ) ) {
+
+		// Handle installments before payment_complete() to ensure data is available in emails.
+			if ( InstallmentsService::has_installments( $gateway_data ) ) {
+				$this->save_installment_data( $order, $gateway_data );
+			}
+	
+			if ( !empty( $gateway_data['payment_method']['apm']['provider'] ) ) {
+					if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+						$order->add_meta_data( '_globalpayments_apm_provider', $gateway_data['payment_method']['apm']['provider'] );
+						$order->save();
+					}else{
+						update_post_meta( $order->get_id(), "_globalpayments_apm_provider", $gateway_data['payment_method']['apm']['provider'] );
+					}
+			}
+
 			if ( ! $already_final ) {
 				$transaction_id  = $gateway_data['id'] ?? '';
 				$previous_status = $order->get_status();
-
-				// Handle installments before payment_complete() to ensure data is available in emails.
-				if ( InstallmentsService::has_installments( $gateway_data ) ) {
-					$this->save_installment_data( $order, $gateway_data );
-				}
-
+				
 				$order->payment_complete( $transaction_id );
 				$order->add_order_note(
 					sprintf(
@@ -954,5 +970,53 @@ trait HppTrait {
 	public function check_hpp_installments_eligibility() :bool
 	{
 		return InstallmentsService::hpp_installments_eligible();
+	}
+
+	/**
+	 * Adds a tooltip to the refund button for eRaty orders
+	 *
+	 * @param WC_Order $order
+	 */
+	public function add_eraty_refund_tooltip( WC_Order $order ): void {
+		if ( ! $this->is_eraty_order( $order ) ) {
+			return;
+		}
+
+		$button_title =  __( "Eraty HPP payments cannot be refunded via the WooCommerce admin.", "globalpayments-gateway-provider-for-woocommerce" ) ;
+
+		?>
+		<script>
+			( function() {
+				var refundButton = document.querySelector( 'button.refund-items' );
+				if ( refundButton ) {
+					refundButton.disabled = true;
+					refundButton.title = <?php echo wp_json_encode( $button_title ); ?>;
+				}
+			} )();
+		</script>
+		<?php
+	}
+
+	/**
+	 * Confirms the order was processed by this gateway before checking for APM provider.
+	 * 
+	 * @param WC_Order $order
+	 * @return bool True if the order was processed by this gateway and is an eRaty order
+	 */
+	protected function is_eraty_order( WC_Order $order ): bool {
+		if ( empty( $order ) || $order->get_payment_method() !== $this->id ) {
+			return false;
+		}
+		if( ! defined( HPPAllowedPaymentMethods::class . "::ERATY" ) ){
+			return false;
+		}
+		$apm_provider = false;
+		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$apm_provider = $order->get_meta( '_globalpayments_apm_provider' );
+		} else {
+			$apm_provider = get_post_meta( $order->get_id(), '_globalpayments_apm_provider', true );
+		}
+
+		return ! empty( $apm_provider ) && HPPAllowedPaymentMethods::ERATY === strtoupper( $apm_provider );
 	}
 }
