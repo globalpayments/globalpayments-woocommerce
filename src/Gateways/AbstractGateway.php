@@ -1359,11 +1359,19 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			// $this->handle_avs_cvn_response_codes( $response );
 
 			if ( ! empty( $response->avsResponseCode ) || ! empty( $response->cvnResponseCode ) ) {
-				//check admin selected decline condtions
-				if (
-					in_array( $response->avsResponseCode, (array) $this->get_option( 'avs_reject_conditions' ) ) ||
-					in_array( $response->cvnResponseCode, (array) $this->get_option( 'cvn_reject_conditions' ) )
-				) {
+				// Check admin-selected decline conditions. Compare strictly and drop
+				// empty entries from the saved option first: a deselected multiselect
+				// is stored as '' so (array) '' === array( '' ), and the previous loose
+				// in_array() treated an empty/absent AVS or CVN response code as equal
+				// to that '' (null == '' / '' == '' are true in PHP). The result was a
+				// good payment being auto-reversed even when no reject conditions were
+				// configured. Now a reversal needs a non-empty response code that is a
+				// strict match against a non-empty configured condition.
+				$avs_conditions = array_filter( (array) $this->get_option( 'avs_reject_conditions' ), 'strlen' );
+				$cvn_conditions = array_filter( (array) $this->get_option( 'cvn_reject_conditions' ), 'strlen' );
+				$avs_rejected   = ! empty( $response->avsResponseCode ) && in_array( (string) $response->avsResponseCode, $avs_conditions, true );
+				$cvn_rejected   = ! empty( $response->cvnResponseCode ) && in_array( (string) $response->cvnResponseCode, $cvn_conditions, true );
+				if ( $avs_rejected || $cvn_rejected ) {
 					$data = $request->order->get_data();
 
 					if ( ! is_array( $data ) ) {
