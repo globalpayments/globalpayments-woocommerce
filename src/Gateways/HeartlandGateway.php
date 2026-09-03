@@ -375,9 +375,28 @@ class HeartlandGateway extends AbstractGateway {
 			return $this->process_gift_card_only_payment( $order_id, $order );
 		}
 
-		$request       = $this->prepare_request( $this->payment_action, $order );
-		$response      = $this->submit_request( $request );
-		$is_successful = $this->handle_response( $request, $response );
+		$request = $this->prepare_request( $this->payment_action, $order );
+
+		try {
+			$response      = $this->submit_request( $request );
+			$is_successful = $this->handle_response( $request, $response );
+		} catch ( \Exception $exception ) {
+			$transaction_id = ! empty( $this->declined_transaction_id )
+				? $this->declined_transaction_id
+				: __( 'N/A', 'globalpayments-gateway-provider-for-woocommerce' );
+
+			$order->update_status(
+				'failed',
+				sprintf(
+					/* translators: 1: failure reason, 2: gateway transaction ID */
+					__( 'Portico payment failed: %1$s Transaction ID: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$exception->getMessage(),
+					$transaction_id
+				)
+			);
+
+			throw $exception;
+		}
 
 		// Charge HPS gift cards if CC trans succeeds
 		if ( $is_successful && $has_applied_gift_cards ) {
@@ -398,15 +417,30 @@ class HeartlandGateway extends AbstractGateway {
 			}
 		}
 
-		$note_text = sprintf(
-			'%1$s%2$s %3$s. Order created with Transaction ID: %4$s.',
-			get_woocommerce_currency_symbol($order->get_currency()),
-			$order->get_total(),
-			$this->payment_action,
-			$order->get_transaction_id()
-		);
+		if ( $is_successful ) {
+			$note_text = sprintf(
+				'%1$s%2$s %3$s. Order created with Transaction ID: %4$s.',
+				get_woocommerce_currency_symbol( $order->get_currency() ),
+				$order->get_total(),
+				$this->payment_action,
+				$order->get_transaction_id()
+			);
 
-		$order->add_order_note($note_text);
+			$order->add_order_note( $note_text );
+		} elseif ( ! $order->is_paid() && 'failed' !== $order->get_status() ) {
+			$response_code    = isset( $response->responseCode ) ? $response->responseCode : __( 'N/A', 'globalpayments-gateway-provider-for-woocommerce' );
+			$response_message = isset( $response->responseMessage ) ? $response->responseMessage : __( 'N/A', 'globalpayments-gateway-provider-for-woocommerce' );
+
+			$order->update_status(
+				'failed',
+				sprintf(
+					/* translators: 1: gateway response code, 2: gateway response message */
+					__( 'Portico payment failed. Response code: %1$s. Response message: %2$s.', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$response_code,
+					$response_message
+				)
+			);
+		}
 
 		return array(
 			'result'   => $is_successful ? 'success' : 'failure',

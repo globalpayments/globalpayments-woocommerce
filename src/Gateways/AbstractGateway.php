@@ -890,11 +890,7 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 * @return string
 	 */
 	protected function secure_payment_fields_asset_base_url() {
-		if ( $this->is_production ) {
-			return 'https://js.globalpay.com/' . static::$js_lib_version;
-		}
-
-		return 'https://js-cert.globalpay.com/' . static::$js_lib_version;
+		return 'https://js.globalpay.com/' . static::$js_lib_version;
 	}
 
 	public function save_payment_method_checkbox() {

@@ -52,6 +52,11 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.23.0 (09/03/26)
+* Enhancement: GPAPI: Added support for click to pay
+* GPAPI: Changed JS URL
+* Bug Fix: Declined Payment Handling Across Global Payments Plugin Integrations
+
 = 1.22.3 (08/14/26)
 * Bug fix: Updated php sdk version to support eRaty via HPP
 

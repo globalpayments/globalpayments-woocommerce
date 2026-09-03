@@ -164,6 +164,13 @@ class GpApiGateway extends AbstractGateway {
 	public $enable_applepay_hpp;
 
 	/**
+	 * Enable Click to Pay for HPP
+	 *
+	 * @var string
+	 */
+	public $enable_clicktopay_hpp;
+
+	/**
 	 * Custom text for HPP payment method display
 	 *
 	 * @var string
@@ -425,6 +432,13 @@ class GpApiGateway extends AbstractGateway {
 				'label'       => __( 'Enable Apple Pay for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Enable Apple Pay as a payment option on the Hosted Payment Page.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'no',
+			),
+			'enable_clicktopay_hpp' => array(
+				'title'       => __( 'Enable Click to Pay for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Enable Click to Pay for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Enable Click to Pay as a payment option on the Hosted Payment Page.', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'default'     => 'no',
 			),
 		);
@@ -790,8 +804,10 @@ class GpApiGateway extends AbstractGateway {
 			'enable_dcc'               => $this->get_option( 'enable_dcc', 'no' ),
 			'transaction_region'       => $this->get_option( 'transaction_region', 'global' ),
 			'serviceUrl'               => $this->get_region_service_url(),
+			'payment_interface'        => $this->get_option( 'payment_interface', 'drop_in' ),
 			'enable_gpay_hpp'		   => $this->get_option( 'enable_gpay_hpp' ),
 			'enable_applepay_hpp'	   => $this->get_option( 'enable_applepay_hpp' ),
+			'enable_clicktopay_hpp'    => $this->get_option( 'enable_clicktopay_hpp' ),
 			'enable_blik_hpp'		   => $this->get_option( 'enable_blik_hpp' ),
 			'enable_open_banking_hpp'  => $this->get_option( 'enable_open_banking_hpp' ),
 			'hpp_installments_plan_types'               => $this->get_option( 'hpp_installments_plan_types' ),

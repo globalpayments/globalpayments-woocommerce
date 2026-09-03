@@ -258,6 +258,10 @@ class InitiatePaymentRequest extends AbstractRequest {
 	 * @return array containing enabled digital wallets
 	 */
 	protected function get_digital_wallets(): array {
+		if ( ! isset( $this->config['payment_interface'] ) || 'hpp' !== $this->config['payment_interface'] ) {
+			return [];
+		}
+
 		$enabled_wallets = [];
 
 		if ( isset( $this->config['enable_gpay_hpp'] ) && 'yes' === $this->config['enable_gpay_hpp'] ) {
@@ -266,6 +270,10 @@ class InitiatePaymentRequest extends AbstractRequest {
 
 		if ( isset( $this->config['enable_applepay_hpp'] ) && 'yes' === $this->config['enable_applepay_hpp'] ) {
 			$enabled_wallets[] = 'applepay';
+		}
+
+		if ( isset( $this->config['enable_clicktopay_hpp'] ) && 'yes' === $this->config['enable_clicktopay_hpp'] ) {
+			$enabled_wallets[] = apply_filters( 'globalpayments_hpp_click_to_pay_provider', 'CLICK_TO_PAY' );
 		}
 
 		return $enabled_wallets;

@@ -243,7 +243,19 @@ class GeniusGateway extends AbstractGateway {
 			&& wcs_order_contains_subscription( $order );
 
 		if ( ! $is_subscription ) {
-			return parent::process_payment( $order_id );
+			try {
+				$result = parent::process_payment( $order_id );
+
+				if ( isset( $result['result'] ) && 'success' !== $result['result'] ) {
+					$this->fail_order( $order, __( 'Payment was declined by the gateway.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+				}
+
+				return $result;
+			} catch ( Exception $e ) {
+				// The Genius connector throws on DECLINED/ErrorMessage responses instead of
+				// returning a Transaction, so the failure has to be mapped to the order here.
+				return $this->fail_order( $order, $e->getMessage() );
+			}
 		}
 
 		try {
@@ -272,10 +284,7 @@ class GeniusGateway extends AbstractGateway {
 			$is_successful = $this->handle_response( $sale_request, $sale_response );
 
 			if ( ! $is_successful ) {
-				return array(
-					'result'   => 'failure',
-					'redirect' => false,
-				);
+				return $this->fail_order( $order, __( 'Payment was declined by the gateway.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 			}
 
 			// Persist vault token on the order for future renewal payments.
@@ -315,22 +324,43 @@ class GeniusGateway extends AbstractGateway {
 				'redirect' => $this->get_return_url( $order ),
 			);
 		} catch ( Exception $e ) {
-			$error_message = sprintf(
-				/* translators: %s: error message */
-				esc_html__( 'Genius subscription payment failed: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
-				$e->getMessage()
-			);
-			$order->add_order_note( $error_message );
+			return $this->fail_order( $order, $e->getMessage() );
+		}
+	}
 
-			if ( function_exists( 'wc_add_notice' ) ) {
-				wc_add_notice( $error_message, 'error' );
+	/**
+	 * Move the order to "failed", record the reason and surface it to the customer.
+	 *
+	 * @param \WC_Order|\WC_Subscription|false $order  Order being paid.
+	 * @param string                           $reason Gateway/decline message.
+	 *
+	 * @return array
+	 */
+	private function fail_order( $order, string $reason ): array {
+		$message = sprintf(
+			/* translators: %s: gateway decline or error message */
+			__( 'Genius payment failed: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+			$reason
+		);
+
+		if ( $order instanceof \WC_Order ) {
+			$order->add_order_note( $message );
+
+			if ( ! $order->has_status( array( 'failed', 'cancelled', 'refunded' ) ) ) {
+				$order->update_status( 'failed', $message );
 			}
 
-			return array(
-				'result'   => 'failure',
-				'redirect' => false,
-			);
+			$order->save();
 		}
+
+		if ( function_exists( 'wc_add_notice' ) ) {
+			wc_add_notice( $message, 'error' );
+		}
+
+		return array(
+			'result'   => 'failure',
+			'redirect' => false,
+		);
 	}
 
 	/**

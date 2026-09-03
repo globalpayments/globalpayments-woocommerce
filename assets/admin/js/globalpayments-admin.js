@@ -468,6 +468,25 @@
 				}
 			}
 
+			//toggle HPP digital wallet fields visibility (only for HPP)
+			[
+				'woocommerce_globalpayments_gpapi_enable_gpay_hpp',
+				'woocommerce_globalpayments_gpapi_enable_applepay_hpp',
+				'woocommerce_globalpayments_gpapi_enable_clicktopay_hpp'
+			].forEach(function(fieldId) {
+				const field = document.getElementById(fieldId);
+				if (!field) {
+					return;
+				}
+
+				const row = field.closest('tr');
+				if (!row) {
+					return;
+				}
+
+				row.style.display = display ? '' : 'none';
+			});
+
 			// Re-evaluate Visa Installments dependent fields when interface changes.
 			this.toggleVisaInstallmentsFields();
 		},

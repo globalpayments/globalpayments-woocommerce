@@ -33,7 +33,7 @@
             // Create info icon with background image
             const icon = document.createElement('span');
             icon.className = 'gp-tooltip-icon';
-            icon.style.cssText = 'display: inline-block; width: 20px; height: 20px; cursor: help; background: transparent url(https://js-cert.globalpay.com/4.1.17/images/gp-fa-question-circle.svg) no-repeat center center; background-size: 18px; vertical-align: middle;';
+            icon.style.cssText = 'display: inline-block; width: 20px; height: 20px; cursor: help; background: transparent url(https://js.globalpay.com/4.1.17/images/gp-fa-question-circle.svg) no-repeat center center; background-size: 18px; vertical-align: middle;';
             icon.setAttribute('aria-label', TOOLTIP_MESSAGE);
 
             // Create tooltip bubble
