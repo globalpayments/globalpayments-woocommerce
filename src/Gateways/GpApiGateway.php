@@ -1459,6 +1459,10 @@ class GpApiGateway extends AbstractGateway {
 	public function init_form_fields()
 	{
 		parent::init_form_fields();
+
+		// AVS/CVV reversals will now be disabled by default. Existing installations remain unchanged.
+		$this->form_fields["check_avs_cvv"]["default"] = 'no';
+
 		if (
 			WC()->countries->get_base_country() === 'PL'
 			&& get_woocommerce_currency() === 'PLN'
@@ -1711,7 +1715,7 @@ class GpApiGateway extends AbstractGateway {
 		if ( $order instanceof \WC_Order && $this->is_eraty_order( $order ) ) {
 			return new WP_Error(
 				'eraty_refund',
-				__( 'Eraty HPP payments cannot be refunded via the WooCommerce admin.', 'globalpayments-gateway-provider-for-woocommerce' )
+				__( 'Refunds for eRaty transactions are not supported via WordPress. Please follow your eRaty/acquirer refund process.', 'globalpayments-gateway-provider-for-woocommerce' )
 			);
 		}
 

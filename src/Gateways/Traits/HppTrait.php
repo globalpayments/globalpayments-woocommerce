@@ -982,7 +982,7 @@ trait HppTrait {
 			return;
 		}
 
-		$button_title =  __( "Eraty HPP payments cannot be refunded via the WooCommerce admin.", "globalpayments-gateway-provider-for-woocommerce" ) ;
+		$button_title = __( 'Refunds for eRaty transactions are not supported via WordPress. Please follow your eRaty/acquirer refund process.', 'globalpayments-gateway-provider-for-woocommerce' );
 
 		?>
 		<script>
