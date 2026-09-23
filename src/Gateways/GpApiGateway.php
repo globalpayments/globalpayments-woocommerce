@@ -1560,6 +1560,17 @@ class GpApiGateway extends AbstractGateway {
 		return $params;
 	}
 
+	/**
+	 * GP API has no void for a transaction: the SDK's GP API management request builder
+	 * has no case for a void, so it builds no request and GpApiConnector throws a TypeError.
+	 * A reversal cancels an authorisation or an unsettled capture in full.
+	 *
+	 * @inheritdoc
+	 */
+	protected function cancel_partial_approval( Transaction $response ) {
+		$response->reverse()->execute();
+	}
+
 	 /* Used for handling AVS/CVN response codes
 	 *
 	 * @param Transaction $response
