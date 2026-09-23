@@ -39,9 +39,15 @@
 
 			$.get( self.helperOptions.orderInfoUrl )
 				.done( function( result ) {
-					// Validate response from remote resource
-					if ( result && typeof result.message === 'string' ) {
-						// Store sanitized message only if it's a valid string
+					// Validate response from remote resource. `message` is the
+					// order data object ( id, amount, currency, country ) built
+					// by AbstractGateway::get_order_data(), not a string.
+					if (
+						result &&
+						result.message &&
+						typeof result.message === 'object' &&
+						! isNaN( parseFloat( result.message.amount ) )
+					) {
 						self.order = result.message;
 					}
 				})
