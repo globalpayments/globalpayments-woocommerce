@@ -1349,6 +1349,9 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			return false;
 		}
 
+		// Never mark an order paid for an amount other than the one the gateway approved.
+		$this->verify_approved_amount( $request, $response );
+
 		//reverse incase of AVS/CVN failure
 		if ( ! empty( $response->transactionReference->transactionId ) && $this->get_option( 'check_avs_cvv' ) === 'yes' ) {
 			// Will enable once PHP SDK supporting changes are released
@@ -1412,6 +1415,113 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		}
 
 		return true;
+	}
+
+	/**
+	 * The amount the gateway reports it actually approved for this transaction.
+	 *
+	 * Gateways that return the approved amount should override this. Returning
+	 * null skips the approved-amount check.
+	 *
+	 * @param Transaction $response
+	 *
+	 * @return float|int|string|null
+	 */
+	protected function get_approved_amount( Transaction $response ) {
+		return null;
+	}
+
+	/**
+	 * Refuses to complete an order whose approved amount differs from the order total.
+	 *
+	 * The amount approved is not always the amount requested: for a digital wallet
+	 * payment the amount the shopper approved in the wallet sheet is part of the
+	 * encrypted token, and that is the amount that gets authorised. If the order total
+	 * changed after the sheet was built, the gateway approves the old amount while the
+	 * order would otherwise be marked as paid in full.
+	 *
+	 * On a mismatch the transaction is reversed and an exception is thrown, so the order
+	 * is never marked as paid. If the reversal fails, the order is put on hold for manual
+	 * review, because the shopper may have been charged.
+	 *
+	 * @param Requests\RequestInterface $request
+	 * @param Transaction               $response
+	 *
+	 * @return void
+	 * @throws ApiException
+	 */
+	protected function verify_approved_amount( Requests\RequestInterface $request, Transaction $response ) {
+		$payment_types = array(
+			self::TXN_TYPE_SALE,
+			self::TXN_TYPE_AUTHORIZE,
+			self::TXN_TYPE_SUBSCRIPTION_PAYMENT,
+		);
+		if ( ! in_array( $request->get_transaction_type(), $payment_types, true ) ) {
+			return;
+		}
+
+		$order = $request->order ?? null;
+		if ( ! $order instanceof WC_Order ) {
+			return;
+		}
+
+		$approved = $this->get_approved_amount( $response );
+		if ( null === $approved || '' === $approved ) {
+			return;
+		}
+
+		$expected = $order->get_total();
+		if ( abs( (float) $approved - (float) $expected ) < 0.00001 ) {
+			return;
+		}
+
+		$transaction_id = $response->transactionReference->transactionId ?? '';
+		$approved_price = wc_price( $approved, array( 'currency' => $order->get_currency() ) );
+		$expected_price = wc_price( $expected, array( 'currency' => $order->get_currency() ) );
+
+		$this->declined_transaction_id = $transaction_id;
+
+		try {
+			// A reversal cancels an authorisation or an unsettled capture in full.
+			$response->reverse()->execute();
+		} catch ( \Throwable $e ) {
+			wc_get_logger()->error(
+				sprintf(
+					'Order %1$s: approved amount %2$s does not match order total %3$s and the reversal of transaction %4$s failed: %5$s',
+					$order->get_id(),
+					$approved,
+					$expected,
+					$transaction_id,
+					$e->getMessage()
+				),
+				array( 'source' => 'globalpayments' )
+			);
+
+			$order->update_status(
+				'on-hold',
+				sprintf(
+					/* translators: 1: amount approved by the gateway, 2: order total, 3: transaction ID */
+					__( 'The gateway approved %1$s but the order total is %2$s. The automatic reversal of transaction %3$s failed, so the shopper may have been charged: reverse or refund this transaction manually before taking payment again.', 'globalpayments-gateway-provider-for-woocommerce' ),
+					$approved_price,
+					$expected_price,
+					$transaction_id
+				)
+			);
+
+			throw new ApiException( esc_html__( 'We could not confirm your payment. Please contact us before trying again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+		}
+
+		$order->add_order_note(
+			sprintf(
+				/* translators: 1: amount approved by the gateway, 2: order total, 3: transaction ID */
+				__( 'The gateway approved %1$s but the order total is %2$s, so transaction %3$s was reversed and the order was not marked as paid.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				$approved_price,
+				$expected_price,
+				$transaction_id
+			)
+		);
+
+		throw new ApiException( esc_html__( 'The amount approved for your payment did not match your order total, so the payment was cancelled and you have not been charged. Please check your order total and try again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 	}
 
 	// should be overridden by gateway implementations
