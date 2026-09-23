@@ -1347,13 +1347,24 @@ class GpApiGateway extends AbstractGateway {
 	public function handle_adding_capture_order_action( $actions ) {
 		global $theorder;
 
+		// Only card orders taken by this gateway can be captured here.
+		if ( ! $theorder instanceof \WC_Order || $this->id !== $theorder->get_payment_method() ) {
+			return $actions;
+		}
+
+		// The action the order was actually taken with; the gateway setting may have changed since.
+		$payment_action = $theorder->get_meta( '_globalpayments_payment_action' );
+		if ( empty( $payment_action ) ) {
+			$payment_action = $this->payment_action;
+		}
+
 		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			$order_is_captured = $theorder->get_meta( '_globalpayments_payment_captured' );
 		} else {
 			$order_is_captured = get_post_meta( $theorder->get_id(), '_globalpayments_payment_captured', true );
 		}
 
-		if ( $order_is_captured === 'is_captured' || $this->payment_action === AbstractGateway::TXN_TYPE_SALE ) {
+		if ( $order_is_captured === 'is_captured' || $payment_action === AbstractGateway::TXN_TYPE_SALE ) {
 			return $actions;
 		}
 

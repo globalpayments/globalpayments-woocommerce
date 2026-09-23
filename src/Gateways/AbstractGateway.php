@@ -1021,11 +1021,14 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 				$this->payment_action = __( 'charged', 'globalpayments-gateway-provider-for-woocommerce' );
 
 				if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
-					$order->add_meta_data( '_globalpayments_payment_captured', 'is_captured', true );
+					$order->update_meta_data( '_globalpayments_payment_captured', 'is_captured' );
 				} else {
 					add_post_meta( $order->get_id(), '_globalpayments_payment_captured', 'is_captured', true );
 				}
 			}
+
+			// payment_complete() saved the order inside handle_response(); persist the meta added after it.
+			$order->save();
 
 			$note_text = sprintf(
 				'%1$s%2$s %3$s. Transaction ID: %4$s.',
@@ -1167,6 +1170,14 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 			case GpiTransactionApiGateway::GATEWAY_ID:
 				$gateway = new GpiTransactionApiGateway();
 				break;
+			default:
+				wp_die(
+					esc_html__( 'This order cannot be captured: it was not paid with a Global Payments payment method that supports capture.', 'globalpayments-gateway-provider-for-woocommerce' ),
+					'',
+					array(
+						'back_link' => true,
+					)
+				);
 		};
 
 		$request = $gateway->prepare_request( self::TXN_TYPE_CAPTURE, $order );
