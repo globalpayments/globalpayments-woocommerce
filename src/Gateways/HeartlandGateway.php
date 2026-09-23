@@ -363,6 +363,15 @@ class HeartlandGateway extends AbstractGateway {
 	 */
 	public function process_payment( $order_id ) {
 		$order                  = new WC_Order( $order_id );
+
+		// Never charge an order that has already been paid, e.g. on a duplicate or replayed submission.
+		if ( $order->is_paid() ) {
+			return array(
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			);
+		}
+
 		$applied_gift_cards     = WC()->session ? WC()->session->get( 'heartland_gift_card_applied' ) : null;
 		$has_applied_gift_cards = is_object( $applied_gift_cards ) && count( get_object_vars( $applied_gift_cards ) ) > 0;
 
