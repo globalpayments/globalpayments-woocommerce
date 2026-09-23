@@ -1308,6 +1308,20 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	}
 
 	/**
+	 * Cancels a partially approved transaction in full.
+	 *
+	 * Gateways that cannot void a transaction should override this.
+	 *
+	 * @param Transaction $response
+	 *
+	 * @return void
+	 * @throws \Throwable
+	 */
+	protected function cancel_partial_approval( Transaction $response ) {
+		$response->void()->withDescription( 'POST_AUTH_USER_DECLINE' )->execute();
+	}
+
+	/**
 	 * Reacts to the transaction response
 	 *
 	 * @param Requests\RequestInterface $request
@@ -1320,11 +1334,39 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		if ( self::is_transaction_declined( $response ) || $response->responseMessage === 'Partially Approved' ) {
 			if ( self::is_partially_approved( $response ) ) {
 				try {
-					$response->void()->withDescription( 'POST_AUTH_USER_DECLINE' )->execute();
+					$this->cancel_partial_approval( $response );
+
+					if ( $request->order instanceof WC_Order ) {
+						$request->order->add_order_note(
+							sprintf(
+								/* translators: %s: gateway transaction ID */
+								__( 'The payment was only partially approved, so it was cancelled. Transaction ID: %s.', 'globalpayments-gateway-provider-for-woocommerce' ),
+								$response->transactionReference->transactionId ?? ''
+							)
+						);
+					}
 
 					return false;
-				} catch ( \Exception $e ) {
-					/** om nom */
+				} catch ( \Throwable $e ) {
+					// \Throwable, not \Exception: an SDK TypeError must not escape and fatal the checkout request.
+					wc_get_logger()->error(
+						sprintf(
+							'Could not cancel partially approved transaction %1$s: %2$s',
+							$response->transactionReference->transactionId ?? '',
+							$e->getMessage()
+						),
+						array( 'source' => 'globalpayments' )
+					);
+
+					if ( $request->order instanceof WC_Order ) {
+						$request->order->add_order_note(
+							sprintf(
+								/* translators: %s: gateway transaction ID */
+								__( 'The payment was only partially approved and could not be cancelled automatically. Check transaction %s and reverse it manually if needed.', 'globalpayments-gateway-provider-for-woocommerce' ),
+								$response->transactionReference->transactionId ?? ''
+							)
+						);
+					}
 				}
 			}
 
