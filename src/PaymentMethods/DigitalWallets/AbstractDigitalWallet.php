@@ -54,7 +54,9 @@ abstract class AbstractDigitalWallet extends AbstractPaymentMethod {
 			$this->payment_action = __( 'charged', 'globalpayments-gateway-provider-for-woocommerce' );
 
 			if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
-				$order->add_meta_data( '_globalpayments_payment_captured', 'is_captured', true );
+				$order->update_meta_data( '_globalpayments_payment_captured', 'is_captured' );
+				// payment_complete() has already saved the order; persist the meta added since.
+				$order->save();
 			} else {
 				add_post_meta( $order->get_id(), '_globalpayments_payment_captured', 'is_captured', true );
 			}
