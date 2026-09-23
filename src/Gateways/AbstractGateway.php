@@ -1005,6 +1005,15 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 */
 	public function process_payment( $order_id ) {
 		$order         = wc_get_order( $order_id );
+
+		// Never charge an order that has already been paid, e.g. on a duplicate or replayed submission.
+		if ( $order instanceof WC_Order && $order->is_paid() ) {
+			return array(
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			);
+		}
+
 		$request       = $this->prepare_request( $this->payment_action, $order );
 
 		$request->set_request_data( array(

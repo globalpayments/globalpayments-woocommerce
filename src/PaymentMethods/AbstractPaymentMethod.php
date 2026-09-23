@@ -275,6 +275,15 @@ abstract class AbstractPaymentMethod extends WC_Payment_Gateway implements Payme
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
+
+		// Never charge an order that has already been paid, e.g. on a duplicate or replayed submission.
+		if ( $order instanceof \WC_Order && $order->is_paid() ) {
+			return array(
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			);
+		}
+
 		try {
 			$request = $this->gateway->prepare_request(
 					$this->get_request_type(),
