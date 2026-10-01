@@ -100,7 +100,10 @@ class PaymentTokenData {
 		$request_data = $this->request->get_request_data( $gateway );
 		if ( ! isset( $request_data['token_response'] ) ) {
 			$payment_data   = $this->request->get_request_data( 'payment_data' );
-			$token_response = Utils::get_data_from_payment_data( $payment_data, 'token_response' );
+			$token_response = null;
+			if ( ! empty( $payment_data ) ) {
+				$token_response = Utils::get_data_from_payment_data( $payment_data, 'token_response' );
+			}
 			if ( ! isset( $token_response ) ) {
 				return null;
 			}

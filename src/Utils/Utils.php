@@ -93,10 +93,14 @@ class Utils {
 	/**
 	 * Payment data come as an array of key-value pair object, we search for specific key and return its value
 	 *
-	 * @param array $payment_data
+	 * @param array|null $payment_data
 	 * @param string $key
 	 */
-	public static function get_data_from_payment_data( array $payment_data, string $key ) {
+	public static function get_data_from_payment_data( ?array $payment_data, string $key ) {
+		if ( empty( $payment_data ) ) {
+			return null;
+		}
+
 		foreach ( $payment_data as $data) {
 			if ($data->key === $key) {
 				return $data->value;

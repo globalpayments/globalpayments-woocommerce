@@ -1005,47 +1005,106 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 */
 	public function process_payment( $order_id ) {
 		$order         = wc_get_order( $order_id );
-		$request       = $this->prepare_request( $this->payment_action, $order );
+		try {
+			$request = $this->prepare_request( $this->payment_action, $order );
 
-		$request->set_request_data( array(
-			'dynamic_descriptor' => $this->txn_descriptor,
-		) );
+			$request->set_request_data( array(
+				'dynamic_descriptor' => $this->txn_descriptor,
+			) );
 
-		$response      = $this->submit_request( $request );
-		$is_successful = $this->handle_response( $request, $response );
+			$response      = $this->submit_request( $request );
+			$is_successful = $this->handle_response( $request, $response );
 
-		if ( $is_successful ) {
-			if ( $this->payment_action == self::TXN_TYPE_AUTHORIZE ) {
-				$this->payment_action = __( 'authorized', 'globalpayments-gateway-provider-for-woocommerce' );
-			} else {
-				$this->payment_action = __( 'charged', 'globalpayments-gateway-provider-for-woocommerce' );
-
-				if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
-					$order->add_meta_data( '_globalpayments_payment_captured', 'is_captured', true );
+			if ( $is_successful ) {
+				if ( $this->payment_action == self::TXN_TYPE_AUTHORIZE ) {
+					$this->payment_action = __( 'authorized', 'globalpayments-gateway-provider-for-woocommerce' );
 				} else {
-					add_post_meta( $order->get_id(), '_globalpayments_payment_captured', 'is_captured', true );
+					$this->payment_action = __( 'charged', 'globalpayments-gateway-provider-for-woocommerce' );
+
+					if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+						$order->add_meta_data( '_globalpayments_payment_captured', 'is_captured', true );
+					} else {
+						add_post_meta( $order->get_id(), '_globalpayments_payment_captured', 'is_captured', true );
+					}
 				}
-			}
 
-			$note_text = sprintf(
-				'%1$s%2$s %3$s. Transaction ID: %4$s.',
-				get_woocommerce_currency_symbol( $order->get_currency() ),
-				$order->get_total(),
-				$this->payment_action,
-				$order->get_transaction_id()
+				$note_text = sprintf(
+					'%1$s%2$s %3$s. Transaction ID: %4$s.',
+					get_woocommerce_currency_symbol( $order->get_currency() ),
+					$order->get_total(),
+					$this->payment_action,
+					$order->get_transaction_id()
+				);
+				// If the order contains a subscription, add the muti-use token to the order meta for repeat payments.
+				if ( function_exists( 'wcs_order_contains_subscription' ) && \wcs_order_contains_subscription( $order ) && $is_successful ) {
+					$order->add_meta_data( "_GP_multi_use_token", $response->token, true );
+					$order->save_meta_data();
+				}
+
+				$order->add_order_note( $note_text );
+			} else {
+				$order->add_order_note(
+					sprintf(
+						/* translators: %s: declined or failed payment message */
+						__( 'Payment failed during checkout: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+						Utils::map_response_code_to_friendly_message( $response->responseCode )
+					)
+				);
+			}
+		} catch ( ApiException $e ) {
+			// Decline exceptions are deliberately thrown by handle_response() to signal declined
+			// transactions. Subclasses (like GpApiGateway) rely on catching this to perform
+			// order status transitions. Log but rethrow to preserve subclass handling.
+			$logger      = wc_get_logger();
+			$log_context = array( 'source' => $this->id );
+
+			$logger->warning(
+				sprintf( 'Transaction declined for order %s: %s', $order_id, $e->getMessage() ),
+				$log_context
 			);
-			// If the order contains a subscription, add the muti-use token to the order meta for repeat payments.
-			if ( function_exists( "wcs_order_contains_subscription" ) && wcs_order_contains_subscription( $order ) && $is_successful ) {
-				$order->add_meta_data( "_GP_multi_use_token", $response->token, true );
-				$order->save_meta_data();
+
+			throw $e;
+		} catch ( \Throwable $e ) {
+			// Catch all other submission/pre-payment errors (request prep, API calls, etc.)
+			$logger      = wc_get_logger();
+			$note_text   = sprintf(
+				/* translators: %s: checkout failure message */
+				__( 'Payment failed during checkout: %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+				$e->getMessage()
+			);
+			$log_context = array( 'source' => $this->id );
+
+			$logger->error(
+				sprintf( 'Checkout payment failed for order %s: %s', $order_id, $e->getMessage() ),
+				$log_context
+			);
+
+			if ( $order instanceof WC_Order ) {
+				$order->add_order_note( $note_text );
 			}
 
-			$order->add_order_note( $note_text );
+			return array(
+				'result'   => 'failure',
+				'redirect' => false,
+			);
+		}
+
+		// Post-processing phase: generate redirect URL. Errors here should not fail a successful payment.
+		try {
+			$redirect_url = $is_successful ? $this->get_return_url( $order ) : false;
+		} catch ( \Throwable $e ) {
+			$logger = wc_get_logger();
+			$logger->warning(
+				sprintf( 'Post-processing failed for order %s (payment succeeded): %s', $order_id, $e->getMessage() ),
+				array( 'source' => $this->id )
+			);
+			// Payment succeeded; provide redirect despite post-processing failure
+			$redirect_url = $is_successful ? wc_get_endpoint_url( 'order-received', $order->get_id(), wc_get_page_permalink( 'checkout' ) ) : false;
 		}
 
 		return array(
 			'result'   => $is_successful ? 'success' : 'failure',
-			'redirect' => $is_successful ? $this->get_return_url( $order ) : false,
+			'redirect' => $redirect_url,
 		);
 	}
 

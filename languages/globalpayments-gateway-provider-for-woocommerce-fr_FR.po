@@ -36,7 +36,7 @@ msgstr "Payer la commande"
 
 #: includes/admin/views/html-pay-order.php:4
 msgid "Admins can process customer orders over the phone using this functionality."
-msgstr "Los administradores pueden procesar las ordenes de los clientes desde el telefóno usando esta funcionalidad"
+msgstr "Les administrateurs peuvent traiter les commandes des clients par téléphone grâce à cette fonctionnalité."
 
 #. translators: Tooltip shown on refund button for async payment methods
 #: src/PaymentMethods/AbstractPaymentMethod.php:398

@@ -145,239 +145,239 @@ msgstr "Wystąpił błąd podczas przetwarzania płatności. Spróbuj ponownie l
 
 #: includes/admin/views/html-pay-order.php:4
 msgid "Admins can process customer orders over the phone using this functionality."
-msgstr "Los administradores pueden procesar las ordenes de los clientes desde el telefóno usando esta funcionalidad"
+msgstr "Administratorzy mogą przetwarzać zamówienia klientów telefonicznie za pomocą tej funkcji."
 
 #. translators: Tooltip shown on refund button for async payment methods
 #: src/PaymentMethods/AbstractPaymentMethod.php:398
 msgid "Payment confirmation for this method may take several days. Refunds are only available after a final payment status is received. Please wait for confirmation or contact support if the delay continues."
-msgstr "La confirmation de paiement pour cette méthode peut prendre quelques jours. Les remboursements ne sont possibles qu'après réception du paiement final. SVP attendez la confirmation, ou contactez le support si le délai persiste."
+msgstr "Potwierdzenie płatności tą metodą może zająć kilka dni. Zwroty są możliwe dopiero po otrzymaniu ostatecznego statusu płatności. Prosimy o cierpliwość lub kontakt z pomocą techniczną, jeśli opóźnienie się utrzymuje."
 
 #: includes/admin/views/html-pay-order.php:57
 msgid "This order has a transaction ID associated with it already. Click the checkbox to proceed."
-msgstr "Cette commande est déjà associée à un ID transaction. Cochez la case pour continuer."
+msgstr "To zamówienie ma już przypisany identyfikator transakcji. Zaznacz pole wyboru, aby kontynuować."
 
 #: includes/admin/views/html-pay-order.php:61
 msgid "Ok to process order"
-msgstr "Ok pour traiter la commande"
+msgstr "Ok, przetwórz zamówienie"
 
 #: includes/admin/views/html-transaction-info.php:3
 #: includes/admin/views/html-transaction-info.php:13
 msgid "View Transaction Info"
-msgstr "Afficher les informations sur les transactions"
+msgstr "Wyświetl informacje o transakcji"
 
 #: includes/admin/views/html-transaction-info.php:5
 msgid "Admins can view transaction details using this functionality."
-msgstr "Les administrateurs peuvent afficher les détails des transactions à l'aide de cette fonctionnalité."
+msgstr "Administratorzy mogą wyświetlać szczegóły transakcji za pomocą tej funkcji."
 
 #: includes/admin/views/html-transaction-info.php:28
 msgid "General Info"
-msgstr "Informations générales"
+msgstr "Informacje ogólne"
 
 #: includes/admin/views/html-transaction-info.php:34
 msgid "Transaction Id"
-msgstr "Transaction ID"
+msgstr "ID transakcji"
 
 #: includes/admin/views/html-transaction-info.php:42
 msgid "Transaction Status"
-msgstr "Statut de transaction"
+msgstr "Status transakcji"
 
 #: includes/admin/views/html-transaction-info.php:50
 msgid "Transaction Type"
-msgstr "Type de transaction"
+msgstr "Typ transakcji"
 
 #: includes/admin/views/html-transaction-info.php:58
 msgid "Amount"
-msgstr "Montant"
+msgstr "Kwota"
 
 #: includes/admin/views/html-transaction-info.php:66
 msgid "Currency"
-msgstr "Devise"
+msgstr "Waluta"
 
 #: includes/admin/views/html-transaction-info.php:75
 msgid "Provider"
-msgstr "Fournisseur"
+msgstr "Dostawca"
 
 #: includes/admin/views/html-transaction-info.php:85
 msgid "Payment Type"
-msgstr "Type de paiement"
+msgstr "Typ płatności"
 
 #: src/Gateways/AbstractGateway.php:601
 #: src/Gateways/AbstractGateway.php:602
 #: src/Gateways/GpApiGateway.php:383
 #: src/Gateways/GpApiGateway.php:384
 msgid "Allow Card Saving"
-msgstr "Permettre la sauvegarde de carte"
+msgstr "Zezwól na zapisywanie karty"
 
 #: src/Gateways/AbstractGateway.php:609
 msgid "Order Transaction Descriptor"
-msgstr "Descripteur de transaction de commande"
+msgstr "Deskryptor transakcji zamówienia"
 
 #: src/Gateways/AbstractGateway.php:620
 msgid "Check AVS CVN"
-msgstr "Vérifier AVS CVN"
+msgstr "Sprawdź AVS CVN"
 
 #: src/Gateways/AbstractGateway.php:621
 msgid "Check AVS/CVN result codes and reverse transaction."
-msgstr "Vérifier les codes de résultat AVS/CVN et annuler la transaction."
+msgstr "Sprawdź kody wyników AVS/CVN i cofnij transakcję."
 
 #: src/Gateways/AbstractGateway.php:624
 msgid "This will check AVS/CVN result codes and reverse transaction."
-msgstr "Cela amorcera une vérification des codes de résultat AVS/CVN et annulera la transaction."
+msgstr "Spowoduje to sprawdzenie kodów wyników AVS/CVN i cofnięcie transakcji."
 
 #: src/Gateways/AbstractGateway.php:629
 msgid "AVS Reject Conditions"
-msgstr "Conditions de rejet AVS"
+msgstr "Warunki odrzucenia AVS"
 
 #: src/Gateways/AbstractGateway.php:633
 msgid "Choose for which AVS result codes, the transaction must be auto reversed."
-msgstr "Choisissez les codes de résultat AVS qui entraîneront une annulation automatique de la transaction."
+msgstr "Wybierz kody wyników AVS, dla których transakcja ma zostać automatycznie cofnięta."
 
 #: src/Gateways/AbstractGateway.php:638
 msgid "CVN Reject Conditions"
-msgstr "Conditions de rejet CVN"
+msgstr "Warunki odrzucenia CVN"
 
 #: src/Gateways/AbstractGateway.php:642
 msgid "Choose for which CVN result codes, the transaction must be auto reversed."
-msgstr "Choisissez les codes de résultat CVN qui entraîneront une annulation automatique de la transaction."
+msgstr "Wybierz kody wyników CVN, dla których transakcja ma zostać automatycznie cofnięta."
 
 #. translators: %s: Order created with Transaction ID
 #: src/Gateways/AbstractGateway.php:992
 #, php-format
 msgid "Order created with Transaction ID: %s"
-msgstr "Commande créée avec l'ID de transaction : %s"
+msgstr "Zamówienie utworzone z identyfikatorem transakcji: %s"
 
 #: src/Gateways/AbstractGateway.php:1019
 #: src/PaymentMethods/DigitalWallets/AbstractDigitalWallet.php:52
 msgid "authorized"
-msgstr "autorisé"
+msgstr "autoryzowano"
 
 #: src/Gateways/AbstractGateway.php:1021
 #: src/Gateways/GeniusGateway.php:306
 #: src/PaymentMethods/DigitalWallets/AbstractDigitalWallet.php:54
 msgid "charged"
-msgstr "chargé"
+msgstr "obciążono"
 
 #: src/Gateways/AbstractGateway.php:1100
 #: src/Gateways/GeniusGateway.php:566
 msgid "Refund amount must be a valid number"
-msgstr "Le montant de remboursement doit être un numéro valide"
+msgstr "Kwota zwrotu musi być prawidłową liczbą"
 
 #: src/Gateways/AbstractGateway.php:1109
 #: src/Gateways/GeniusGateway.php:575
 msgid "Refund amount must be greater than zero."
-msgstr "Le montant de remboursement doit être supérieur à zéro."
+msgstr "Kwota zwrotu musi być większa niż zero."
 
 #. translators: %s: Transaction ID for the capture
 #: src/Gateways/AbstractGateway.php:1190
 #, php-format
 msgid "Transaction captured. Transaction ID for the capture: %s"
-msgstr "Transaction capturée. ID de transaction pour la capture : %s"
+msgstr "Transakcja przechwycona. Identyfikator transakcji przechwycenia: %s"
 
 #: src/Gateways/AbstractGateway.php:1457
 #: src/Gateways/GpApiGateway.php:1360
 #: src/PaymentMethods/Apm/Paypal.php:99
 msgid "Capture credit card authorization"
-msgstr "Capturer l'autorisation de carte de crédit"
+msgstr "Przechwyć autoryzację karty kredytowej"
 
 #: src/Gateways/AbstractGateway.php:1534
 msgid "A - Address matches, zip No Match"
-msgstr "A - Adresse correspond, code postal ne correspond pas"
+msgstr "A - Adres zgodny, kod pocztowy niezgodny"
 
 #: src/Gateways/AbstractGateway.php:1535
 msgid "N - Neither address or zip code match"
-msgstr "N - Adresse et code postal ne correspondent pas"
+msgstr "N - Ani adres, ani kod pocztowy nie są zgodne"
 
 #: src/Gateways/AbstractGateway.php:1536
 msgid "R - Retry - system unable to respond"
-msgstr "R - Réessayer - système incapable de répondre"
+msgstr "R - Ponów - system nie może odpowiedzieć"
 
 #: src/Gateways/AbstractGateway.php:1537
 msgid "U - Visa / Discover card AVS not supported"
-msgstr "U - AVS de carte Visa/Discover non pris en charge"
+msgstr "U - AVS niewspierane dla kart Visa/Discover"
 
 #: src/Gateways/AbstractGateway.php:1538
 msgid "S - Master / Amex card AVS not supported"
-msgstr "S - AVS de carte Master/Amex non pris en charge"
+msgstr "S - AVS niewspierane dla kart Mastercard/Amex"
 
 #: src/Gateways/AbstractGateway.php:1539
 msgid "Z - Visa / Discover card 9-digit zip code match, address no match"
-msgstr "Z - Code postal de 9 chiffres de carte Visa/Discover correspond, adresse ne correspond pas"
+msgstr "Z - 9-cyfrowy kod pocztowy karty Visa/Discover zgodny, adres niezgodny"
 
 #: src/Gateways/AbstractGateway.php:1540
 msgid "W - Master / Amex card 9-digit zip code match, address no match"
-msgstr "W - Code postal de 9 chiffres de carte Master/Amex correspond, adresse ne correspond pas"
+msgstr "W - 9-cyfrowy kod pocztowy karty Mastercard/Amex zgodny, adres niezgodny"
 
 #: src/Gateways/AbstractGateway.php:1541
 msgid "Y - Visa / Discover card 5-digit zip code and address match"
-msgstr "Y - Code postal de 5 chiffres et adresse de carte Visa/Discover correspondent"
+msgstr "Y - 5-cyfrowy kod pocztowy i adres karty Visa/Discover zgodne"
 
 #: src/Gateways/AbstractGateway.php:1542
 msgid "X - Master / Amex card 5-digit zip code and address match"
-msgstr "X - Code postal de 5 chiffres et adresse de carte Master/Amex correspondent"
+msgstr "X - 5-cyfrowy kod pocztowy i adres karty Mastercard/Amex zgodne"
 
 #: src/Gateways/AbstractGateway.php:1543
 msgid "G - Address not verified for International transaction"
-msgstr "G - Adresse non vérifiée pour transaction internationale"
+msgstr "G - Adres niezweryfikowany w transakcji międzynarodowej"
 
 #: src/Gateways/AbstractGateway.php:1544
 msgid "B - Address match, Zip not verified"
-msgstr "B - Adresse correspond, code postal non vérifié"
+msgstr "B - Adres zgodny, kod pocztowy niezweryfikowany"
 
 #: src/Gateways/AbstractGateway.php:1545
 msgid "C - Address and zip mismatch"
-msgstr "C - Adresse et code postal ne concordent pas"
+msgstr "C - Adres i kod pocztowy niezgodne"
 
 #: src/Gateways/AbstractGateway.php:1546
 msgid "D - Address and zip match"
-msgstr "D - Adresse et code postal concordent"
+msgstr "D - Adres i kod pocztowy zgodne"
 
 #: src/Gateways/AbstractGateway.php:1547
 msgid "I - AVS not verified for International transaction"
-msgstr "I - AVS non vérifié pour transaction internationale"
+msgstr "I - AVS niezweryfikowane w transakcji międzynarodowej"
 
 #: src/Gateways/AbstractGateway.php:1548
 msgid "M - Street address and postal code matches"
-msgstr "M - Adresse postale et code postal concordent"
+msgstr "M - Adres i kod pocztowy zgodne"
 
 #: src/Gateways/AbstractGateway.php:1549
 msgid "P - Address and Zip not verified"
-msgstr "P - Adresse et code postal non vérifiés"
+msgstr "P - Adres i kod pocztowy niezweryfikowane"
 
 #: src/Gateways/AbstractGateway.php:1555
 msgid "N - Not Matching"
-msgstr "N - Ne correspond pas"
+msgstr "N - Niezgodny"
 
 #: src/Gateways/AbstractGateway.php:1556
 msgid "P - Not Processed"
-msgstr "P - Non Traité"
+msgstr "P - Nieprzetworzony"
 
 #: src/Gateways/AbstractGateway.php:1557
 msgid "S - Result not present"
-msgstr "S - Résultat non présenté"
+msgstr "S - Brak wyniku"
 
 #: src/Gateways/AbstractGateway.php:1558
 msgid "U - Issuer not certified"
-msgstr "U - Émetteur non certifié"
+msgstr "U - Wydawca niecertyfikowany"
 
 #: src/Gateways/AbstractGateway.php:1559
 msgid "? - CVV unrecognized"
-msgstr "? - CVV inconnu"
+msgstr "? - CVV nierozpoznany"
 
 #. translators: %s: You can enable only one GlobalPayments gateway at a time
 #: src/Gateways/AbstractGateway.php:1586
 #: assets/admin/js/globalpayments-enforce-single-gateway.js:29
 #, php-format,js-format
 msgid "You can enable only one GlobalPayments gateway at a time. Please disable %s first!"
-msgstr "Vous ne pouvez activer qu’une seule passerelle GlobalPayments à la fois. Veuillez d'abord désactiver %s!"
+msgstr "Możesz włączyć tylko jedną bramkę GlobalPayments naraz. Najpierw wyłącz %s!"
 
 #: src/Gateways/Clients/SdkClient.php:114
 msgid "Unable to perform request."
-msgstr "Impossible d'exécuter la demande."
+msgstr "Nie można wykonać żądania."
 
 #: src/Gateways/Clients/SdkClient.php:543
 #: src/Gateways/Clients/SdkClient.php:547
 msgid "3DS Authentication failed. Please try again."
-msgstr "Échec de l'authentification 3DS. Veuillez réessayer."
+msgstr "Uwierzytelnianie 3DS nie powiodło się. Spróbuj ponownie."
 
 #: src/Gateways/GeniusGateway.php:93
 msgid "Global Payments Genius"
@@ -385,7 +385,7 @@ msgstr "Global Payments Genius"
 
 #: src/Gateways/GeniusGateway.php:94
 msgid "Connect to the Global Payments Genius gateway"
-msgstr "Connectez-vous à la passerelle Global Payments Genius"
+msgstr "Połącz się z bramką Global Payments Genius"
 
 #: src/Gateways/GeniusGateway.php:104
 #: src/Gateways/GpApiGateway.php:273
@@ -393,47 +393,47 @@ msgstr "Connectez-vous à la passerelle Global Payments Genius"
 #: src/Gateways/HeartlandGateway.php:98
 #: src/Gateways/TransitGateway.php:157
 msgid "Live Mode"
-msgstr "Mode En ligne"
+msgstr "Tryb na żywo"
 
 #: src/Gateways/GeniusGateway.php:106
 msgid "Get your credentials from your Global Payments Genius account."
-msgstr "Obtenez vos informations d'identification depuis votre compte Global Payments Genius."
+msgstr "Pobierz swoje dane uwierzytelniające z konta Global Payments Genius."
 
 #: src/Gateways/GeniusGateway.php:110
 msgid "Live Merchant Name"
-msgstr "Nom du marchand En ligne"
+msgstr "Nazwa sprzedawcy (Live)"
 
 #: src/Gateways/GeniusGateway.php:116
 msgid "Live Merchant Site ID"
-msgstr "ID du site marchand En ligne"
+msgstr "ID witryny sprzedawcy (Live)"
 
 #: src/Gateways/GeniusGateway.php:122
 msgid "Live Merchant Key"
-msgstr "Clé du marchand En ligne"
+msgstr "Klucz sprzedawcy (Live)"
 
 #: src/Gateways/GeniusGateway.php:128
 msgid "Live Web API Key"
-msgstr "Clé API Web En ligne"
+msgstr "Klucz Web API (Live)"
 
 #: src/Gateways/GeniusGateway.php:134
 msgid "Sandbox Merchant Name"
-msgstr "Nom du marchand Test"
+msgstr "Nazwa sprzedawcy (Sandbox)"
 
 #: src/Gateways/GeniusGateway.php:140
 msgid "Sandbox Merchant Site ID"
-msgstr "ID du site marchand Test"
+msgstr "ID witryny sprzedawcy (Sandbox)"
 
 #: src/Gateways/GeniusGateway.php:146
 msgid "Sandbox Merchant Key"
-msgstr "Clé du marchand Test"
+msgstr "Klucz sprzedawcy (Sandbox)"
 
 #: src/Gateways/GeniusGateway.php:152
 msgid "Sandbox Web API Key"
-msgstr "Clé API Web Test"
+msgstr "Klucz Web API (Sandbox)"
 
 #: src/Gateways/GpApiGateway.php:263
 msgid "Connect to the Unified Payments Gateway"
-msgstr "Connectez-vous à la passerelle Unified Payments"
+msgstr "Połącz się z bramką Unified Payments"
 
 #: src/Gateways/GpApiGateway.php:306
 msgid "Live App Id*"
@@ -459,16 +459,16 @@ msgstr "App Key Test*"
 #: src/Gateways/GpApiGateway.php:366
 #: assets/admin/js/globalpayments-admin.js:151
 msgid "Credentials check"
-msgstr "Vérification des identifiants"
+msgstr "Sprawdzenie danych uwierzytelniających"
 
 #: src/Gateways/GpApiGateway.php:327
 #: src/Gateways/GpApiGateway.php:367
 msgid "Note: The Payment Methods will not be displayed at checkout if the credentials are not correct."
-msgstr "Veuillez noter que les méthodes de paiement n'apparaîtront pas lors du paiement si les identifiants sont incorrects."
+msgstr "Uwaga: metody płatności nie zostaną wyświetlone przy finalizacji zakupu, jeśli dane uwierzytelniające są niepoprawne."
 
 #: src/Gateways/GpApiGateway.php:659
 msgid "General Settings"
-msgstr "Paramètres généraux"
+msgstr "Ustawienia ogólne"
 
 #: src/Gateways/GpApiGateway.php:663
 #: src/Gateways/GpApiGateway.php:664
@@ -479,35 +479,35 @@ msgstr "Paramètres généraux"
 #: src/Gateways/TransitGateway.php:235
 #: src/Gateways/TransitGateway.php:236
 msgid "Enable Logging"
-msgstr "Activer l'enregistrement"
+msgstr "Włącz rejestrowanie"
 
 #: src/Gateways/GpApiGateway.php:666
 #: src/Gateways/GpiTransactionApiGateway.php:127
 #: src/Gateways/HeartlandGateway.php:131
 #: src/Gateways/TransitGateway.php:238
 msgid "Log all requests to and from the gateway. This can also log private data and should only be enabled in a development or stage environment."
-msgstr "Enregistrer toutes les demandes entrantes et sortantes de la passerelle. Les données privées peuvent également être enregistrées. Cela ne peut être activé que dans un environnement de développement."
+msgstr "Rejestruj wszystkie żądania do i z bramki. Może to również rejestrować dane prywatne, dlatego opcję tę należy włączać tylko w środowisku testowym lub deweloperskim."
 
 #: src/Gateways/TransitGateway.php:268
 msgid "Invalid MultiPass User ID or Password. Please try again."
-msgstr "ID utilisateur ou mot de passe MultiPass invalide. Veuillez réessayer."
+msgstr "Nieprawidłowy identyfikator użytkownika MultiPass lub hasło. Spróbuj ponownie."
 
 #: src/Gateways/GpApiGateway.php:671
 msgid "Contact Url*"
-msgstr "URL de contact*"
+msgstr "Adres URL kontaktu*"
 
 #: src/Gateways/GpApiGateway.php:674
 msgid "A link to an About or Contact page on your website with customer care information (maxLength: 256)."
-msgstr "Un lien vers une page À propos ou Contact sur votre site Web avec les informations de service à la clientèle (longueur max : 256)."
+msgstr "Link do strony „O nas” lub „Kontakt” w Twojej witrynie zawierającej informacje o obsłudze klienta (maks. długość: 256)."
 
 #: src/Gateways/GpApiGateway.php:682
 #: src/Gateways/GpApiGateway.php:683
 msgid "Enable 3D Secure"
-msgstr "Activer 3D Secure"
+msgstr "Włącz 3D Secure"
 
 #: src/Gateways/GpApiGateway.php:893
 msgid "Card Holder Name"
-msgstr "Nom du détenteur de carte"
+msgstr "Imię i nazwisko posiadacza karty"
 
 #: src/Gateways/GpApiGateway.php:894
 msgid "Jane Smith"
@@ -515,15 +515,15 @@ msgstr "Jane Smith"
 
 #: src/Gateways/GpApiGateway.php:896
 msgid "Please enter a valid Card Holder Name"
-msgstr "Veuillez entrer un nom de détenteur de carte valide"
+msgstr "Podaj prawidłowe imię i nazwisko posiadacza karty"
 
 #: src/Gateways/GpApiGateway.php:1072
 msgid "Please provide Live Credentials."
-msgstr "Veuillez fournir des identifiants En ligne."
+msgstr "Podaj dane uwierzytelniające Live."
 
 #: src/Gateways/GpApiGateway.php:1082
 msgid "Please provide Sandbox Credentials."
-msgstr "Veuillez fournir des identifiants Test."
+msgstr "Podaj dane uwierzytelniające Sandbox."
 
 #: src/Gateways/GpiTransactionApiGateway.php:37
 msgid "Transaction API"
@@ -531,124 +531,124 @@ msgstr "API de transactions"
 
 #: src/Gateways/GpiTransactionApiGateway.php:38
 msgid "Connect to the Transaction API"
-msgstr "Connectez-vous à l'API Transaction"
+msgstr "Połącz się z API transakcji"
 
 #: src/Gateways/GpiTransactionApiGateway.php:68
 #: src/Gateways/HeartlandGateway.php:104
 msgid "Live Public Key"
-msgstr "Clé publique En ligne"
+msgstr "Klucz publiczny (Live)"
 
 #: src/Gateways/GpiTransactionApiGateway.php:74
 msgid "Live API Key"
-msgstr "API Key En ligne"
+msgstr "Klucz API (Live)"
 
 #: src/Gateways/GpiTransactionApiGateway.php:80
 msgid "Live API Secret"
-msgstr "Secret API En ligne"
+msgstr "Sekret API (Live)"
 
 #: src/Gateways/GpiTransactionApiGateway.php:86
 msgid "Live Account Credential"
-msgstr "En ligne identifiant du compte"
+msgstr "Dane uwierzytelniające konta (Live)"
 
 #: src/Gateways/GpiTransactionApiGateway.php:92
 #: src/Gateways/HeartlandGateway.php:116
 msgid "Sandbox Public Key"
-msgstr "Clé publique Test"
+msgstr "Klucz publiczny (Sandbox)"
 
 #: src/Gateways/GpiTransactionApiGateway.php:98
 msgid "Sandbox API Key"
-msgstr "API Key Test"
+msgstr "Klucz API (Sandbox)"
 
 #: src/Gateways/GpiTransactionApiGateway.php:104
 msgid "Sandbox API Secret"
-msgstr "Secret API Test"
+msgstr "Sekret API (Sandbox)"
 
 #: src/Gateways/GpiTransactionApiGateway.php:110
 msgid "Sandbox Account Credential"
-msgstr "Identifiant du compte Test"
+msgstr "Dane uwierzytelniające konta (Sandbox)"
 
 #: src/Gateways/GpiTransactionApiGateway.php:116
 msgid "Region"
-msgstr "Région"
+msgstr "Region"
 
 #: src/Gateways/HeartlandGateway.php:110
 msgid "Live Secret Key"
-msgstr "Clé secrète En ligne"
+msgstr "Klucz tajny (Live)"
 
 #: src/Gateways/HeartlandGateway.php:122
 msgid "Sandbox Secret Key"
-msgstr "Clé secrète Test"
+msgstr "Klucz tajny (Sandbox)"
 
 #: src/Gateways/HeartlandGateway.php:136
 msgid "Enable Gift Cards"
-msgstr "Activer les cartes cadeaux"
+msgstr "Włącz karty podarunkowe"
 
 #: src/Gateways/HeartlandGateway.php:137
 msgid "Allow customers to use gift cards to pay for purchases in full or in part."
-msgstr "Permettez aux clients d’utiliser des cartes-cadeaux pour payer leurs achats en totalité ou en partie."
+msgstr "Zezwól klientom na płacenie kartami podarunkowymi za zakupy w całości lub częściowo."
 
 #: src/Gateways/HeartlandGateway.php:140
 msgid "This will display a gift card entry field directly below the credit card entry area."
-msgstr "Cela affichera un champ de saisie de la carte-cadeau directement sous la zone de saisie de la carte de crédit."
+msgstr "Spowoduje to wyświetlenie pola wprowadzania karty podarunkowej bezpośrednio pod polem karty kredytowej."
 
 #: src/Gateways/Requests/BuyNowPayLater/InitiatePaymentRequest.php:70
 msgid "Your order"
-msgstr "Votre commande"
+msgstr "Twoje zamówienie"
 
 #: src/Gateways/Requests/ThreeDSecure/AbstractAuthenticationsRequest.php:34
 #: src/Gateways/Requests/ThreeDSecure/AbstractAuthenticationsRequest.php:40
 #: src/Gateways/Requests/ThreeDSecure/AbstractAuthenticationsRequest.php:48
 msgid "Not enough data to perform 3DS. Unable to retrieve token."
-msgstr "Pas assez de données pour réaliser 3DS. Impossible de récupérer le jeton."
+msgstr "Za mało danych, aby wykonać 3DS. Nie można pobrać tokenu."
 
 #: src/Gateways/Requests/ThreeDSecure/CheckEnrollmentRequest.php:55
 #: src/Gateways/Requests/ThreeDSecure/CheckEnrollmentRequest.php:61
 #: assets/frontend/js/globalpayments-secure-payment-fields.js:349
 msgid "Please try again with another card."
-msgstr "Veuillez réessayer avec une autre carte."
+msgstr "Spróbuj ponownie z inną kartą."
 
 #: src/Gateways/Traits/CheckApiCredentialsTrait.php:31
 msgid "Invalid check api credentials request."
-msgstr "Demande de vérification d'identifiants API invalide."
+msgstr "Nieprawidłowe żądanie sprawdzenia danych uwierzytelniających API."
 
 #: src/Gateways/Traits/CheckApiCredentialsTrait.php:40
 msgid "App Id or App Key fields are invalid"
-msgstr "Les champs App ID ou App Key sont invalides"
+msgstr "Pola App Id lub App Key są nieprawidłowe"
 
 #: src/Gateways/Traits/CheckApiCredentialsTrait.php:61
 msgid "Your credentials were successfully confirmed!"
-msgstr "Vos identifiants ont été confirmés avec succès!"
+msgstr "Twoje dane uwierzytelniające zostały pomyślnie potwierdzone!"
 
 #: src/Gateways/Traits/CheckApiCredentialsTrait.php:65
 #: src/Gateways/Traits/CheckApiCredentialsTrait.php:73
 msgid "Unable to perform request. Invalid data."
-msgstr "Impossible d'exécuter la demande. Données invalides."
+msgstr "Nie można wykonać żądania. Nieprawidłowe dane."
 
 #: src/Gateways/Traits/PayOrderTrait.php:169
 #: src/Gateways/Traits/PayOrderTrait.php:176
 #: src/Gateways/Traits/PayOrderTrait.php:183
 msgid "Invalid payment request."
-msgstr "Demande de paiement invalide."
+msgstr "Nieprawidłowe żądanie płatności."
 
 #: src/Gateways/Traits/PayOrderTrait.php:196
 msgid "Invalid amount. Order total must be greater than zero."
-msgstr "Montant invalide. Le total de la commande doit être supérieur à zéro."
+msgstr "Nieprawidłowa kwota. Suma zamówienia musi być większa niż zero."
 
 #: src/Gateways/Traits/PayOrderTrait.php:199
 msgid "This order has a transaction ID associated with it already. Please click the checkbox to proceed with payment."
-msgstr "Cette commande est déjà associée à un ID de transaction. Veuillez cocher la case pour effectuer le paiement."
+msgstr "To zamówienie ma już przypisany identyfikator transakcji. Zaznacz pole wyboru, aby kontynuować płatność."
 
 #: src/Gateways/Traits/PayOrderTrait.php:224
 msgid "Something went wrong while processing the payment."
-msgstr "Une erreur s'est produite lors du traitement du paiement."
+msgstr "Coś poszło nie tak podczas przetwarzania płatności."
 
 #: src/Gateways/Traits/TransactionInfoTrait.php:79
 msgid "Invalid view transaction request."
-msgstr "Demande d'affichage de transaction invalide."
+msgstr "Nieprawidłowe żądanie wyświetlenia transakcji."
 
 #: src/Gateways/Traits/TransactionInfoTrait.php:84
 msgid "Invalid transaction id."
-msgstr "ID de transaction invalide."
+msgstr "Nieprawidłowy identyfikator transakcji."
 
 #: src/Gateways/TransitGateway.php:146
 msgid "Global Payments TransIT"
@@ -656,97 +656,97 @@ msgstr "Global Payments TransIT"
 
 #: src/Gateways/TransitGateway.php:159
 msgid "Get your API keys from your Global Payments TransIT account."
-msgstr "Obtenez vos clés API depuis votre compte Global Payments TransIT."
+msgstr "Pobierz klucze API z konta Global Payments TransIT."
 
 #: src/Gateways/TransitGateway.php:163
 msgid "Live Merchant ID"
-msgstr "ID de marchand En ligne"
+msgstr "ID sprzedawcy (Live)"
 
 #: src/Gateways/TransitGateway.php:169
 msgid "Live MultiPass User ID"
-msgstr "ID utilisateur En ligne MultiPass"
+msgstr "ID użytkownika MultiPass (Live)"
 
 #: src/Gateways/TransitGateway.php:175
 msgid "Live Password"
-msgstr "Mot de passe En ligne"
+msgstr "Hasło (Live)"
 
 #: src/Gateways/TransitGateway.php:181
 msgid "Live Device ID"
-msgstr "ID d'appareil En ligne"
+msgstr "ID urządzenia (Live)"
 
 #: src/Gateways/TransitGateway.php:187
 msgid "Live TSEP Device ID"
-msgstr "ID d'appareil TSEP En ligne"
+msgstr "ID urządzenia TSEP (Live)"
 
 #: src/Gateways/TransitGateway.php:193
 msgid "Live Transaction Key"
-msgstr "Transaction Key En ligne"
+msgstr "Klucz transakcji (Live)"
 
 #: src/Gateways/TransitGateway.php:199
 msgid "Sandbox Merchant ID"
-msgstr "ID de marchand Test"
+msgstr "ID sprzedawcy (Sandbox)"
 
 #: src/Gateways/TransitGateway.php:205
 msgid "Sandbox MultiPass User ID"
-msgstr "ID utilisateur Test MultiPass"
+msgstr "ID użytkownika MultiPass (Sandbox)"
 
 #: src/Gateways/TransitGateway.php:211
 msgid "Sandbox Password"
-msgstr "Mot de passe Test"
+msgstr "Hasło (Sandbox)"
 
 #: src/Gateways/TransitGateway.php:217
 msgid "Sandbox Device ID"
-msgstr "ID de l'appareil Test"
+msgstr "ID urządzenia (Sandbox)"
 
 #: src/Gateways/TransitGateway.php:223
 msgid "Sandbox TSEP Device ID"
-msgstr "ID de l'appareil TSEP Test"
+msgstr "ID urządzenia TSEP (Sandbox)"
 
 #: src/Gateways/TransitGateway.php:229
 msgid "Sandbox Transaction Key"
-msgstr "Transaction Key Test"
+msgstr "Klucz transakcji (Sandbox)"
 
 #. translators: %s: Order ID
 #: src/PaymentMethods/AbstractAsyncPaymentMethod.php:101
 #, php-format
 msgid "Order ID: %s. Order not found."
-msgstr "ID de commande : %s. Commande introuvable."
+msgstr "ID zamówienia: %s. Nie znaleziono zamówienia."
 
 #: src/PaymentMethods/AbstractAsyncPaymentMethod.php:163
 msgid "This request method is not supported."
-msgstr "Cette méthode de requête n'est pas prise en charge."
+msgstr "Ta metoda żądania nie jest obsługiwana."
 
 #: src/PaymentMethods/AbstractAsyncPaymentMethod.php:168
 msgid "Invalid request signature."
-msgstr "Signature de requête invalide."
+msgstr "Nieprawidłowy podpis żądania."
 
 #: src/PaymentMethods/Apm/Paypal.php:227
 msgid "Authorized"
-msgstr "Autorisé"
+msgstr "Autoryzowano"
 
 #: src/PaymentMethods/Apm/Paypal.php:219
 msgid "Captured"
-msgstr "Capturé"
+msgstr "Przechwycono"
 
 #. translators: %1$s: Payment %2$s Transaction ID
 #: src/PaymentMethods/AbstractAsyncPaymentMethod.php:323
 #, php-format
 msgid "Payment of %1$s declined/failed. Transaction ID: %2$s"
-msgstr "Paiement de %1$s refusé/échoué. ID de transaction : %2$s"
+msgstr "Płatność %1$s odrzucona/nieudana. Identyfikator transakcji: %2$s"
 
 #. translators: %1$s: Payment canceled %2$s Transaction ID
 #: src/PaymentMethods/AbstractAsyncPaymentMethod.php:343
 #, php-format
 msgid "%1$s payment canceled by customer. Transaction ID: %2$s."
-msgstr "Paiement de %1$s annulé par le client. ID de transaction : %2$s."
+msgstr "Płatność %1$s anulowana przez klienta. Identyfikator transakcji: %2$s."
 
 #: src/PaymentMethods/AbstractAsyncPaymentMethod.php:373
 msgid "Thank you. Your order has been received, but we have encountered an issue when redirecting back. Please contact us for assistance."
-msgstr "Merci. Votre commande a été reçue, mais un problème est survenu lors du réacheminement. Veuillez nous contacter pour de l'assistance."
+msgstr "Dziękujemy. Twoje zamówienie zostało odebrane, jednak wystąpił problem podczas przekierowania z powrotem. Skontaktuj się z nami, aby uzyskać pomoc."
 
 #: src/PaymentMethods/Apm/Paypal.php:33
 msgid "Pay with PayPal"
-msgstr "Payer avec PayPal"
+msgstr "Zapłać przez PayPal"
 
 #: src/PaymentMethods/Apm/Paypal.php:35
 msgid "GlobalPayments - PayPal"
@@ -754,7 +754,7 @@ msgstr "GlobalPayments - PayPal"
 
 #: src/PaymentMethods/Apm/Paypal.php:37
 msgid "Connect to PayPal via Unified Payments Gateway"
-msgstr "Connectez-vous à Paypal via la passerelle Unified Payments"
+msgstr "Połącz się z PayPal za pomocą bramki Unified Payments"
 
 #. translators: %1$s: Payment initiated %2$s Transaction ID
 #. translators: %1$s: Payment initiated %3$s Transaction ID %2$s
@@ -764,33 +764,33 @@ msgstr "Connectez-vous à Paypal via la passerelle Unified Payments"
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:161
 #, php-format
 msgid "%1$s payment initiated with %3$s. Transaction ID: %2$s."
-msgstr "Paiement de %1$s amorcé avec %3$s. ID de transaction : %2$s."
+msgstr "Płatność %1$s zainicjowana za pomocą %3$s. Identyfikator transakcji: %2$s."
 
 #. translators: %1$s: Amount %2$s Transaction ID %2$s
 #: src/PaymentMethods/Apm/Paypal.php:232
 #, php-format
 msgid "%1$s amount of %2$s. Transaction ID: %3$s."
-msgstr "Montant %1$s de %2$s. ID de transaction : %3$s."
+msgstr "%1$s kwoty %2$s. Identyfikator transakcji: %3$s."
 
 #. translators: %1$s: Authorized amount %2$sTransaction ID
 #: src/PaymentMethods/AbstractAsyncPaymentMethod.php:259
 #, php-format
 msgid "Authorized amount of %1$s. Transaction ID: %2$s."
-msgstr "Montant autorisé de %1$s. ID de transaction : %2$s."
+msgstr "Autoryzowano kwotę %1$s. Identyfikator transakcji: %2$s."
 
 #. translators: %1$s: Captured amount %2$s Transaction ID
 #: src/PaymentMethods/AbstractAsyncPaymentMethod.php:279
 #, php-format
 msgid "Captured amount of %1$s. Transaction ID: %2$s."
-msgstr "Montant capturé de %1$s. ID de transaction : %2$s."
+msgstr "Przechwycono kwotę %1$s. Identyfikator transakcji: %2$s."
 
 #: src/PaymentMethods/BuyNowPayLater/AbstractBuyNowPayLater.php:70
 msgid "<strong>Billing ZIP Code</strong> is a required field for this payment method."
-msgstr "<strong>Le code postal de facturation</strong> est obligatoire pour cette méthode de paiement."
+msgstr "<strong>Kod pocztowy rozliczeniowy</strong> jest polem wymaganym dla tej metody płatności."
 
 #: src/PaymentMethods/BuyNowPayLater/AbstractBuyNowPayLater.php:73
 msgid "<strong>Shipping ZIP Code</strong> is a required field for this payment method."
-msgstr "<strong>Le code postal de livraison</strong> est obligatoire pour cette méthode de paiement."
+msgstr "<strong>Kod pocztowy dostawy</strong> jest polem wymaganym dla tej metody płatności."
 
 #: src/PaymentMethods/BuyNowPayLater/AbstractBuyNowPayLater.php:76
 #: assets/frontend/blocks/gateways.js:1469
@@ -800,11 +800,11 @@ msgstr "<strong>Le code postal de livraison</strong> est obligatoire pour cette 
 #: assets/frontend/blocks/gateways.js:30
 #: assets/frontend/blocks/gateways.js:63
 msgid "<strong>Phone</strong> is a required field for this payment method."
-msgstr "<strong>Le téléphone</strong> est obligatoire pour cette méthode de paiement."
+msgstr "<strong>Telefon</strong> jest polem wymaganym dla tej metody płatności."
 
 #: src/PaymentMethods/BuyNowPayLater/Affirm.php:25
 msgid "Pay with Affirm"
-msgstr "Payer avec Affirm"
+msgstr "Zapłać przez Affirm"
 
 #: src/PaymentMethods/BuyNowPayLater/Affirm.php:27
 msgid "GlobalPayments - Affirm"
@@ -812,11 +812,11 @@ msgstr "GlobalPayments - Affirm"
 
 #: src/PaymentMethods/BuyNowPayLater/Affirm.php:28
 msgid "Connect to Affirm via Unified Payments Gateway"
-msgstr "Connectez-vous à Affirm via la passerelle Unified Payments"
+msgstr "Połącz się z Affirm za pomocą bramki Unified Payments"
 
 #: src/PaymentMethods/BuyNowPayLater/Clearpay.php:23
 msgid "Pay with Clearpay"
-msgstr "Payer avec Clearpay"
+msgstr "Zapłać przez Clearpay"
 
 #: src/PaymentMethods/BuyNowPayLater/Clearpay.php:25
 msgid "GlobalPayments - Clearpay"
@@ -824,11 +824,11 @@ msgstr "GlobalPayments - Clearpay"
 
 #: src/PaymentMethods/BuyNowPayLater/Clearpay.php:27
 msgid "Connect to Clearpay via Unified Payments Gateway"
-msgstr "Connectez-vous à Clearpay via la passerelle Unified Payments"
+msgstr "Połącz się z Clearpay za pomocą bramki Unified Payments"
 
 #: src/PaymentMethods/BuyNowPayLater/Klarna.php:23
 msgid "Pay with Klarna"
-msgstr "Payer avec Klarna"
+msgstr "Zapłać przez Klarna"
 
 #: src/PaymentMethods/BuyNowPayLater/Klarna.php:25
 msgid "GlobalPayments - Klarna"
@@ -836,7 +836,7 @@ msgstr "GlobalPayments - Klarna"
 
 #: src/PaymentMethods/BuyNowPayLater/Klarna.php:26
 msgid "Connect to Klarna via Unified Payments Gateway"
-msgstr "Connectez-vous à Klarna via la passerelle Unified Payments"
+msgstr "Połącz się z Klarna za pomocą bramki Unified Payments"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:84
 #: assets/frontend/js/globalpayments-applepay.js:73
@@ -846,23 +846,23 @@ msgstr "Connectez-vous à Klarna via la passerelle Unified Payments"
 #: assets/frontend/blocks/gateways.js:130
 #: assets/frontend/blocks/gateways.js:131
 msgid "Pay with Apple Pay"
-msgstr "Payer avec Apple Pay"
+msgstr "Zapłać przez Apple Pay"
 
 #: src/Gateways/GpApiGateway.php:290
 msgid "Transaction Region"
-msgstr "Région de transaction"
+msgstr "Region transakcji"
 
 #: src/Gateways/GpApiGateway.php:292
 msgid "Select where transactions are processed. This controls the GP API host for sandbox and live transactions."
-msgstr "Sélectionnez l'endroit où les transactions sont traitées. Ceci contrôle l'hôte GP API pour sandbox et live."
+msgstr "Wybierz, gdzie przetwarzane są transakcje. Ustawienie to kontroluje hosta GP API dla transakcji testowych i produkcyjnych."
 
 #: src/Gateways/GpApiGateway.php:301
 msgid "Global (default)"
-msgstr "Global (par défaut)"
+msgstr "Globalny (domyślnie)"
 
 #: src/Gateways/GpApiGateway.php:302
 msgid "Europe"
-msgstr "Europe"
+msgstr "Europa"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:86
 msgid "GlobalPayments - Apple Pay"
@@ -870,63 +870,63 @@ msgstr "GlobalPayments - Apple Pay"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:87
 msgid "Connect to Apple Pay via Unified Payments Gateway"
-msgstr "Connectez-vous à Apple Pay via la passerelle Unified Payments"
+msgstr "Połącz się z Apple Pay za pomocą bramki Unified Payments"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:98
 msgid "Apple Merchant ID*"
-msgstr "ID de marchand Apple*"
+msgstr "ID sprzedawcy Apple*"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:103
 msgid "Apple Merchant Cert Path*"
-msgstr "Chemin certif de marchand Apple*"
+msgstr "Ścieżka certyfikatu sprzedawcy Apple*"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:108
 msgid "Apple Merchant Key Path*"
-msgstr "Chemin de clé de marchand Apple*"
+msgstr "Ścieżka klucza sprzedawcy Apple*"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:113
 msgid "Apple Merchant Key Passphrase"
-msgstr "Phrase de passe clé de marchand Apple"
+msgstr "Hasło klucza sprzedawcy Apple"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:117
 msgid "Apple Merchant Domain*"
-msgstr "Domaine de marchand Apple*"
+msgstr "Domena sprzedawcy Apple*"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:122
 msgid "Apple Merchant Display Name*"
-msgstr "Nom de marchand Apple affiché*"
+msgstr "Wyświetlana nazwa sprzedawcy Apple*"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:127
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:95
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:102
 msgid "Accepted Cards*"
-msgstr "Cartes acceptées"
+msgstr "Akceptowane karty*"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:145
 msgid "Apple button color"
-msgstr "Couleur du bouton Apple"
+msgstr "Kolor przycisku Apple"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:147
 msgid "Button styling at checkout"
-msgstr "Style des boutons à la caisse"
+msgstr "Styl przycisku przy finalizacji zakupu"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:151
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:148
 msgid "Black"
-msgstr "Noir"
+msgstr "Czarny"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:152
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:147
 msgid "White"
-msgstr "Blanc"
+msgstr "Biały"
 
 #: src/PaymentMethods/DigitalWallets/ApplePay.php:153
 msgid "White with Outline"
-msgstr "Blanc avec Contour"
+msgstr "Biały z obramowaniem"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:57
 msgid "Pay with Click To Pay"
-msgstr "Payer avec Click To Pay"
+msgstr "Zapłać przez Click To Pay"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:59
 msgid "GlobalPayments - Click To Pay"
@@ -934,52 +934,52 @@ msgstr "GlobalPayments - Click To Pay"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:60
 msgid "Connect to Click To Pay via Unified Payments Gateway"
-msgstr "Connectez-vous à Click To Pay via la passerelle Unified Payments"
+msgstr "Połącz się z Click To Pay za pomocą bramki Unified Payments"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:71
 msgid "Click To Pay Client ID*"
-msgstr "ID de client Click To Pay*"
+msgstr "ID klienta Click To Pay*"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:73
 msgid "Your Merchant ID provided by Click To Pay."
-msgstr "Votre ID de marchand fourni par Click To Pay."
+msgstr "Twój identyfikator sprzedawcy nadany przez Click To Pay."
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:77
 msgid "Render Click To Pay natively"
-msgstr "Rendre Click To Pay nativement"
+msgstr "Renderuj Click To Pay natywnie"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:78
 msgid "Click To Pay will render natively within the payment form"
-msgstr "Click To Pay est rendu nativement dans le formulaire de paiement"
+msgstr "Click To Pay zostanie wyrenderowane natywnie w formularzu płatności"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:83
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:84
 msgid "Accept Canadian Visa debit cards"
-msgstr "Accepter les cartes de débit Visa canadiennes"
+msgstr "Akceptuj kanadyjskie karty debetowe Visa"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:89
 msgid "Display Global Payments footer"
-msgstr "Afficher le bas de page de Global Payments"
+msgstr "Wyświetl stopkę Global Payments"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:90
 msgid "Display Global Payments footer within the payment form"
-msgstr "Afficher le bas de page de Global Payments dans le formulaire de paiement"
+msgstr "Wyświetl stopkę Global Payments w formularzu płatności"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:248
 msgid "Click To Pay Billing"
-msgstr "Facturation Click To Pay"
+msgstr "Dane rozliczeniowe Click To Pay"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:256
 msgid "Email address:"
-msgstr "Adresse courriel:"
+msgstr "Adres e-mail:"
 
 #: src/PaymentMethods/DigitalWallets/ClickToPay.php:282
 msgid "Click To Pay Shipping"
-msgstr "Livraison Click To Pay"
+msgstr "Dane wysyłki Click To Pay"
 
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:72
 msgid "Pay with Google Pay"
-msgstr "Payer avec Google Pay"
+msgstr "Zapłać przez Google Pay"
 
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:74
 msgid "GlobalPayments - Google Pay"
@@ -987,68 +987,68 @@ msgstr "GlobalPayments - Google Pay"
 
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:75
 msgid "Connect to Google Pay via Unified Payments Gateway"
-msgstr "Connectez-vous à Google Pay via la passerelle Unified Payments"
+msgstr "Połącz się z Google Pay za pomocą bramki Unified Payments"
 
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:86
 msgid "Global Payments Client ID*"
-msgstr "ID de client Global Payments*"
+msgstr "ID klienta Global Payments*"
 
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:88
 msgid "Your Client ID provided by Global Payments."
-msgstr "Votre ID de client fourni par Global Payments."
+msgstr "Twój identyfikator klienta nadany przez Global Payments."
 
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:92
 msgid "Google Merchant ID"
-msgstr "ID de marchand Google"
+msgstr "ID sprzedawcy Google"
 
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:94
 msgid "Your Merchant ID provided by Google."
-msgstr "Votre ID de marchand fourni par Google."
+msgstr "Twój identyfikator sprzedawcy nadany przez Google."
 
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:97
 msgid "Google Merchant Display Name"
-msgstr "Nom de marchand Google affiché"
+msgstr "Wyświetlana nazwa sprzedawcy Google"
 
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:99
 msgid "Displayed to the customer in the Google Pay dialog."
-msgstr "Ce que voit le client dans le dialogue Google Pay."
+msgstr "Wyświetlane klientowi w oknie dialogowym Google Pay."
 
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:122
 msgid "Allowed Card Auth Methods*"
-msgstr "Méthodes d'autorisation de carte permises"
+msgstr "Dozwolone metody autoryzacji karty*"
 
 #: src/PaymentMethods/DigitalWallets/GooglePay.php:143
 msgid "Button Color"
-msgstr "Couleur de bouton"
+msgstr "Kolor przycisku"
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:164
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:224
 msgid "Bank Payment"
-msgstr "Paiements bancaire"
+msgstr "Płatność bankowa"
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:226
 msgid "GlobalPayments - Bank Payment"
-msgstr "GlobalPayments - Paiement bancaire"
+msgstr "GlobalPayments - Płatność bankowa"
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:227
 msgid "Connect to Bank Payments via Unified Payments Gateway"
-msgstr "Connectez-vous à Paiements bancaires via la passerelle Unified Payments"
+msgstr "Połącz się z płatnościami bankowymi za pomocą bramki Unified Payments"
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:233
 msgid "Account Number"
-msgstr "Numéro de compte"
+msgstr "Numer konta"
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:235
 msgid "Account number, for bank transfers within the UK (UK to UK bank). Only required if no bank details are stored on account."
-msgstr "Numéro de compte, pour les transferts bancaires au R.-U. (R.-U. à banque R.-U.). Requis seulement si aucune donnée bancaire n'est stockée dans le compte."
+msgstr "Numer konta dla przelewów bankowych w Wielkiej Brytanii (z banku UK do banku UK). Wymagany tylko, jeśli w koncie nie są zapisane dane bankowe."
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:238
 msgid "Account Name"
-msgstr "Nom du compte"
+msgstr "Nazwa konta"
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:240
 msgid "The name of the individual or business on the bank account. Only required if no bank details are stored on account."
-msgstr "Le nom de la personne ou de l'entreprise liée au compte bancaire. Requis seulement si aucune donnée bancaire n'est stockée dans le compte."
+msgstr "Nazwa osoby lub firmy powiązanej z kontem bankowym. Wymagana tylko, jeśli w koncie nie są zapisane dane bankowe."
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:243
 msgid "IBAN"
@@ -1056,27 +1056,27 @@ msgstr "IBAN"
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:245
 msgid "Only required for EUR transacting merchants."
-msgstr "Uniquement requis pour les commerçants effectuant des transactions en EUR."
+msgstr "Wymagane tylko dla sprzedawców rozliczających się w EUR."
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:248
 msgid "Sort Code"
-msgstr "Code bancaire"
+msgstr "Kod banku (Sort Code)"
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:250
 msgid "Six digits which identify the bank and branch of an account. Included with the Account Number for UK to UK bank transfers. Only required if no bank details are stored on account."
-msgstr "Six chiffres qui identifient la banque et la succursale d'un compte. Accompagne le numéro de compte pour les transferts bancaires R.-U. à banque R.-U. Requis seulement si aucune donnée bancaire n'est stockée dans le compte."
+msgstr "Sześć cyfr identyfikujących bank i oddział konta. Używany razem z numerem konta przy przelewach z banku UK do banku UK. Wymagany tylko, jeśli w koncie nie są zapisane dane bankowe."
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:253
 msgid "Countries"
-msgstr "Pays"
+msgstr "Kraje"
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:261
 msgid "Currencies*"
-msgstr "Devises*"
+msgstr "Waluty*"
 
 #: src/PaymentMethods/OpenBanking/OpenBanking.php:265
 msgid "Note: The payment method will be displayed at checkout only for the selected currencies."
-msgstr "Remarque : La méthode de paiement sera affichée à la caisse seulement pour les devises sélectionnées."
+msgstr "Uwaga: metoda płatności będzie wyświetlana przy finalizacji zakupu tylko dla wybranych walut."
 
 #. Plugin Name of the plugin
 #: globalpayments-gateway-provider-for-woocommerce.php
@@ -2099,133 +2099,3 @@ msgstr ""
 #: src/Gateways/Traits/HppTrait.php:985
 msgid "Refunds for eRaty transactions are not supported via WordPress. Please follow your eRaty/acquirer refund process."
 msgstr "Zwroty transakcji eRaty nie są obsługiwane za pośrednictwem WordPressa. Postępuj zgodnie z procedurą zwrotu eRaty lub swojego agenta rozliczeniowego."
-
-#: assets/admin/js/globalpayments-admin.js:80
-msgid "Please be sure that you have filled AppId and AppKey fields!"
-msgstr ""
-
-#: assets/admin/js/globalpayments-admin.js:224
-msgid "No payment gateway available."
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:220
-msgid "Please enter both gift card number and PIN."
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:247
-#: assets/frontend/blocks/heartland.js:333
-msgid "Gift card applied successfully!"
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:255
-msgid "Failed to apply gift card. Please try again."
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:284
-msgid "Failed to remove gift card. Please try again."
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:332
-msgid "Gift card applied! Balance: "
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:365
-msgid "Gift card"
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:374
-msgid "PIN"
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:403
-msgid "Applying..."
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:492
-msgid "Applied Gift Cards"
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:516
-msgid "Remove gift card"
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:519
-msgid "Removing..."
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:520
-msgid "Remove"
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:528
-msgid "Loading..."
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:922
-msgid "Place Order"
-msgstr ""
-
-#: assets/frontend/blocks/heartland.js:1238
-msgid "Your gift card(s) cover the entire order total. No credit card is required."
-msgstr ""
-
-#: assets/frontend/js/globalpayments-applepay.js:93
-#: resources/js/frontend/components/digitalWallets/applePayComponent.js:90
-#: assets/frontend/blocks/gateways.js:165
-msgid "Unable to create ApplePaySession"
-msgstr "Nie można utworzyć sesji Apple Pay"
-
-#: assets/frontend/js/globalpayments-applepay.js:94
-#: assets/frontend/js/globalpayments-applepay.js:109
-#: assets/frontend/js/globalpayments-applepay.js:126
-#: assets/frontend/js/globalpayments-applepay.js:133
-#: resources/js/frontend/components/digitalWallets/applePayComponent.js:91
-#: resources/js/frontend/components/digitalWallets/applePayComponent.js:106
-#: resources/js/frontend/components/digitalWallets/applePayComponent.js:150
-#: resources/js/frontend/components/digitalWallets/applePayComponent.js:157
-#: assets/frontend/blocks/gateways.js:166
-#: assets/frontend/blocks/gateways.js:181
-#: assets/frontend/blocks/gateways.js:225
-#: assets/frontend/blocks/gateways.js:232
-msgid "We're unable to take your payment through Apple Pay. Please try again or use an alternative payment method."
-msgstr "Nie można przetworzyć płatności za pomocą Apple Pay. Spróbuj ponownie lub użyj innej metody płatności."
-
-#: assets/frontend/js/globalpayments-applepay.js:189
-#: resources/js/frontend/gateways/gpapi.js:75
-#: assets/frontend/blocks/gateways.js:1617
-msgid "Apple Pay requires your checkout be served over HTTPS"
-msgstr "Apple Pay wymaga, aby strona płatności była obsługiwana przez HTTPS"
-
-#: assets/frontend/js/globalpayments-applepay.js:194
-#: resources/js/frontend/gateways/gpapi.js:80
-#: assets/frontend/blocks/gateways.js:1622
-msgid "Apple Pay is not supported on this device/browser"
-msgstr "Apple Pay nie jest obsługiwane na tym urządzeniu ani w tej przeglądarce"
-
-#: assets/frontend/js/globalpayments-clicktopay.js:81
-#: assets/frontend/js/globalpayments-secure-payment-fields.js:223
-#: resources/js/frontend/components/digitalWallets/clickToPayComponent.js:58
-#: assets/frontend/blocks/gateways.js:322
-msgid "Warning! Payment fields cannot be loaded"
-msgstr ""
-
-#: assets/frontend/js/globalpayments-secure-payment-fields.js:391
-#: assets/frontend/js/globalpayments-secure-payment-fields.js:398
-msgid "Something went wrong while doing 3DS processing."
-msgstr ""
-
-#: assets/frontend/js/globalpayments-secure-payment-fields.js:483
-msgid "Something went wrong. Please contact us to get assistance."
-msgstr ""
-
-#: assets/frontend/js/globalpayments-secure-payment-fields.js:492
-msgid "We're not able to process this payment. Please refresh the page and try again."
-msgstr ""
-
-#: assets/frontend/js/saved-cards-tooltip.js:8
-msgid "For card-based installment payment options, please enter your card information below."
-msgstr ""
-
-#: resources/js/frontend/components/hostedPaymentPages/hppComponent.js:309
-msgid "Billing phone number is required for secure payments."
-msgstr ""

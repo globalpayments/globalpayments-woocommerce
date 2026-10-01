@@ -52,6 +52,10 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.23.2 (10/1/26)
+* Bug Fix: Updated translations
+* Bug Fix: Added exception logging and order notes when payment processing errors occur
+
 = 1.23.1 (09/17/26)
 * Enhancement: GPAPI: Added Localize eRaty Refund Tooltip Text
 
