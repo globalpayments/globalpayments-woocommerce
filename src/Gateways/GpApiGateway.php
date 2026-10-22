@@ -1298,16 +1298,21 @@ class GpApiGateway extends AbstractGateway {
 		}
 
 		try {
-			$response = new \stdClass();
-
+			// Without a readable CRes (no `cres` field, or one that doesn't decode) the parent
+			// window is still notified, with an empty result, so the checkout isn't left waiting
+			// on a blank challenge window. The server-side authentication check then decides.
+			$convertedCRes = null;
 			if ( isset( $_POST['cres'] ) ) {
 				$convertedCRes = wc_clean( json_decode( base64_decode( $_POST['cres'] ) ) );
-
-				$response = wp_json_encode( [
-					'threeDSServerTransID' => $convertedCRes->threeDSServerTransID,
-					'transStatus'          => $convertedCRes->transStatus ?? '',
-				] );
 			}
+			if ( ! is_object( $convertedCRes ) ) {
+				$convertedCRes = new \stdClass();
+			}
+
+			$response = wp_json_encode( [
+				'threeDSServerTransID' => $convertedCRes->threeDSServerTransID ?? '',
+				'transStatus'          => $convertedCRes->transStatus ?? '',
+			] );
 
 			wp_enqueue_script(
 				'globalpayments-threedsecure-lib',
@@ -1328,7 +1333,7 @@ class GpApiGateway extends AbstractGateway {
 </html>
 			<?php
 			exit();
-		} catch ( Exception $e ) {
+		} catch ( \Throwable $e ) {
 			wp_send_json( [
 				'error'   => true,
 				'message' => $e->getMessage(),
