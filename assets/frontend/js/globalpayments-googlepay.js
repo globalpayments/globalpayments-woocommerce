@@ -193,6 +193,17 @@
 		 * Add the google pay button to the DOM
 		 */
 		addGooglePayButton: function () {
+			var target = helper.getSubmitButtonTargetSelector( this.id );
+
+			// initialize() is bound to `updated_checkout`, which fires on every
+			// checkout re-render. WooCommerce recreates the payment fragment (wiping
+			// this target) on some updates but not others, so without a guard the
+			// button — and the target div — can stack up across re-renders. Bail if
+			// our button is already in place.
+			if ( $( target ).children().length ) {
+				return;
+			}
+
 			helper.createSubmitButtonTarget( this.id );
 
 			var self = this
@@ -203,7 +214,7 @@
 					}
 				} );
 
-			$( helper.getSubmitButtonTargetSelector( this.id ) ).append( button );
+			$( target ).append( button );
 		},
 
 		onGooglePaymentButtonClicked: function () {
