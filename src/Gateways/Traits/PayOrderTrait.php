@@ -297,8 +297,19 @@ trait PayOrderTrait {
 		$available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
 		
 		foreach ( $available_gateways as $gateway ) {
-			// Only include GlobalPayments gateways (gpapi, genius, and transit)
-			if ( strpos( $gateway->id, 'globalpayments_' ) === 0 && 'yes' === $gateway->enabled ) {
+			// Only include GlobalPayments gateways (gpapi, genius, and transit) that
+			// support the Pay for Order flow. The digital-wallet methods (Apple Pay,
+			// Google Pay) also register with a `globalpayments_` id, but they do not
+			// use PayOrderTrait and therefore have no get_stored_payment_methods().
+			// Including them here fatals pay_order_modal() ("Call to undefined method
+			// ...GooglePay::get_stored_payment_methods()") on the order-edit screen for
+			// any pending/failed order whenever a wallet is enabled. They cannot be
+			// charged via admin Pay for Order anyway, so exclude them.
+			if (
+				strpos( $gateway->id, 'globalpayments_' ) === 0
+				&& 'yes' === $gateway->enabled
+				&& method_exists( $gateway, 'get_stored_payment_methods' )
+			) {
 				$enabled_gateways[] = $gateway;
 			}
 		}
