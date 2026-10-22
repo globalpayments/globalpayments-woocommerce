@@ -381,6 +381,12 @@
 								helper.showPaymentError( authenticationData.message );
 								return false;
 							}
+							// After a challenge, only continue when the issuer authenticated the shopper.
+							// Closing the challenge window reports transStatus "N" (see cancelTransaction).
+							if ( ! self.isChallengeSuccessful( authenticationData ) ) {
+								helper.showPaymentError( __( '3DS Authentication failed. Please try again.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+								return false;
+							}
 							helper.createInputElement( self.id, 'serverTransId', authenticationData.serverTransactionId || authenticationData.challenge.response.data.threeDSServerTransID || versionCheckData.serverTransactionId );
 							$form.submit();
 							return true;
@@ -399,10 +405,31 @@
 					return false;
 				});
 
-			$( document ).on( "click", 'img[id^="GlobalPayments-frame-close-"]', this.cancelTransaction.bind( this ) );
+			// Namespaced and rebound so repeated attempts don't stack duplicate handlers.
+			$( document )
+				.off( 'click.globalpaymentsChallengeClose' )
+				.on( 'click.globalpaymentsChallengeClose', 'img[id^="GlobalPayments-frame-close-"]', this.cancelTransaction.bind( this ) );
 
 			return false;
 
+		},
+
+		/**
+		 * Whether a 3DS challenge, if one was presented, ended in a successful authentication
+		 *
+		 * Frictionless flows have no challenge response and are left to the server-side check.
+		 *
+		 * @param {object} authenticationData
+		 *
+		 * @returns {boolean}
+		 */
+		isChallengeSuccessful: function ( authenticationData ) {
+			var challengeResponse = authenticationData.challenge && authenticationData.challenge.response;
+			if ( ! challengeResponse || ! challengeResponse.data || ! challengeResponse.data.transStatus ) {
+				return true;
+			}
+
+			return -1 !== [ 'Y', 'A' ].indexOf( challengeResponse.data.transStatus );
 		},
 
 		/**
