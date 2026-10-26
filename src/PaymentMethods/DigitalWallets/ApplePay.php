@@ -97,37 +97,69 @@ class ApplePay extends AbstractDigitalWallet {
 			'apple_merchant_id'             => array(
 				'title'             => __( 'Apple Merchant ID*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'              => 'text',
+				'description'       => __(
+					'Your Apple Pay Merchant Identifier, e.g. <code>merchant.com.yourcompany</code>. Create it in your Apple Developer account under <a href="https://developer.apple.com/account/resources/identifiers/list/merchant" target="_blank" rel="noopener noreferrer">Certificates, Identifiers &amp; Profiles &rarr; Identifiers &rarr; Merchant IDs</a>.',
+					'globalpayments-gateway-provider-for-woocommerce'
+				),
+				'desc_tip'          => false,
 				'custom_attributes' => array( 'required' => 'required' ),
 			),
 			'apple_merchant_cert_path'      => array(
 				'title'             => __( 'Apple Merchant Cert Path*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'              => 'text',
+				'description'       => __(
+					'Absolute path on this server to your Apple Pay <strong>Merchant Identity certificate</strong> in PEM format (e.g. <code>/path/to/merchant_id.pem</code>). It is used to validate the merchant session with Apple during checkout. Generate a certificate signing request for your Merchant ID in the Apple Developer portal, download the certificate Apple issues, and convert it to PEM. See <a href="https://developer.apple.com/documentation/apple_pay_on_the_web/configuring_your_environment" target="_blank" rel="noopener noreferrer">Configuring your Apple Pay environment</a>.',
+					'globalpayments-gateway-provider-for-woocommerce'
+				),
+				'desc_tip'          => false,
 				'custom_attributes' => array( 'required' => 'required' ),
 			),
 			'apple_merchant_key_path'       => array(
 				'title'             => __( 'Apple Merchant Key Path*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'              => 'text',
+				'description'       => __(
+					'Absolute path on this server to the <strong>private key</strong> (PEM) that pairs with the Merchant Identity certificate above, e.g. <code>/path/to/merchant_id_key.pem</code>. Keep it outside the web root.',
+					'globalpayments-gateway-provider-for-woocommerce'
+				),
+				'desc_tip'          => false,
 				'custom_attributes' => array( 'required' => 'required' ),
 			),
 			'apple_merchant_key_passphrase' => array(
-				'title' => __( 'Apple Merchant Key Passphrase', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'  => 'password',
+				'title'       => __( 'Apple Merchant Key Passphrase', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'password',
+				'description' => __(
+					'The passphrase protecting the private key above, if you set one when exporting it. Leave blank if the key is unencrypted.',
+					'globalpayments-gateway-provider-for-woocommerce'
+				),
+				'desc_tip'    => false,
 			),
 			'apple_merchant_domain'         => array(
 				'title'             => __( 'Apple Merchant Domain*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'              => 'text',
+				'description'       => __(
+					'The fully-qualified domain that serves your checkout, e.g. <code>www.example.com</code> (no scheme, no path). It must be registered and verified for Apple Pay on the Web: add the domain to your Merchant ID and host the <code>apple-developer-merchantid-domain-association</code> file Apple provides. See <a href="https://developer.apple.com/documentation/apple_pay_on_the_web/maintaining_your_environment#3179109" target="_blank" rel="noopener noreferrer">Registering your merchant domains</a>.',
+					'globalpayments-gateway-provider-for-woocommerce'
+				),
+				'desc_tip'          => false,
 				'custom_attributes' => array( 'required' => 'required' ),
 			),
 			'apple_merchant_display_name'   => array(
 				'title'             => __( 'Apple Merchant Display Name*', 'globalpayments-gateway-provider-for-woocommerce' ),
 				'type'              => 'text',
+				'description'       => __(
+					'The store name shown to the customer in the Apple Pay sheet.',
+					'globalpayments-gateway-provider-for-woocommerce'
+				),
+				'desc_tip'          => false,
 				'custom_attributes' => array( 'required' => 'required' ),
 			),
 			'cc_types'                      => array(
-				'title'   => __( 'Accepted Cards*', 'globalpayments-gateway-provider-for-woocommerce' ),
-				'type'    => 'multiselectcheckbox',
-				'class'   => 'accepted_cards required',
-				'css'     => 'width: 450px; height: 110px',
+				'title'       => __( 'Accepted Cards*', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'multiselectcheckbox',
+				'class'       => 'accepted_cards required',
+				'css'         => 'width: 450px; height: 110px',
+				'description' => __( 'The card networks offered to the customer in the Apple Pay sheet.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'desc_tip'    => false,
 				'options' => array(
 					CardType::VISA       => __( 'Visa', 'globalpayments-gateway-provider-for-woocommerce' ),
 					CardType::MASTERCARD => __( 'MasterCard', 'globalpayments-gateway-provider-for-woocommerce' ),
