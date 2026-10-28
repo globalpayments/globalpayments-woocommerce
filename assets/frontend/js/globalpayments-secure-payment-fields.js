@@ -248,7 +248,7 @@
 					styles: this.getStyleConfiguration()
 				}
 			);
-			this.cardForm.on( 'submit', 'click', helper.blockOnSubmit.bind( this ) );
+			this.cardForm.on( 'submit', 'click', helper.blockOnSubmit.bind( helper ) );
 			this.cardForm.on( 'token-success', this.handleResponse.bind( this ) );
 			this.cardForm.on( 'token-error', this.handleErrors.bind( this ) );
 			this.cardForm.on( 'error', this.handleErrors.bind( this ) );
