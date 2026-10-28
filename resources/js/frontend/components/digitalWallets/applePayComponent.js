@@ -130,7 +130,21 @@ const getCountryId = () => {
 };
 
 const getAllowedCardNetworks = () => {
-	return state.settings.payment_method_options.cc_types;
+	// Apple Pay's supportedNetworks expects Apple's own network identifiers
+	// (e.g. 'visa', 'masterCard'), NOT the uppercase GP CardType codes stored
+	// for the gateway (VISA, MASTERCARD). Apple silently ignores unrecognised
+	// values, so passing the raw codes filtered every card out of the sheet.
+	// Map them, dropping any with no Apple network.
+	const appleNetworks = {
+		VISA: 'visa',
+		MASTERCARD: 'masterCard',
+		AMEX: 'amex',
+		DISCOVER: 'discover',
+		JCB: 'jcb',
+	};
+	return ( state.settings.payment_method_options.cc_types || [] )
+		.map( ( type ) => appleNetworks[ String( type ).toUpperCase() ] )
+		.filter( Boolean );
 };
 
 const getDisplayName = () => {
