@@ -1488,6 +1488,20 @@ class GpApiGateway extends AbstractGateway {
 	}
 
 	/**
+	 * GP API returns the amount actually processed on the transaction, mapped by
+	 * the SDK to balanceAmount (and to authorizedAmount for a pre-authorisation).
+	 *
+	 * @inheritdoc
+	 */
+	protected function get_approved_amount( Transaction $response ) {
+		if ( null !== $response->authorizedAmount && '' !== $response->authorizedAmount ) {
+			return $response->authorizedAmount;
+		}
+
+		return $response->balanceAmount;
+	}
+
+	/**
 	 * Use DiUi handler or abstract method
 	 *
 	 * @param int $order_id
@@ -1512,7 +1526,8 @@ class GpApiGateway extends AbstractGateway {
 			return parent::process_payment( $order_id );
 		} catch ( \Exception $e ) {
 			$order = wc_get_order( $order_id );
-			if ( $order instanceof \WC_Order && ! $order->is_paid() && 'failed' !== $order->get_status() ) {
+			// An order already put on hold (a payment needing manual review) keeps that status.
+			if ( $order instanceof \WC_Order && ! $order->is_paid() && ! $order->has_status( array( 'failed', 'on-hold' ) ) ) {
 				$transaction_id = ! empty( $this->declined_transaction_id )
 					? $this->declined_transaction_id
 					: __( 'N/A', 'globalpayments-gateway-provider-for-woocommerce' );
