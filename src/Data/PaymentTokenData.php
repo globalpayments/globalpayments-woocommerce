@@ -50,7 +50,7 @@ class PaymentTokenData {
 	 *
 	 * @return
 	 */
-	public function __construct( RequestInterface $request = null ) {
+	public function __construct( ?RequestInterface $request ) {
 		$this->request = $request;
 	}
 

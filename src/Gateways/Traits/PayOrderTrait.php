@@ -221,7 +221,7 @@ trait PayOrderTrait {
 					'success' => true,
 				] );
 			} else {
-				throw new Exception( __( 'Something went wrong while processing the payment.', 'globalpayments-gateway-provider-for-woocommerce' ) );
+				throw new \Exception( __( 'Something went wrong while processing the payment.', 'globalpayments-gateway-provider-for-woocommerce' ) );
 			}
 		} catch ( \Exception $e ) {
 			wp_send_json( [
@@ -298,7 +298,10 @@ trait PayOrderTrait {
 		
 		foreach ( $available_gateways as $gateway ) {
 			// Only include GlobalPayments gateways (gpapi, genius, and transit)
-			if ( strpos( $gateway->id, 'globalpayments_' ) === 0 && 'yes' === $gateway->enabled ) {
+			if ( strpos( $gateway->id, 'globalpayments_' ) === 0 
+				&& 'yes' === $gateway->enabled 
+				&&  method_exists( $gateway, 'get_stored_payment_methods' )
+				) {
 				$enabled_gateways[] = $gateway;
 			}
 		}
