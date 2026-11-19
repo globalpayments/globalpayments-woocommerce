@@ -52,8 +52,11 @@ Access to our Unified Payments requires sandbox credentials which you can retrie
 4. Click  ‘Create a New App’. An app is a set of credentials used to access the API and generate access tokens.
 
 == Changelog ==
+= 1.24.0 (11/19/26)
+* Enhancement: Add Cashpresso (APM) support using HPP
+
 = 1.23.4 (11/12/26)
-* Enhancement: Update to globalpayments PHP-SDK 
+* Enhancement: Update to globalpayments PHP-SDK
 
 = 1.23.3 (10/22/26)
 * Bug Fix: Prevent unauthorized order status updates for Blik & Bank Select orders

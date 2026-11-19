@@ -427,6 +427,7 @@ trait HppTrait {
 		// Guard against double-processing when both the return and final callbacks fire.
 		$already_final = in_array( $order->get_status(), array( 'processing', 'completed' ), true );
 		if ( HppResponseParser::is_successful_payment( $gateway_data ) ) {
+			$this->store_cashpresso_trn_id( $order, $gateway_data );
 
 		// Handle installments before payment_complete() to ensure data is available in emails.
 			if ( InstallmentsService::has_installments( $gateway_data ) ) {
@@ -498,6 +499,25 @@ trait HppTrait {
 		}
 
 		return wc_get_checkout_url();
+	}
+
+	/**
+	 * Store the verified Cashpresso transaction reference used for refunds.
+	 *
+	 * @param WC_Order $order WooCommerce order.
+	 * @param array    $gateway_data HPP callback data.
+	 * @return void
+	 */
+	protected function store_cashpresso_trn_id( WC_Order $order, array $gateway_data ): void {
+		if ( 'CASHPRESSO' !== HppResponseParser::extract_apm_provider( $gateway_data ) ) {
+			return;
+		}
+
+		$trn_id = HppResponseParser::extract_cashpresso_trn_id( $gateway_data );
+		if ( null !== $trn_id ) {
+			$order->update_meta_data( '_globalpayments_cashpresso_trn_id', $trn_id );
+			$order->save();
+		}
 	}
 
 	/**

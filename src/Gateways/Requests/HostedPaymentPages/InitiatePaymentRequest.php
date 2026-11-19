@@ -16,7 +16,9 @@ use GlobalPayments\Api\Entities\Enums\{
 	HPPAllowedPaymentMethods,
 	PaymentMethodUsageMode,
 	PhoneNumberType,
-	InstallmentsFundingMode
+	InstallmentsFundingMode,
+	CashpressoPaymentPlan,
+	CashpressoShippingMethod
 };
 use GlobalPayments\Api\Utils\{
 	CountryUtils,
@@ -101,6 +103,21 @@ class InitiatePaymentRequest extends AbstractRequest {
 		$enabled_alternative_payments = $this->get_alternative_payment_methods();
 		if ( ! empty( $enabled_alternative_payments ) ) {
 			$hpp_payment_methods = array_merge( $hpp_payment_methods, $enabled_alternative_payments );
+		}
+
+		if ( $this->is_cashpresso_enabled() ) {
+			$hpp_builder
+				->withShipping( false )
+				->withApm( false, false )
+				->withCashpressoPaymentPlans(
+					array(
+						CashpressoPaymentPlan::PAY_IN_3_INSTALLMENTS,
+						CashpressoPaymentPlan::PAY_30_DAYS,
+					)
+				)
+				->withOrderShippingMethod( CashpressoShippingMethod::DELIVERY )
+				->withOrderShippingDate( wp_date( 'Y-m-d', strtotime( '+1 day' ) ) )
+				->withOrderItems( $this->get_cashpresso_order_items() );
 		}
 
 		// Map admin payment action to HPP capture mode.
@@ -299,7 +316,52 @@ class InitiatePaymentRequest extends AbstractRequest {
 			$enabled_alternative_payments[] = HPPAllowedPaymentMethods::ERATY;
 		}
 
+		if ( $this->is_cashpresso_enabled() ) {
+			$enabled_alternative_payments[] = HPPAllowedPaymentMethods::CASHPRESSO;
+		}
+
 		return $enabled_alternative_payments;
+	}
+
+	/**
+	 * Determine whether Cashpresso is enabled for the hosted payment page.
+	 *
+	 * @return bool
+	 */
+	protected function is_cashpresso_enabled(): bool {
+		return isset( $this->config['enable_cashpresso_hpp'] )
+			&& wc_string_to_bool( $this->config['enable_cashpresso_hpp'] )
+			&& 'hpp' === ( $this->config['payment_interface'] ?? '' )
+			&& 'DE' === ( wc_get_base_location()['country'] ?? '' )
+			&& count( $this->order->get_items( 'line_item' ) ) <= 10;
+	}
+
+	/**
+	 * Map WooCommerce line items to the Cashpresso HPP order item payload.
+	 *
+	 * @return array
+	 */
+	protected function get_cashpresso_order_items(): array {
+		$items = array();
+
+		foreach ( $this->order->get_items( 'line_item' ) as $item ) {
+			$product  = $item->get_product();
+			$quantity = max( 1, (int) $item->get_quantity() );
+			$label    = $product ? $product->get_name() : $item->get_name();
+			$product_code = $product && $product->get_sku()
+				? $product->get_sku()
+				: (string) $item->get_product_id();
+
+			$items[] = array(
+				'label'        => $label,
+				'product_code' => $product_code,
+				'quantity'     => (string) $quantity,
+				'unit_amount'  => StringUtils::toNumeric( $item->get_total() / $quantity, $this->order->get_currency() ),
+				'tax_amount'   => StringUtils::toNumeric( $item->get_total_tax(), $this->order->get_currency() ),
+			);
+		}
+
+		return $items;
 	}
 
 	/**

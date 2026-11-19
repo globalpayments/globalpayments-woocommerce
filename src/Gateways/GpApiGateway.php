@@ -150,6 +150,13 @@ class GpApiGateway extends AbstractGateway {
 	public $enable_eraty_hpp;
 
 	/**
+	 * Enable Cashpresso for HPP
+	 *
+	 * @var string
+	 */
+	public $enable_cashpresso_hpp;
+
+	/**
 	 * Enable Google Pay for HPP
 	 *
 	 * @var string
@@ -652,6 +659,16 @@ class GpApiGateway extends AbstractGateway {
 			);
 		}
 
+		if ( WC()->countries->get_base_country() === 'DE' ) {
+			$theArray['enable_cashpresso_hpp'] = array(
+				'title'       => __( 'Enable Cashpresso for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'label'       => __( 'Enable Cashpresso for HPP', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Enable Cashpresso as a payment option on the Hosted Payment Page.', 'globalpayments-gateway-provider-for-woocommerce' ),
+				'default'     => 'no',
+			);
+		}
+
 		$theArray = array_merge(
 			$theArray,
 			array(
@@ -814,6 +831,7 @@ class GpApiGateway extends AbstractGateway {
 			'hpp_installments_plan_merchant_funded_max' => $this->get_option( 'hpp_installments_plan_merchant_funded_max' ),
 			'hpp_installments_plan_threshold'           => $this->get_option( 'hpp_installments_plan_threshold' ),
 			'enable_eraty_hpp'  	   => $this->get_option( 'enable_eraty_hpp' ),
+			'enable_cashpresso_hpp'    => $this->get_option( 'enable_cashpresso_hpp' ),
 		);
 	}
 

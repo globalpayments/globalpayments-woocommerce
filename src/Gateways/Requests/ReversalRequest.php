@@ -13,7 +13,7 @@ class ReversalRequest extends AbstractRequest {
 
 	public function get_args() {
 
-		$gateway_id  = $this->order->get_transaction_id();
+		$gateway_id  = $this->order->get_meta( '_globalpayments_cashpresso_trn_id', true ) ?: $this->order->get_transaction_id();
 		$description = $this->data['refund_reason'];
 
 		$original_amount = wc_format_decimal( $this->order->get_total(), 2 );

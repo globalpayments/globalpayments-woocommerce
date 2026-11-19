@@ -1146,7 +1146,8 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
 		$order                  = wc_get_order( $order_id );
-		$details                = $this->get_transaction_details_by_txn_id( $order->get_transaction_id() );
+		$refund_transaction_id  = $this->get_refund_transaction_id( $order );
+		$details                = $this->get_transaction_details_by_txn_id( $refund_transaction_id );
 		$is_order_txn_id_active = $this->is_transaction_active( $details );
 		$txn_type               = $is_order_txn_id_active ? self::TXN_TYPE_REVERSAL : self::TXN_TYPE_REFUND;
 
@@ -1181,6 +1182,20 @@ abstract class AbstractGateway extends WC_Payment_Gateway_Cc {
 		}
 
 		return $is_successful;
+	}
+
+	/**
+	 * Get the transaction ID to use for refunds.
+	 *
+	 * @param WC_Order $order WooCommerce order.
+	 * @return string
+	 */
+	protected function get_refund_transaction_id( WC_Order $order ): string {
+		$cashpresso_trn_id = $order->get_meta( '_globalpayments_cashpresso_trn_id', true );
+
+		return ! empty( $cashpresso_trn_id )
+			? (string) $cashpresso_trn_id
+			: (string) $order->get_transaction_id();
 	}
 
 	/**

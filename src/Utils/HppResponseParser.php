@@ -69,6 +69,36 @@ class HppResponseParser {
     }
 
     /**
+     * Extract the Cashpresso transaction reference used for refunds.
+     *
+     * @param array $data HPP callback data.
+     * @return string|null
+     */
+    public static function extract_cashpresso_trn_id( array $data ): ?string
+    {
+        $trn_id = $data['TRN_ID'] ?? null;
+
+        return is_scalar( $trn_id ) && '' !== (string) $trn_id
+            ? sanitize_text_field( (string) $trn_id )
+            : null;
+    }
+
+    /**
+     * Extract the alternative payment provider from HPP callback data.
+     *
+     * @param array $data HPP callback data.
+     * @return string|null
+     */
+    public static function extract_apm_provider( array $data ): ?string
+    {
+        $provider = $data['payment_method']['apm']['provider'] ?? null;
+
+        return is_scalar( $provider ) && '' !== (string) $provider
+            ? strtoupper( sanitize_text_field( (string) $provider ) )
+            : null;
+    }
+
+    /**
      * Extract payment status from HPP callback data
      * 
      * - status: "DECLINED" | "CAPTURED" | "PREAUTHORIZED" 

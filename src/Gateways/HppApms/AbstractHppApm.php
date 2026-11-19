@@ -86,6 +86,15 @@ class AbstractHppApm {
             wp_die( 'Invalid order', 404 );
             return;
         }
+
+        if ( isset( $json_data ) && is_array( $json_data )
+            && 'CASHPRESSO' === HppResponseParser::extract_apm_provider( $json_data ) ) {
+            $trn_id = HppResponseParser::extract_cashpresso_trn_id( $json_data );
+            if ( null !== $trn_id ) {
+                $order->update_meta_data( '_globalpayments_cashpresso_trn_id', $trn_id );
+                $order->save();
+            }
+        }
         
 
         // The order is located via the reference embedded in this notification, so a
@@ -137,7 +146,7 @@ class AbstractHppApm {
             $callback_summary .= ", Transaction ID: $transaction_id";
         }
         if ( isset( $callback_data['amount'] ) ) {
-            $callback_summary .= ", Amount: " . $callback_data['amount'];
+            $callback_summary .= ", Amount: " . $order->get_total();
         }
         if ( isset( $callback_data['currency'] ) ) {
             $callback_summary .= " " . $callback_data['currency'];
@@ -175,7 +184,7 @@ class AbstractHppApm {
                     }
 
                     // Add metadata to track callback processing
-                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', date( 'Y-m-d H:i:s' ) );
+                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', gmdate( 'Y-m-d H:i:s' ) );
                     $order->update_meta_data( '_globalpayments_hpp_payment_status', $payment_status );
                     if ( !empty( $payment_method_type ) ) {
                         $order->update_meta_data( '_globalpayments_hpp_payment_method_type', $payment_method_type );
@@ -196,7 +205,7 @@ class AbstractHppApm {
                     $order->payment_complete( $transaction_id );
 
                     // Add metadata to track callback processing
-                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', date( 'Y-m-d H:i:s' ) );
+                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', gmdate( 'Y-m-d H:i:s' ) );
                     $order->update_meta_data( '_globalpayments_hpp_payment_status', $payment_status );
                     $order->update_meta_data( '_globalpayments_payment_captured', 'is_captured' );
                     if ( !empty( $payment_method_type ) ) {
@@ -227,7 +236,7 @@ class AbstractHppApm {
 
 
                      // Add metadata to track callback processing
-                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', date( 'Y-m-d H:i:s' ) );
+                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', gmdate( 'Y-m-d H:i:s' ) );
                     $order->update_meta_data( '_globalpayments_hpp_payment_status', $payment_status );
                     $order->update_meta_data( '_globalpayments_payment_captured', 'is_pending' );
                     if ( !empty( $payment_method_type ) ) {
@@ -244,18 +253,17 @@ class AbstractHppApm {
                 }
                 break;
             case 'DECLINED':
-            case 'CANCELLED':
             case 'FAILED':
-                // Payment failed, declined, or cancelled
+                // Payment failed or declined
                 if ( in_array($order->get_status(), ['on-hold', 'pending', 'cancelled', 'failed'] ) ) {
                     $note_text = sprintf(
                         __( 'Payment failed/declined via HPP status notification. %s', 'globalpayments-gateway-provider-for-woocommerce' ),
                         $callback_summary
                     );
-                    $order->update_status( 'cancelled', $note_text );
+                    $order->update_status( 'failed', $note_text );
 
                     // Add metadata to track callback processing
-                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', date('Y-m-d H:i:s') );
+                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', gmdate( 'Y-m-d H:i:s' ) );
                     $order->update_meta_data( '_globalpayments_hpp_payment_status', $payment_status );
                     if ( !empty( $payment_method_type ) ) {
                         $order->update_meta_data( '_globalpayments_hpp_payment_method_type', $payment_method_type );
@@ -268,6 +276,22 @@ class AbstractHppApm {
                             'status' => $payment_status
                         ] ) );
                     }
+                }
+                break;
+            case 'CANCELLED':
+                // Payment was cancelled by the shopper or provider.
+                if ( in_array($order->get_status(), ['on-hold', 'pending', 'cancelled', 'failed'] ) ) {
+                    $note_text = sprintf(
+                        __( 'Payment cancelled via HPP status notification. %s', 'globalpayments-gateway-provider-for-woocommerce' ),
+                        $callback_summary
+                    );
+                    $order->update_status( 'cancelled', $note_text );
+                    $order->update_meta_data( '_globalpayments_hpp_callback_processed', gmdate( 'Y-m-d H:i:s' ) );
+                    $order->update_meta_data( '_globalpayments_hpp_payment_status', $payment_status );
+                    if ( !empty( $payment_method_type ) ) {
+                        $order->update_meta_data( '_globalpayments_hpp_payment_method_type', $payment_method_type );
+                    }
+                    $order->save();
                 }
                 break;
 
