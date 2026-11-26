@@ -181,7 +181,21 @@
 		},
 
 		getAllowedCardNetworks: function () {
-			return this.paymentMethodOptions.cc_types;
+			// Apple Pay's supportedNetworks expects Apple's own network identifiers
+			// (e.g. 'visa', 'masterCard'), NOT the uppercase GP CardType codes we
+			// store for the gateway (VISA, MASTERCARD). Apple silently ignores any
+			// value it doesn't recognise, so passing the raw codes filtered every
+			// card out of the sheet. Map them, dropping any with no Apple network.
+			var appleNetworks = {
+				VISA: 'visa',
+				MASTERCARD: 'masterCard',
+				AMEX: 'amex',
+				DISCOVER: 'discover',
+				JCB: 'jcb'
+			};
+			return ( this.paymentMethodOptions.cc_types || [] ).map( function ( type ) {
+				return appleNetworks[ String( type ).toUpperCase() ];
+			} ).filter( Boolean );
 		},
 
 		deviceSupported: function () {
