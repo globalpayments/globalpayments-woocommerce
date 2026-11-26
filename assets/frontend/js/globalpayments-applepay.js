@@ -144,6 +144,17 @@
 				}
 
 				var originalSubmit = $( helper.getPlaceOrderButtonSelector() );
+				var $form = $( helper.getForm() );
+
+				// The classic checkout places the order over AJAX, so the outcome is
+				// not known yet. Complete the Apple Pay sheet only once WooCommerce
+				// has answered, so a declined or refused order isn't shown as "Done".
+				if ( $form.is( 'form.checkout' ) ) {
+					this.completePaymentAfterCheckout( session, $form );
+					originalSubmit.click();
+					return;
+				}
+
 				if ( originalSubmit ) {
 					originalSubmit.click();
 					session.completePayment( ApplePaySession.STATUS_SUCCESS );
@@ -154,6 +165,53 @@
 			}
 			session.completePayment( ApplePaySession.STATUS_SUCCESS );
 			$( this.getForm() ).submit();
+		},
+
+		/**
+		 * Complete the Apple Pay session with the outcome of the checkout request:
+		 * SUCCESS when WooCommerce accepts the order (checkout_place_order_success,
+		 * fired just before it redirects), FAILURE when it reports an error
+		 * (checkout_error). If the submit never starts, e.g. a checkout_place_order
+		 * handler cancels it, WooCommerce never adds the `processing` class; complete
+		 * with FAILURE rather than leave the sheet spinning until Apple times out.
+		 *
+		 * @param {ApplePaySession} session
+		 * @param {jQuery} $form
+		 */
+		completePaymentAfterCheckout: function ( session, $form ) {
+			var completed = false;
+			var timer = null;
+
+			var complete = function ( status ) {
+				if ( completed ) {
+					return;
+				}
+				completed = true;
+				clearTimeout( timer );
+				$( document.body ).off( 'checkout_error', onError );
+				$form.off( 'checkout_place_order_success', onSuccess );
+				try {
+					session.completePayment( status );
+				} catch ( e ) {
+					// The session has already ended (Apple's authorization timeout).
+				}
+			};
+			var onError = function () {
+				complete( ApplePaySession.STATUS_FAILURE );
+			};
+			var onSuccess = function () {
+				complete( ApplePaySession.STATUS_SUCCESS );
+				// No return value: returning false would cancel WooCommerce's redirect.
+			};
+
+			$( document.body ).on( 'checkout_error', onError );
+			$form.on( 'checkout_place_order_success', onSuccess );
+
+			timer = setTimeout( function () {
+				if ( ! $form.hasClass( 'processing' ) ) {
+					onError();
+				}
+			}, 3000 );
 		},
 
 		getPaymentRequest: function () {
